@@ -1,32 +1,45 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Text;
-
+using System.Linq;
 using Server.Network;
 
 namespace Server.Managers;
 
 public class ConnectionManager
 {
-    private readonly List<ClientSession> _clients = new();
+    // Dùng ConcurrentDictionary thay cho List để chống crash đụng độ luồng (Thread-Safety)
+    private readonly ConcurrentDictionary<Guid, ClientSession> _clients = new();
 
     public void Add(ClientSession session)
     {
-        _clients.Add(session);
-
-        Console.WriteLine($"[+] Client connected ({_clients.Count})");
+        if (_clients.TryAdd(session.SessionId, session))
+        {
+            Console.WriteLine($"[+] Client connected ({_clients.Count})");
+        }
     }
 
-    public void Remove(ClientSession session)
+    public void Remove(Guid sessionId)
     {
-        _clients.Remove(session);
-
-        Console.WriteLine($"[-] Client disconnected ({_clients.Count})");
+        if (_clients.TryRemove(sessionId, out var session))
+        {
+            session.Close();
+            Console.WriteLine($"[-] Client disconnected ({_clients.Count})");
+        }
     }
 
     public IReadOnlyList<ClientSession> GetAll()
     {
-        return _clients.AsReadOnly();
+        return _clients.Values.ToList().AsReadOnly();
+    }
+
+    public void ClearAll()
+    {
+        foreach (var session in _clients.Values)
+        {
+            session.Close();
+        }
+        _clients.Clear();
     }
 
     public int Count => _clients.Count;

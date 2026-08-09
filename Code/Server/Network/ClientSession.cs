@@ -33,4 +33,14 @@ public class ClientSession
 
         ConnectedTime = DateTime.Now;
     }
+    public void Close()
+    {
+        try
+        {
+            Stream?.Close();
+            Client?.Close();
+        }
+        catch { }
+    }
+
 }
