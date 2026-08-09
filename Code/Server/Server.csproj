@@ -8,15 +8,22 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Config\ServerConfig.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Config\ServerConfig.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Shared\Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Config\" />
     <Folder Include="Core\" />
-    <Folder Include="Managers\" />
     <Folder Include="Models\" />
-    <Folder Include="Network\" />
     <Folder Include="Utils\" />
     <Folder Include="Services\" />
   </ItemGroup>
