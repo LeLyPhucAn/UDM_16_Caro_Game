@@ -8,7 +8,7 @@
 
 | STT | MSSV         | Họ và tên               | Vai trò |
 |-----|--------------|-------------------------|---------|
-| 1   | 080206002048 | Lê Lý Phúc An           | Leader / Architecture & Core Backend |
+| 1   | 080206002048 | Lê Lý Phúc An           | Architecture & Core Backend |
 | 2   | 068305006610 | Nguyễn Trọng Vân Khuyên | Network Message & Protocol |
 | 3   | 054206002957 | Lê Quốc Kim             | Frontend / Client UI |
 | 4   | 052306013525 | Võ Thị Kim Kiều         | Database & Repositories |
@@ -18,7 +18,17 @@
 
 ## Phân công công việc
 
-### 1. Phân công chi tiết nhiệm vụ (Code & Báo cáo DOCX)
+### 1. Phân công tổng thể vai trò & module
+
+| Thành viên | Vai trò | Module Code chính | Công việc DOCX |
+|------------|---------|-------------------|----------------|
+| **Lê Lý Phúc An (Leader)** | Kiến trúc & Tích hợp hệ thống | Thiết kế kiến trúc, Socket TCP Server, Connection Manager, Session Manager, Shared Library, tích hợp các module, review code, merge nhánh | Chương 1 (Tổng quan), Chương 3 (Kiến trúc hệ thống), rà soát toàn bộ báo cáo |
+| **Lê Thế Kiệt** | Backend - Game Logic | Board, Move, Room Manager, Match Manager, Validate Move, kiểm tra thắng/thua/hòa, Timer | Chương 2 (Yêu cầu chức năng), Activity Diagram, Sequence Diagram (Luồng chơi game) |
+| **Lê Quốc Kim** | Frontend - Client | Login UI, Lobby UI, Game UI, Spectator UI, hiển thị Timer, cập nhật trạng thái bàn cờ | Thiết kế GUI, Use Case Diagram |
+| **Võ Thị Kim Kiều** | Database & History | Database Layer, Repository, Match History, Config (IP/Port), màn hình lịch sử trận đấu | Thiết kế CSDL, ERD, Data Dictionary |
+| **Nguyễn Trọng Vân Khuyên** | Lobby & Network Message | Online Player List, Invite/Accept/Reject, Join/Leave Room, Message Packet, JSON Serializer, Connection Status | Protocol Message, Test Case |
+
+### 2. Phân công chi tiết nhiệm vụ tuần 1
 
 | Thành viên | Công việc CODE | Công việc DOCX |
 |------------|----------------|----------------|
@@ -28,15 +38,6 @@
 | **Võ Thị Kim Kiều** | - Tạo Database Layer (`DatabaseHelper`, `DatabaseConfig`)<br>- Tạo Repository: UserRepository, MatchRepository, HistoryRepository<br>- Thiết kế lớp Config đọc IP/Port (khung) | - Thiết kế Database<br>- ERD sơ bộ |
 | **Nguyễn Trọng Vân Khuyên** | - Tạo Message Packet<br>- Tạo MessageType (Enum)<br>- Tạo JsonSerializer<br>- Khởi tạo các lớp LoginMessage, InviteMessage, ResponseMessage | - Thiết kế Protocol Message V1<br>- Liệt kê các loại Message sẽ sử dụng |
 
-### 2. Phân công tổng thể vai trò & module
-
-| Thành viên | Vai trò | Module Code chính | Công việc DOCX |
-|------------|---------|-------------------|----------------|
-| **Lê Lý Phúc An (Leader)** | Kiến trúc & Tích hợp hệ thống | Thiết kế kiến trúc, Socket TCP Server, Connection Manager, Session Manager, Shared Library, tích hợp các module, review code, merge nhánh | Chương 1 (Tổng quan), Chương 3 (Kiến trúc hệ thống), rà soát toàn bộ báo cáo |
-| **Lê Thế Kiệt** | Backend - Game Logic | Board, Move, Room Manager, Match Manager, Validate Move, kiểm tra thắng/thua/hòa, Timer | Chương 2 (Yêu cầu chức năng), Activity Diagram, Sequence Diagram (Luồng chơi game) |
-| **Lê Quốc Kim** | Frontend - Client | Login UI, Lobby UI, Game UI, Spectator UI, hiển thị Timer, cập nhật trạng thái bàn cờ | Thiết kế GUI, Use Case Diagram |
-| **Võ Thị Kim Kiều** | Database & History | Database Layer, Repository, Match History, Config (IP/Port), màn hình lịch sử trận đấu | Thiết kế CSDL, ERD, Data Dictionary |
-| **Nguyễn Trọng Vân Khuyên** | Lobby & Network Message | Online Player List, Invite/Accept/Reject, Join/Leave Room, Message Packet, JSON Serializer, Connection Status | Protocol Message, Test Case |
 
 ### 3. Lộ trình phát triển (Timeline 6 tuần)
 
@@ -51,7 +52,7 @@
 
 ---
 
-## Tiến độ & Các hạng mục đã hoàn thành (Dự án thực tế)
+## Tiến độ & Các hạng mục đã hoàn thành 
 
 - [x] **Cấu trúc Solution**: Đã chia lớp hoàn chỉnh gồm 3 dự án `Server` (Console app / Network Host), `Client` / `Player` (WinForms App), và `Shared` (Thư viện dùng chung chứa DTO, Messages, Enums).
 - [x] **Database Layer & Persistence**: Tích hợp SQL Server với `DatabaseHelper` (sử dụng `Microsoft.Data.SqlClient`), hỗ trợ kết nối và đọc ghi dữ liệu người dùng, trận đấu.
@@ -83,7 +84,7 @@
 
 1. Clone repository về máy:
    ```bash
-   git clone <URL_REPOSITORY>
+   git clone https://github.com/LeLyPhucAn/UDM_16_Caro_Game.git
    cd Project_UDM_16_Caro_Game
    ```
 2. Mở Solution bằng Visual Studio hoặc VS Code.
@@ -141,13 +142,7 @@ File cấu hình Server nằm tại `Code/Server/Config/ServerConfig.json`:
 
 ## Kiểm thử
 
-- **Functional test**: Đã kiểm thử luồng Đăng nhập, Tạo phòng, Đánh cờ.
-- **Test dữ liệu không hợp lệ**: Kiểm tra các nước đi trùng hoặc ra ngoài bàn cờ.
-- **Test mất kết nối**: Kiểm thử ngắt đột ngột Client socket.
-- **Stress test**: Sẽ triển khai ở Tuần 5.
-- **Performance test**: Sẽ triển khai ở Tuần 5.
 
-Bằng chứng kiểm thử lưu tại `Extra/`.
 
 ## Demo
 
