@@ -13,10 +13,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Forms\" />
     <Folder Include="Controls\" />
+    <Folder Include="Forms\" />
     <Folder Include="Managers\" />
-    <Folder Include="Network\" />
     <Folder Include="Utils\" />
     <Folder Include="Services\" />
   </ItemGroup>
