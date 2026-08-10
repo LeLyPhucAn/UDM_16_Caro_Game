@@ -1,5 +1,5 @@
 using System.Data.SqlClient;
-
+using Microsoft.Data.SqlClient;
 namespace Server.Database;
 
 public class DatabaseHelper
