@@ -1,3 +1,4 @@
+using Client.Forms;
 namespace Client
 {
     internal static class Program
