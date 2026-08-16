@@ -2,6 +2,11 @@ using Microsoft.Data.SqlClient;
 using System.Data;
 
 namespace CaroGame.Database
+using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
+namespace Server.Database;
+
+public class DatabaseHelper
 {
     public class DatabaseHelper
     {
