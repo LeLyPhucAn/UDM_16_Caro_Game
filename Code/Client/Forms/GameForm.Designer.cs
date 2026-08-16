@@ -1,4 +1,4 @@
-﻿namespace Player
+namespace Client.Forms
 {
     partial class GameForm
     {

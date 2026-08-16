@@ -1,7 +1,7 @@
 using System;
 using System.Windows.Forms;
 
-namespace Player
+namespace Client.Forms
 {
     public partial class LoginForm : Form
     {

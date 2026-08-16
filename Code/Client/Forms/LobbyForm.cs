@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace Player
+namespace Client.Forms
 {
     public partial class LobbyForm : Form
     {
