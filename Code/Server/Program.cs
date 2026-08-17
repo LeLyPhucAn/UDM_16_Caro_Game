@@ -1,5 +1,9 @@
-﻿using Server.Config;
+﻿using System.Text;
+using Server.Config;
 using Server.Network;
+
+Console.OutputEncoding = Encoding.UTF8;
+Console.InputEncoding = Encoding.UTF8;
 
 Console.Title = "UDM_16 - Caro Server";
 
@@ -12,7 +16,7 @@ try
     server.Start(config);
 
     Console.WriteLine();
-    Console.WriteLine("Press ENTER to stop server...");
+    Console.WriteLine("Nhấn phím ENTER để dừng server...");
 
     Console.ReadLine();
 
