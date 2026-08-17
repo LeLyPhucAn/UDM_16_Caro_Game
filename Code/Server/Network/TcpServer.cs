@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using CaroGame.Protocol;
 using Server.Config;
 using Server.Managers;
+using Server.Utils;
 
 namespace Server.Network;
 
@@ -30,11 +31,11 @@ public class TcpServer
         _isRunning = true;
         _cts = new CancellationTokenSource();
 
-        Console.WriteLine("------------------------------------");
-        Console.WriteLine("Server started");
-        Console.WriteLine($"IP   : {config.Ip}");
-        Console.WriteLine($"Port : {config.Port}");
-        Console.WriteLine("------------------------------------");
+        Logger.Info("========================================");
+        Logger.Info($"Server đã khởi động thành công!");
+        Logger.Info($"Địa chỉ IP : {config.Ip}");
+        Logger.Info($"Cổng Port  : {config.Port}");
+        Logger.Info("========================================");
 
         _ = AcceptClientsAsync(_cts.Token);
     }
@@ -50,16 +51,6 @@ public class TcpServer
                 ClientSession session = new(client);
                 _connectionManager.Add(session);
 
-                Console.WriteLine();
-                Console.WriteLine("====================================");
-                Console.WriteLine("New Client Connected");
-                Console.WriteLine($"Session ID : {session.SessionId}");
-                Console.WriteLine($"Remote IP  : {session.RemoteEndPoint}");
-                Console.WriteLine($"Connected  : {session.ConnectedTime}");
-                Console.WriteLine($"Online     : {_connectionManager.Count}");
-                Console.WriteLine("====================================");
-                Console.WriteLine();
-
                 // Lắng nghe tin nhắn ngầm từ Client
                 _ = Task.Run(() => NetworkHandler.ListenForMessagesAsync(
                     session,
@@ -74,19 +65,18 @@ public class TcpServer
             }
             catch (SocketException)
             {
-                if (!_isRunning)
-                    break;
+                if (!_isRunning) break;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[ServerError] Error accepting client: {ex.Message}");
+                Logger.Error("Lỗi khi chấp nhận Client mới", ex);
             }
         }
     }
 
     private async Task OnMessageReceivedAsync(ClientSession session, BaseMessage message)
     {
-        Console.WriteLine($"[Recv] Từ Client {session.SessionId} ({session.RemoteEndPoint}): Type={message.Type}, Sender={message.SenderId}");
+        Logger.Debug($"Nhận Message từ {session.SessionId}: Type={message.Type}, Sender={message.SenderId}");
 
         // Phản hồi mẫu ResponseMessage lại cho Client
         ResponseMessage response = new ResponseMessage
@@ -94,7 +84,7 @@ public class TcpServer
             SenderId = "Server",
             Success = true,
             ErrorMessage = string.Empty,
-            Data = $"Server received {message.Type} message successfully"
+            Data = $"Server đã nhận {message.Type} thành công lúc {DateTime.Now:HH:mm:ss}"
         };
 
         await session.SendAsync(response);
@@ -103,7 +93,6 @@ public class TcpServer
     private void OnClientDisconnected(ClientSession session)
     {
         _connectionManager.Remove(session.SessionId);
-        Console.WriteLine($"[Disconnected] Client {session.SessionId} ({session.RemoteEndPoint}) đã ngắt kết nối. Online còn: {_connectionManager.Count}");
     }
 
     public void Stop()
@@ -114,7 +103,6 @@ public class TcpServer
         _connectionManager.ClearAll();
         _listener?.Stop();
 
-        Console.WriteLine();
-        Console.WriteLine("Server stopped.");
+        Logger.Warn("Server đã dừng hoạt động.");
     }
 }
