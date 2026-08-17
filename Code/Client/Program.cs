@@ -28,7 +28,7 @@ namespace Client
                 }
             });
 
-            Application.Run(new Form());
+            Application.Run(new Client.Forms.LoginForm());
         }
     }
 }
