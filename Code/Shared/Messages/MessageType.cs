@@ -6,9 +6,10 @@ namespace CaroGame.Protocol
     /// </summary>
     public enum MessageType
     {
-        Login,
-        Invite,
-        Response,
+        Login = 0,
+        Invite = 1,
+        Response = 2,
+        Error = 3,
 
         // Chuẩn bị mở rộng cho các tuần tiếp theo, ví dụ:
         // Move,

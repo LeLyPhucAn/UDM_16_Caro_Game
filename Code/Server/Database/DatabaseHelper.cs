@@ -1,54 +1,71 @@
-using Microsoft.Data.SqlClient;
+using System;
 using System.Data;
-
-namespace CaroGame.Database
-using System.Data.SqlClient;
 using Microsoft.Data.SqlClient;
+
 namespace Server.Database;
 
 public class DatabaseHelper
 {
-    public class DatabaseHelper
-    {
-        public static SqlConnection GetConnection()
-        {
-            return new SqlConnection(Config.ConnectionString);
-        }
+    private static readonly string _defaultConnectionString = new DatabaseConfig().ConnectionString;
+    private readonly string _connectionString;
 
-        // Dùng cho INSERT, UPDATE, DELETE
-        public static int ExecuteNonQuery(string query, SqlParameter[] parameters = null)
+    // Constructor mặc định (sử dụng cấu hình từ DatabaseConfig)
+    public DatabaseHelper() : this(new DatabaseConfig())
+    {
+    }
+
+    // Constructor nhận cấu hình từ bên ngoài
+    public DatabaseHelper(DatabaseConfig config)
+    {
+        _connectionString = config.ConnectionString;
+    }
+
+    /// <summary>
+    /// Tạo và trả về một SqlConnection mới
+    /// </summary>
+    public static SqlConnection GetConnection()
+    {
+        return new SqlConnection(_defaultConnectionString);
+    }
+
+    /// <summary>
+    /// Dùng cho các câu lệnh INSERT, UPDATE, DELETE (trả về số dòng bị ảnh hưởng)
+    /// </summary>
+    public static int ExecuteNonQuery(string query, SqlParameter[]? parameters = null)
+    {
+        using (var conn = GetConnection())
         {
-            using (var conn = GetConnection())
+            conn.Open();
+            using (var cmd = new SqlCommand(query, conn))
             {
-                conn.Open();
-                using (var cmd = new SqlCommand(query, conn))
+                if (parameters != null && parameters.Length > 0)
                 {
-                    if (parameters != null)
-                    {
-                        cmd.Parameters.AddRange(parameters);
-                    }
-                    return cmd.ExecuteNonQuery();
+                    cmd.Parameters.AddRange(parameters);
                 }
+                return cmd.ExecuteNonQuery();
             }
         }
+    }
 
-        // Dùng cho SELECT lấy dữ liệu
-        public static DataTable ExecuteQuery(string query, SqlParameter[] parameters = null)
+    /// <summary>
+    /// Dùng cho câu lệnh SELECT (trả về bảng dữ liệu DataTable)
+    /// </summary>
+    public static DataTable ExecuteQuery(string query, SqlParameter[]? parameters = null)
+    {
+        using (var conn = GetConnection())
         {
-            using (var conn = GetConnection())
+            conn.Open();
+            using (var cmd = new SqlCommand(query, conn))
             {
-                using (var cmd = new SqlCommand(query, conn))
+                if (parameters != null && parameters.Length > 0)
                 {
-                    if (parameters != null)
-                    {
-                        cmd.Parameters.AddRange(parameters);
-                    }
-                    using (var adapter = new SqlDataAdapter(cmd))
-                    {
-                        DataTable dt = new DataTable();
-                        adapter.Fill(dt);
-                        return dt;
-                    }
+                    cmd.Parameters.AddRange(parameters);
+                }
+                using (var adapter = new SqlDataAdapter(cmd))
+                {
+                    DataTable dt = new DataTable();
+                    adapter.Fill(dt);
+                    return dt;
                 }
             }
         }

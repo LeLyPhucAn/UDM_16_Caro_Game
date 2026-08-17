@@ -2,37 +2,93 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using CaroGame.Protocol;
 using Server.Network;
+using Server.Utils;
 
 namespace Server.Managers;
 
 public class ConnectionManager
 {
-    // Dùng ConcurrentDictionary thay cho List để chống crash đụng độ luồng (Thread-Safety)
+    // Sử dụng ConcurrentDictionary để đảm bảo an toàn đa luồng (Thread-Safety)
     private readonly ConcurrentDictionary<Guid, ClientSession> _clients = new();
 
-    public void Add(ClientSession session)
+    /// <summary>
+    /// Số lượng Client đang trực tuyến
+    /// </summary>
+    public int Count => _clients.Count;
+
+    /// <summary>
+    /// Thêm một Client Session mới vào danh sách quản lý
+    /// </summary>
+    public bool Add(ClientSession session)
     {
         if (_clients.TryAdd(session.SessionId, session))
         {
-            Console.WriteLine($"[+] Client connected ({_clients.Count})");
+            Logger.Info($"[+] Client kết nối: SessionId={session.SessionId}, IP={session.RemoteEndPoint} (Online: {_clients.Count})");
+            return true;
         }
+
+        Logger.Warn($"Không thể thêm Client {session.SessionId} (Session đã tồn tại)");
+        return false;
     }
 
-    public void Remove(Guid sessionId)
+    /// <summary>
+    /// Xóa và đóng kết nối của một Client Session
+    /// </summary>
+    public bool Remove(Guid sessionId)
     {
         if (_clients.TryRemove(sessionId, out var session))
         {
             session.Close();
-            Console.WriteLine($"[-] Client disconnected ({_clients.Count})");
+            Logger.Info($"[-] Client ngắt kết nối: SessionId={sessionId}, IP={session.RemoteEndPoint} (Online: {_clients.Count})");
+            return true;
         }
+        return false;
     }
 
+    /// <summary>
+    /// Tìm kiếm ClientSession theo SessionId
+    /// </summary>
+    public ClientSession? Get(Guid sessionId)
+    {
+        _clients.TryGetValue(sessionId, out var session);
+        return session;
+    }
+
+    /// <summary>
+    /// Lấy danh sách toàn bộ ClientSession đang hoạt động
+    /// </summary>
     public IReadOnlyList<ClientSession> GetAll()
     {
         return _clients.Values.ToList().AsReadOnly();
     }
 
+    /// <summary>
+    /// Gửi thông điệp (Broadcast) tới toàn bộ Client đang kết nối
+    /// </summary>
+    public async Task BroadcastAsync(BaseMessage message)
+    {
+        var tasks = _clients.Values.Select(client => client.SendAsync(message));
+        await Task.WhenAll(tasks);
+    }
+
+    /// <summary>
+    /// Gửi thông điệp tới tất cả Client ngoại trừ một Client chỉ định (hữu ích cho Chat/Game Room)
+    /// </summary>
+    public async Task BroadcastExceptAsync(Guid excludeSessionId, BaseMessage message)
+    {
+        var tasks = _clients.Values
+            .Where(client => client.SessionId != excludeSessionId)
+            .Select(client => client.SendAsync(message));
+
+        await Task.WhenAll(tasks);
+    }
+
+    /// <summary>
+    /// Ngắt và dọn dẹp toàn bộ kết nối khi dừng Server
+    /// </summary>
     public void ClearAll()
     {
         foreach (var session in _clients.Values)
@@ -40,7 +96,6 @@ public class ConnectionManager
             session.Close();
         }
         _clients.Clear();
+        Logger.Info("Đã dọn dẹp và ngắt toàn bộ kết nối Client.");
     }
-
-    public int Count => _clients.Count;
 }

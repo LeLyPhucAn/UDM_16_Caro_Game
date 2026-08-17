@@ -13,6 +13,7 @@
 | 3   | 054206002957 | Lê Quốc Kim             | Frontend / Client UI |
 | 4   | 052306013525 | Võ Thị Kim Kiều         | Database & Repositories |
 | 5   | 054206001474 | Lê Thế Kiệt             | Game Logic Engine |
+| 6   | 052206005364 | Nguyễn Văn Hiếu         | Client Network & Infrastructure |
 
 ---
 
@@ -27,8 +28,10 @@
 | **Lê Quốc Kim** | Frontend - Client | Login UI, Lobby UI, Game UI, Spectator UI, hiển thị Timer, cập nhật trạng thái bàn cờ | Thiết kế GUI, Use Case Diagram |
 | **Võ Thị Kim Kiều** | Database & History | Database Layer, Repository, Match History, Config (IP/Port), màn hình lịch sử trận đấu | Thiết kế CSDL, ERD, Data Dictionary |
 | **Nguyễn Trọng Vân Khuyên** | Lobby & Network Message | Online Player List, Invite/Accept/Reject, Join/Leave Room, Message Packet, JSON Serializer, Connection Status | Protocol Message, Test Case |
+| **Nguyễn Văn Hiếu** | Client Network & Infrastructure | TcpClientService, ClientConnection, Client Config, Logger, giao tiếp TCP phía Client | Component/Deployment Diagram, mô tả giao tiếp Client–Server |
 
-### 2. Phân công chi tiết nhiệm vụ tuần 1
+### 2. Phân công chi tiết nhiệm vụ tuần
+### 2.1 Phân công chi tiết nhiệm vụ tuần 1
 
 | Thành viên | Công việc CODE | Công việc DOCX |
 |------------|----------------|----------------|
@@ -38,6 +41,15 @@
 | **Võ Thị Kim Kiều** | - Tạo Database Layer (`DatabaseHelper`, `DatabaseConfig`)<br>- Tạo Repository: UserRepository, MatchRepository, HistoryRepository<br>- Thiết kế lớp Config đọc IP/Port (khung) | - Thiết kế Database<br>- ERD sơ bộ |
 | **Nguyễn Trọng Vân Khuyên** | - Tạo Message Packet<br>- Tạo MessageType (Enum)<br>- Tạo JsonSerializer<br>- Khởi tạo các lớp LoginMessage, InviteMessage, ResponseMessage | - Thiết kế Protocol Message V1<br>- Liệt kê các loại Message sẽ sử dụng |
 
+### 2.2 Phân công chi tiết nhiệm vụ tuần 2
+| Thành viên | Công việc CODE | Công việc DOCX |
+|---|---|---|
+| **Lê Lý Phúc An** | Network Layer Server, Connection Manager, Logger Server | Chương 2, yêu cầu phi chức năng, kiến trúc hệ thống, Sequence Diagram kết nối |
+| **Lê Thế Kiệt** | Board Logic, RoomManager, MatchManager | Use Case Specification, Activity Diagram |
+| **Lê Quốc Kim** | Login UI, Lobby UI, Game UI, tích hợp Network | Wireframe, Mockup, mô tả Login/Lobby/Game |
+| **Võ Thị Kim Kiều** | Database Layer, Repository, Service | Database Design, ERD, mô tả bảng |
+| **Nguyễn Trọng Vân Khuyên** | Message Protocol, Packet Parser, JSON Serializer | Protocol Message Version 1, Message Format, Packet Structure, Sequence Diagram Login |
+| **Nguyễn Văn Hiếu** | Client Network Layer, Logger & Config Manager | Component Diagram/Deployment Diagram, mô tả giao tiếp Client–Server |
 
 ### 3. Lộ trình phát triển (Timeline 6 tuần)
 
