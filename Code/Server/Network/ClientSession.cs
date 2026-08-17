@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-
 using System.Net;
 using System.Net.Sockets;
+using System.Threading.Tasks;
+using CaroGame.Protocol;
 
 namespace Server.Network;
 
@@ -33,6 +34,12 @@ public class ClientSession
 
         ConnectedTime = DateTime.Now;
     }
+
+    public async Task<bool> SendAsync(BaseMessage message)
+    {
+        return await NetworkHandler.SendAsync(this, message);
+    }
+
     public void Close()
     {
         try
@@ -42,5 +49,4 @@ public class ClientSession
         }
         catch { }
     }
-
 }
