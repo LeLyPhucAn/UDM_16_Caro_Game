@@ -17,296 +17,295 @@ namespace Client.Forms
 
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
-            this.pnlTopBar = new System.Windows.Forms.Panel();
-            this.btnExitGame = new System.Windows.Forms.Button();
-            this.lblPing = new System.Windows.Forms.Label();
-            this.lblPlayerName = new System.Windows.Forms.Label();
-            this.lblPlayerTitle = new System.Windows.Forms.Label();
-            this.lblStatusDot = new System.Windows.Forms.Label();
-            this.pnlRightBar = new System.Windows.Forms.Panel();
-            this.btnJoinRoom = new System.Windows.Forms.Button();
-            this.btnCreateRoom = new System.Windows.Forms.Button();
-            this.lblStats = new System.Windows.Forms.Label();
-            this.lblActionTitle = new System.Windows.Forms.Label();
-            this.pnlMain = new System.Windows.Forms.Panel();
-            this.dgvRooms = new System.Windows.Forms.DataGridView();
-            this.colRoomId = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.colRoomName = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.colPlayerCount = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.colStatus = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.lblListDesc = new System.Windows.Forms.Label();
-            this.lblListTitle = new System.Windows.Forms.Label();
-            this.pnlTopBar.SuspendLayout();
-            this.pnlRightBar.SuspendLayout();
-            this.pnlMain.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dgvRooms)).BeginInit();
-            this.SuspendLayout();
+            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
+            pnlTopBar = new Panel();
+            btnExitGame = new Button();
+            lblPing = new Label();
+            lblPlayerName = new Label();
+            lblPlayerTitle = new Label();
+            lblStatusDot = new Label();
+            pnlRightBar = new Panel();
+            btnJoinRoom = new Button();
+            btnCreateRoom = new Button();
+            lblStats = new Label();
+            lblActionTitle = new Label();
+            pnlMain = new Panel();
+            dgvRooms = new DataGridView();
+            colRoomId = new DataGridViewTextBoxColumn();
+            colRoomName = new DataGridViewTextBoxColumn();
+            colPlayerCount = new DataGridViewTextBoxColumn();
+            colStatus = new DataGridViewTextBoxColumn();
+            lblListDesc = new Label();
+            lblListTitle = new Label();
+            pnlTopBar.SuspendLayout();
+            pnlRightBar.SuspendLayout();
+            pnlMain.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)dgvRooms).BeginInit();
+            SuspendLayout();
             // 
             // pnlTopBar
             // 
-            this.pnlTopBar.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(30)))), ((int)(((byte)(30)))));
-            this.pnlTopBar.Controls.Add(this.btnExitGame);
-            this.pnlTopBar.Controls.Add(this.lblPing);
-            this.pnlTopBar.Controls.Add(this.lblPlayerName);
-            this.pnlTopBar.Controls.Add(this.lblPlayerTitle);
-            this.pnlTopBar.Controls.Add(this.lblStatusDot);
-            this.pnlTopBar.Dock = System.Windows.Forms.DockStyle.Top;
-            this.pnlTopBar.Location = new System.Drawing.Point(0, 0);
-            this.pnlTopBar.Name = "pnlTopBar";
-            this.pnlTopBar.Size = new System.Drawing.Size(1105, 60);
-            this.pnlTopBar.TabIndex = 0;
+            pnlTopBar.BackColor = Color.FromArgb(30, 30, 30);
+            pnlTopBar.Controls.Add(btnExitGame);
+            pnlTopBar.Controls.Add(lblPing);
+            pnlTopBar.Controls.Add(lblPlayerName);
+            pnlTopBar.Controls.Add(lblPlayerTitle);
+            pnlTopBar.Controls.Add(lblStatusDot);
+            pnlTopBar.Dock = DockStyle.Top;
+            pnlTopBar.Location = new Point(0, 0);
+            pnlTopBar.Name = "pnlTopBar";
+            pnlTopBar.Size = new Size(1105, 60);
+            pnlTopBar.TabIndex = 0;
             // 
             // btnExitGame
             // 
-            this.btnExitGame.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnExitGame.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(217)))), ((int)(((byte)(83)))), ((int)(((byte)(79)))));
-            this.btnExitGame.FlatAppearance.BorderSize = 0;
-            this.btnExitGame.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnExitGame.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Bold);
-            this.btnExitGame.Location = new System.Drawing.Point(950, 12);
-            this.btnExitGame.Name = "btnExitGame";
-            this.btnExitGame.Size = new System.Drawing.Size(130, 36);
-            this.btnExitGame.TabIndex = 4;
-            this.btnExitGame.Text = "THOÁT GAME";
-            this.btnExitGame.UseVisualStyleBackColor = false;
+            btnExitGame.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            btnExitGame.BackColor = Color.FromArgb(217, 83, 79);
+            btnExitGame.FlatAppearance.BorderSize = 0;
+            btnExitGame.FlatStyle = FlatStyle.Flat;
+            btnExitGame.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold);
+            btnExitGame.Location = new Point(950, 12);
+            btnExitGame.Name = "btnExitGame";
+            btnExitGame.Size = new Size(130, 36);
+            btnExitGame.TabIndex = 4;
+            btnExitGame.Text = "THOÁT GAME";
+            btnExitGame.UseVisualStyleBackColor = false;
             // 
             // lblPing
             // 
-            this.lblPing.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.lblPing.AutoSize = true;
-            this.lblPing.ForeColor = System.Drawing.Color.Gray;
-            this.lblPing.Location = new System.Drawing.Point(760, 20);
-            this.lblPing.Name = "lblPing";
-            this.lblPing.Size = new System.Drawing.Size(170, 23);
-            this.lblPing.TabIndex = 3;
-            this.lblPing.Text = "Ping: 14ms | Online: 242";
+            lblPing.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            lblPing.AutoSize = true;
+            lblPing.ForeColor = Color.Gray;
+            lblPing.Location = new Point(760, 20);
+            lblPing.Name = "lblPing";
+            lblPing.Size = new Size(193, 23);
+            lblPing.TabIndex = 3;
+            lblPing.Text = "Ping: 14ms | Online: 242";
             // 
             // lblPlayerName
             // 
-            this.lblPlayerName.AutoSize = true;
-            this.lblPlayerName.Font = new System.Drawing.Font("Segoe UI", 10.2F, System.Drawing.FontStyle.Bold);
-            this.lblPlayerName.ForeColor = System.Drawing.Color.DeepSkyBlue;
-            this.lblPlayerName.Location = new System.Drawing.Point(145, 19);
-            this.lblPlayerName.Name = "lblPlayerName";
-            this.lblPlayerName.Size = new System.Drawing.Size(111, 23);
-            this.lblPlayerName.TabIndex = 2;
-            this.lblPlayerName.Text = "Namdeptrai";
+            lblPlayerName.AutoSize = true;
+            lblPlayerName.Font = new Font("Segoe UI", 10.2F, FontStyle.Bold);
+            lblPlayerName.ForeColor = Color.DeepSkyBlue;
+            lblPlayerName.Location = new Point(145, 19);
+            lblPlayerName.Name = "lblPlayerName";
+            lblPlayerName.Size = new Size(107, 23);
+            lblPlayerName.TabIndex = 2;
+            lblPlayerName.Text = "Namdeptrai";
             // 
             // lblPlayerTitle
             // 
-            this.lblPlayerTitle.AutoSize = true;
-            this.lblPlayerTitle.Font = new System.Drawing.Font("Segoe UI", 10.2F, System.Drawing.FontStyle.Bold);
-            this.lblPlayerTitle.Location = new System.Drawing.Point(50, 19);
-            this.lblPlayerTitle.Name = "lblPlayerTitle";
-            this.lblPlayerTitle.Size = new System.Drawing.Size(102, 23);
-            this.lblPlayerTitle.TabIndex = 1;
-            this.lblPlayerTitle.Text = "Người chơi:";
+            lblPlayerTitle.AutoSize = true;
+            lblPlayerTitle.Font = new Font("Segoe UI", 10.2F, FontStyle.Bold);
+            lblPlayerTitle.Location = new Point(50, 19);
+            lblPlayerTitle.Name = "lblPlayerTitle";
+            lblPlayerTitle.Size = new Size(105, 23);
+            lblPlayerTitle.TabIndex = 1;
+            lblPlayerTitle.Text = "Người chơi:";
             // 
             // lblStatusDot
             // 
-            this.lblStatusDot.AutoSize = true;
-            this.lblStatusDot.Font = new System.Drawing.Font("Segoe UI", 16F);
-            this.lblStatusDot.ForeColor = System.Drawing.Color.LimeGreen;
-            this.lblStatusDot.Location = new System.Drawing.Point(20, 11);
-            this.lblStatusDot.Name = "lblStatusDot";
-            this.lblStatusDot.Size = new System.Drawing.Size(34, 37);
-            this.lblStatusDot.TabIndex = 0;
-            this.lblStatusDot.Text = "●";
+            lblStatusDot.AutoSize = true;
+            lblStatusDot.Font = new Font("Segoe UI", 16F);
+            lblStatusDot.ForeColor = Color.LimeGreen;
+            lblStatusDot.Location = new Point(20, 11);
+            lblStatusDot.Name = "lblStatusDot";
+            lblStatusDot.Size = new Size(33, 37);
+            lblStatusDot.TabIndex = 0;
+            lblStatusDot.Text = "●";
             // 
             // pnlRightBar
             // 
-            this.pnlRightBar.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(42)))), ((int)(((byte)(44)))), ((int)(((byte)(48)))));
-            this.pnlRightBar.Controls.Add(this.btnJoinRoom);
-            this.pnlRightBar.Controls.Add(this.btnCreateRoom);
-            this.pnlRightBar.Controls.Add(this.lblStats);
-            this.pnlRightBar.Controls.Add(this.lblActionTitle);
-            this.pnlRightBar.Dock = System.Windows.Forms.DockStyle.Right;
-            this.pnlRightBar.Location = new System.Drawing.Point(805, 60);
-            this.pnlRightBar.Name = "pnlRightBar";
-            this.pnlRightBar.Size = new System.Drawing.Size(300, 633);
-            this.pnlRightBar.TabIndex = 1;
+            pnlRightBar.BackColor = Color.FromArgb(42, 44, 48);
+            pnlRightBar.Controls.Add(btnJoinRoom);
+            pnlRightBar.Controls.Add(btnCreateRoom);
+            pnlRightBar.Controls.Add(lblStats);
+            pnlRightBar.Controls.Add(lblActionTitle);
+            pnlRightBar.Dock = DockStyle.Right;
+            pnlRightBar.Location = new Point(805, 60);
+            pnlRightBar.Name = "pnlRightBar";
+            pnlRightBar.Size = new Size(300, 633);
+            pnlRightBar.TabIndex = 1;
             // 
             // btnJoinRoom
             // 
-            this.btnJoinRoom.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnJoinRoom.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(50)))), ((int)(((byte)(55)))));
-            this.btnJoinRoom.FlatAppearance.BorderColor = System.Drawing.Color.Gray;
-            this.btnJoinRoom.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnJoinRoom.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
-            this.btnJoinRoom.Location = new System.Drawing.Point(25, 540);
-            this.btnJoinRoom.Name = "btnJoinRoom";
-            this.btnJoinRoom.Size = new System.Drawing.Size(250, 50);
-            this.btnJoinRoom.TabIndex = 3;
-            this.btnJoinRoom.Text = "THAM GIA PHÒNG";
-            this.btnJoinRoom.UseVisualStyleBackColor = false;
+            btnJoinRoom.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            btnJoinRoom.BackColor = Color.FromArgb(50, 50, 55);
+            btnJoinRoom.FlatAppearance.BorderColor = Color.Gray;
+            btnJoinRoom.FlatStyle = FlatStyle.Flat;
+            btnJoinRoom.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            btnJoinRoom.Location = new Point(25, 540);
+            btnJoinRoom.Name = "btnJoinRoom";
+            btnJoinRoom.Size = new Size(250, 50);
+            btnJoinRoom.TabIndex = 3;
+            btnJoinRoom.Text = "THAM GIA PHÒNG";
+            btnJoinRoom.UseVisualStyleBackColor = false;
             // 
             // btnCreateRoom
             // 
-            this.btnCreateRoom.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnCreateRoom.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(120)))), ((int)(((byte)(215)))));
-            this.btnCreateRoom.FlatAppearance.BorderSize = 0;
-            this.btnCreateRoom.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnCreateRoom.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
-            this.btnCreateRoom.Location = new System.Drawing.Point(25, 475);
-            this.btnCreateRoom.Name = "btnCreateRoom";
-            this.btnCreateRoom.Size = new System.Drawing.Size(250, 50);
-            this.btnCreateRoom.TabIndex = 2;
-            this.btnCreateRoom.Text = "TẠO PHÒNG MỚI";
-            this.btnCreateRoom.UseVisualStyleBackColor = false;
+            btnCreateRoom.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            btnCreateRoom.BackColor = Color.FromArgb(0, 120, 215);
+            btnCreateRoom.FlatAppearance.BorderSize = 0;
+            btnCreateRoom.FlatStyle = FlatStyle.Flat;
+            btnCreateRoom.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            btnCreateRoom.Location = new Point(25, 475);
+            btnCreateRoom.Name = "btnCreateRoom";
+            btnCreateRoom.Size = new Size(250, 50);
+            btnCreateRoom.TabIndex = 2;
+            btnCreateRoom.Text = "TẠO PHÒNG MỚI";
+            btnCreateRoom.UseVisualStyleBackColor = false;
             // 
             // lblStats
             // 
-            this.lblStats.AutoSize = true;
-            this.lblStats.ForeColor = System.Drawing.Color.DarkGray;
-            this.lblStats.Location = new System.Drawing.Point(21, 75);
-            this.lblStats.Name = "lblStats";
-            this.lblStats.Size = new System.Drawing.Size(155, 69);
-            this.lblStats.TabIndex = 1;
-            this.lblStats.Text = "Phòng trống: 1\nĐang chờ ghép: 2\nĐang thi đấu: 2";
+            lblStats.AutoSize = true;
+            lblStats.ForeColor = Color.DarkGray;
+            lblStats.Location = new Point(21, 75);
+            lblStats.Name = "lblStats";
+            lblStats.Size = new Size(146, 69);
+            lblStats.TabIndex = 1;
+            lblStats.Text = "Phòng trống: 1\nĐang chờ ghép: 2\nĐang thi đấu: 2";
             // 
             // lblActionTitle
             // 
-            this.lblActionTitle.AutoSize = true;
-            this.lblActionTitle.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
-            this.lblActionTitle.Location = new System.Drawing.Point(20, 25);
-            this.lblActionTitle.Name = "lblActionTitle";
-            this.lblActionTitle.Size = new System.Drawing.Size(183, 28);
-            this.lblActionTitle.TabIndex = 0;
-            this.lblActionTitle.Text = "THAO TÁC NHANH";
+            lblActionTitle.AutoSize = true;
+            lblActionTitle.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+            lblActionTitle.Location = new Point(20, 25);
+            lblActionTitle.Name = "lblActionTitle";
+            lblActionTitle.Size = new Size(193, 28);
+            lblActionTitle.TabIndex = 0;
+            lblActionTitle.Text = "THAO TÁC NHANH";
             // 
             // pnlMain
             // 
-            this.pnlMain.Controls.Add(this.dgvRooms);
-            this.pnlMain.Controls.Add(this.lblListDesc);
-            this.pnlMain.Controls.Add(this.lblListTitle);
-            this.pnlMain.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pnlMain.Location = new System.Drawing.Point(0, 60);
-            this.pnlMain.Name = "pnlMain";
-            this.pnlMain.Size = new System.Drawing.Size(805, 633);
-            this.pnlMain.TabIndex = 2;
+            pnlMain.Controls.Add(dgvRooms);
+            pnlMain.Controls.Add(lblListDesc);
+            pnlMain.Controls.Add(lblListTitle);
+            pnlMain.Dock = DockStyle.Fill;
+            pnlMain.Location = new Point(0, 60);
+            pnlMain.Name = "pnlMain";
+            pnlMain.Size = new Size(805, 633);
+            pnlMain.TabIndex = 2;
             // 
             // dgvRooms
             // 
-            this.dgvRooms.AllowUserToAddRows = false;
-            this.dgvRooms.AllowUserToDeleteRows = false;
-            this.dgvRooms.AllowUserToResizeRows = false;
-            this.dgvRooms.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.dgvRooms.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
-            this.dgvRooms.BackgroundColor = System.Drawing.Color.FromArgb(((int)(((byte)(34)))), ((int)(((byte)(36)))), ((int)(((byte)(40)))));
-            this.dgvRooms.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.dgvRooms.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.SingleHorizontal;
-            this.dgvRooms.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.Single;
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(42)))), ((int)(((byte)(44)))), ((int)(((byte)(48)))));
-            dataGridViewCellStyle1.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
-            dataGridViewCellStyle1.ForeColor = System.Drawing.Color.White;
-            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(42)))), ((int)(((byte)(44)))), ((int)(((byte)(48)))));
-            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.Color.White;
-            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgvRooms.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
-            this.dgvRooms.ColumnHeadersHeight = 45;
-            this.dgvRooms.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-            this.dgvRooms.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.colRoomId,
-            this.colRoomName,
-            this.colPlayerCount,
-            this.colStatus});
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(34)))), ((int)(((byte)(36)))), ((int)(((byte)(40)))));
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("Segoe UI", 10F);
-            dataGridViewCellStyle2.ForeColor = System.Drawing.Color.White;
-            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(52)))), ((int)(((byte)(56)))));
-            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.Color.White;
-            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dgvRooms.DefaultCellStyle = dataGridViewCellStyle2;
-            this.dgvRooms.EnableHeadersVisualStyles = false;
-            this.dgvRooms.GridColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(60)))), ((int)(((byte)(60)))));
-            this.dgvRooms.Location = new System.Drawing.Point(30, 80);
-            this.dgvRooms.Name = "dgvRooms";
-            this.dgvRooms.ReadOnly = true;
-            this.dgvRooms.RowHeadersVisible = false;
-            this.dgvRooms.RowHeadersWidth = 51;
-            this.dgvRooms.RowTemplate.Height = 45;
-            this.dgvRooms.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgvRooms.Size = new System.Drawing.Size(745, 520);
-            this.dgvRooms.TabIndex = 2;
+            dgvRooms.AllowUserToAddRows = false;
+            dgvRooms.AllowUserToDeleteRows = false;
+            dgvRooms.AllowUserToResizeRows = false;
+            dgvRooms.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            dgvRooms.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            dgvRooms.BackgroundColor = Color.FromArgb(34, 36, 40);
+            dgvRooms.BorderStyle = BorderStyle.None;
+            dgvRooms.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
+            dgvRooms.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.Single;
+            dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle1.BackColor = Color.FromArgb(42, 44, 48);
+            dataGridViewCellStyle1.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            dataGridViewCellStyle1.ForeColor = Color.White;
+            dataGridViewCellStyle1.SelectionBackColor = Color.FromArgb(42, 44, 48);
+            dataGridViewCellStyle1.SelectionForeColor = Color.White;
+            dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
+            dgvRooms.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+            dgvRooms.ColumnHeadersHeight = 45;
+            dgvRooms.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+            dgvRooms.Columns.AddRange(new DataGridViewColumn[] { colRoomId, colRoomName, colPlayerCount, colStatus });
+            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle2.BackColor = Color.FromArgb(34, 36, 40);
+            dataGridViewCellStyle2.Font = new Font("Segoe UI", 10F);
+            dataGridViewCellStyle2.ForeColor = Color.White;
+            dataGridViewCellStyle2.SelectionBackColor = Color.FromArgb(50, 52, 56);
+            dataGridViewCellStyle2.SelectionForeColor = Color.White;
+            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.False;
+            dgvRooms.DefaultCellStyle = dataGridViewCellStyle2;
+            dgvRooms.EnableHeadersVisualStyles = false;
+            dgvRooms.GridColor = Color.FromArgb(60, 60, 60);
+            dgvRooms.Location = new Point(30, 80);
+            dgvRooms.Name = "dgvRooms";
+            dgvRooms.ReadOnly = true;
+            dgvRooms.RowHeadersVisible = false;
+            dgvRooms.RowHeadersWidth = 51;
+            dgvRooms.RowTemplate.Height = 45;
+            dgvRooms.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dgvRooms.Size = new Size(745, 520);
+            dgvRooms.TabIndex = 2;
             // 
             // colRoomId
             // 
-            this.colRoomId.FillWeight = 20F;
-            this.colRoomId.HeaderText = "Mã Phòng";
-            this.colRoomId.Name = "colRoomId";
-            this.colRoomId.ReadOnly = true;
+            colRoomId.FillWeight = 20F;
+            colRoomId.HeaderText = "Mã Phòng";
+            colRoomId.MinimumWidth = 6;
+            colRoomId.Name = "colRoomId";
+            colRoomId.ReadOnly = true;
             // 
             // colRoomName
             // 
-            this.colRoomName.FillWeight = 40F;
-            this.colRoomName.HeaderText = "Tên Phòng";
-            this.colRoomName.Name = "colRoomName";
-            this.colRoomName.ReadOnly = true;
+            colRoomName.FillWeight = 40F;
+            colRoomName.HeaderText = "Tên Phòng";
+            colRoomName.MinimumWidth = 6;
+            colRoomName.Name = "colRoomName";
+            colRoomName.ReadOnly = true;
             // 
             // colPlayerCount
             // 
-            this.colPlayerCount.FillWeight = 20F;
-            this.colPlayerCount.HeaderText = "Số Người";
-            this.colPlayerCount.Name = "colPlayerCount";
-            this.colPlayerCount.ReadOnly = true;
+            colPlayerCount.FillWeight = 20F;
+            colPlayerCount.HeaderText = "Số Người";
+            colPlayerCount.MinimumWidth = 6;
+            colPlayerCount.Name = "colPlayerCount";
+            colPlayerCount.ReadOnly = true;
             // 
             // colStatus
             // 
-            this.colStatus.FillWeight = 20F;
-            this.colStatus.HeaderText = "Trạng Thái";
-            this.colStatus.Name = "colStatus";
-            this.colStatus.ReadOnly = true;
+            colStatus.FillWeight = 20F;
+            colStatus.HeaderText = "Trạng Thái";
+            colStatus.MinimumWidth = 6;
+            colStatus.Name = "colStatus";
+            colStatus.ReadOnly = true;
             // 
             // lblListDesc
             // 
-            this.lblListDesc.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.lblListDesc.AutoSize = true;
-            this.lblListDesc.ForeColor = System.Drawing.Color.Gray;
-            this.lblListDesc.Location = new System.Drawing.Point(582, 33);
-            this.lblListDesc.Name = "lblListDesc";
-            this.lblListDesc.Size = new System.Drawing.Size(193, 23);
-            this.lblListDesc.TabIndex = 1;
-            this.lblListDesc.Text = "Hiển thị 5 phòng hoạt động";
+            lblListDesc.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            lblListDesc.AutoSize = true;
+            lblListDesc.ForeColor = Color.Gray;
+            lblListDesc.Location = new Point(551, 33);
+            lblListDesc.Name = "lblListDesc";
+            lblListDesc.Size = new Size(224, 23);
+            lblListDesc.TabIndex = 1;
+            lblListDesc.Text = "Hiển thị 5 phòng hoạt động";
             // 
             // lblListTitle
             // 
-            this.lblListTitle.AutoSize = true;
-            this.lblListTitle.Font = new System.Drawing.Font("Segoe UI", 14F, System.Drawing.FontStyle.Bold);
-            this.lblListTitle.Location = new System.Drawing.Point(24, 25);
-            this.lblListTitle.Name = "lblListTitle";
-            this.lblListTitle.Size = new System.Drawing.Size(288, 32);
-            this.lblListTitle.TabIndex = 0;
-            this.lblListTitle.Text = "DANH SÁCH PHÒNG CHỜ";
+            lblListTitle.AutoSize = true;
+            lblListTitle.Font = new Font("Segoe UI", 14F, FontStyle.Bold);
+            lblListTitle.Location = new Point(24, 25);
+            lblListTitle.Name = "lblListTitle";
+            lblListTitle.Size = new Size(309, 32);
+            lblListTitle.TabIndex = 0;
+            lblListTitle.Text = "DANH SÁCH PHÒNG CHỜ";
             // 
-            // FormLobby
+            // LobbyForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 23F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(34)))), ((int)(((byte)(36)))), ((int)(((byte)(40)))));
-            this.ClientSize = new System.Drawing.Size(1105, 693);
-            this.Controls.Add(this.pnlMain);
-            this.Controls.Add(this.pnlRightBar);
-            this.Controls.Add(this.pnlTopBar);
-            this.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.ForeColor = System.Drawing.Color.White;
-            this.MinimumSize = new System.Drawing.Size(950, 600);
-            this.Name = "FormLobby";
-            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Caro Arena - Lobby Browser";
-            this.pnlTopBar.ResumeLayout(false);
-            this.pnlTopBar.PerformLayout();
-            this.pnlRightBar.ResumeLayout(false);
-            this.pnlRightBar.PerformLayout();
-            this.pnlMain.ResumeLayout(false);
-            this.pnlMain.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dgvRooms)).EndInit();
-            this.ResumeLayout(false);
+            AutoScaleDimensions = new SizeF(9F, 23F);
+            AutoScaleMode = AutoScaleMode.Font;
+            BackColor = Color.FromArgb(34, 36, 40);
+            ClientSize = new Size(1105, 693);
+            Controls.Add(pnlMain);
+            Controls.Add(pnlRightBar);
+            Controls.Add(pnlTopBar);
+            Font = new Font("Segoe UI", 10F);
+            ForeColor = Color.White;
+            MinimumSize = new Size(950, 600);
+            Name = "LobbyForm";
+            StartPosition = FormStartPosition.CenterScreen;
+            Text = "Caro Arena - Lobby Browser";
+            Load += LobbyForm_Load;
+            pnlTopBar.ResumeLayout(false);
+            pnlTopBar.PerformLayout();
+            pnlRightBar.ResumeLayout(false);
+            pnlRightBar.PerformLayout();
+            pnlMain.ResumeLayout(false);
+            pnlMain.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)dgvRooms).EndInit();
+            ResumeLayout(false);
 
         }
 
