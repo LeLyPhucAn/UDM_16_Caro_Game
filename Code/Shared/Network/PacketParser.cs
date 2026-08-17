@@ -1,9 +1,7 @@
 using System;
 using System.Text;
-using CaroGame.Protocol.Messages;
-using CaroGame.Protocol.Utils;
 
-namespace CaroGame.Protocol.Network
+namespace CaroGame.Protocol
 {
     /// <summary>
     /// Chuẩn hóa cấu trúc dữ liệu gửi/nhận qua Socket, gồm 3 phần:
@@ -43,12 +41,9 @@ namespace CaroGame.Protocol.Network
 
         /// <summary>
         /// Giải mã một packet hoàn chỉnh (đã đủ Header + Body) thành BaseMessage.
-        /// Nếu dữ liệu không hợp lệ (thiếu byte, sai định dạng) sẽ ném PacketException
-        /// để nơi gọi (SocketServer) tự xử lý, thay vì làm crash chương trình.
         /// </summary>
         public static BaseMessage Unpack(byte[] data)
         {
-            // Bước 1: Kiểm tra dữ liệu có đủ để đọc Header không
             if (data == null || data.Length < HEADER_SIZE)
             {
                 throw new PacketException("Dữ liệu không đủ để đọc Header (cần tối thiểu " + HEADER_SIZE + " byte).");
@@ -57,7 +52,6 @@ namespace CaroGame.Protocol.Network
             MessageType type = (MessageType)BitConverter.ToInt32(data, 0);
             int bodyLength = BitConverter.ToInt32(data, TYPE_SIZE);
 
-            // Bước 2: Kiểm tra độ dài Body có hợp lệ không
             if (bodyLength < 0 || data.Length < HEADER_SIZE + bodyLength)
             {
                 throw new PacketException("Dữ liệu không đủ để đọc Body (cần " + bodyLength + " byte).");
@@ -65,9 +59,6 @@ namespace CaroGame.Protocol.Network
 
             string json = Encoding.UTF8.GetString(data, HEADER_SIZE, bodyLength);
 
-            // Bước 3: Chuyển JSON về đúng loại Message. Nếu type không được hỗ trợ
-            // hoặc JSON sai định dạng, JsonSerializer sẽ ném lỗi và ta gói lại
-            // thành PacketException cho thống nhất.
             try
             {
                 return JsonSerializer.Deserialize(json, type);
@@ -80,8 +71,7 @@ namespace CaroGame.Protocol.Network
     }
 
     /// <summary>
-    /// Exception riêng cho lỗi đóng gói/giải mã packet, giúp phân biệt với các
-    /// exception hệ thống khác khi SocketServer bắt lỗi.
+    /// Exception riêng cho lỗi đóng gói/giải mã packet.
     /// </summary>
     public class PacketException : Exception
     {

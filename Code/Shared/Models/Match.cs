@@ -1,4 +1,7 @@
-﻿namespace GameLogic.Models
+using System;
+using Shared.Models;
+
+namespace GameLogic.Models
 {
     public class Match
     {

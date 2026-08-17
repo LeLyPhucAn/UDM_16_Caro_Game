@@ -1,16 +1,14 @@
 using System;
-using CaroGame.Protocol.Messages;
+using System.Text.Json;
 
-namespace CaroGame.Protocol.Utils
+namespace CaroGame.Protocol
 {
     /// <summary>
     /// Lớp tiện ích chuyển đổi giữa Object (Message) và chuỗi JSON.
-    /// Dùng System.Text.Json phía dưới, được gọi đầy đủ để tránh trùng tên
-    /// với chính class này.
     /// </summary>
     public static class JsonSerializer
     {
-        private static readonly System.Text.Json.JsonSerializerOptions OPTIONS = new System.Text.Json.JsonSerializerOptions
+        private static readonly JsonSerializerOptions OPTIONS = new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true
         };
@@ -22,8 +20,6 @@ namespace CaroGame.Protocol.Utils
                 throw new ArgumentNullException(nameof(message));
             }
 
-            // Serialize theo đúng kiểu cụ thể (LoginMessage, InviteMessage, ...)
-            // để không bị mất các field riêng của từng loại message.
             return System.Text.Json.JsonSerializer.Serialize(message, message.GetType(), OPTIONS);
         }
 
@@ -34,20 +30,19 @@ namespace CaroGame.Protocol.Utils
                 throw new ArgumentException("Chuỗi JSON không được rỗng.", nameof(json));
             }
 
-            // Dựa vào Type để biết cần chuyển JSON về đúng class con nào
             switch (type)
             {
                 case MessageType.Login:
-                    return System.Text.Json.JsonSerializer.Deserialize<LoginMessage>(json, OPTIONS);
+                    return System.Text.Json.JsonSerializer.Deserialize<LoginMessage>(json, OPTIONS) ?? throw new InvalidOperationException("Deserialize LoginMessage returned null.");
 
                 case MessageType.Invite:
-                    return System.Text.Json.JsonSerializer.Deserialize<InviteMessage>(json, OPTIONS);
+                    return System.Text.Json.JsonSerializer.Deserialize<InviteMessage>(json, OPTIONS) ?? throw new InvalidOperationException("Deserialize InviteMessage returned null.");
 
                 case MessageType.Response:
-                    return System.Text.Json.JsonSerializer.Deserialize<ResponseMessage>(json, OPTIONS);
+                    return System.Text.Json.JsonSerializer.Deserialize<ResponseMessage>(json, OPTIONS) ?? throw new InvalidOperationException("Deserialize ResponseMessage returned null.");
 
                 case MessageType.Error:
-                    return System.Text.Json.JsonSerializer.Deserialize<ErrorMessage>(json, OPTIONS);
+                    return System.Text.Json.JsonSerializer.Deserialize<ErrorMessage>(json, OPTIONS) ?? throw new InvalidOperationException("Deserialize ErrorMessage returned null.");
 
                 default:
                     throw new NotSupportedException("Chưa hỗ trợ deserialize cho MessageType: " + type);

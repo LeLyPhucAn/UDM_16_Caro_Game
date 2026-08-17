@@ -1,16 +1,18 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
-using Client.Network;
 
-namespace Client
+namespace Client.Network
 {
     public class ClientConnection
     {
-        private TcpClientService _networkService;
+        private readonly TcpClientService _networkService;
 
         // Các event để giao tiếp với tầng UI / Game Logic
-        public event Action OnMessageReceived;
-        public event Action OnConnectionLost;
+        public event Action<string>? OnMessageReceived;
+        public event Action? OnConnectionLost;
+        public event Action<Exception>? OnError;
+
+        public bool IsConnected => _networkService.IsConnected;
 
         public ClientConnection()
         {
@@ -40,7 +42,6 @@ namespace Client
         // Xử lý dữ liệu nhận được trước khi đẩy lên UI
         private void HandleDataReceived(string data)
         {
-            // Sau này bạn có thể thêm logic giải mã JSON hoặc chia gói tin ở đây
             OnMessageReceived?.Invoke(data);
         }
 
@@ -51,8 +52,8 @@ namespace Client
 
         private void HandleError(Exception ex)
         {
-            // In log lỗi ra console hoặc xử lý tùy logic game
             Console.WriteLine($"[ClientConnection Error]: {ex.Message}");
+            OnError?.Invoke(ex);
         }
     }
 }
