@@ -64,8 +64,13 @@ namespace Client.Forms
 
             if (result == DialogResult.Yes)
             {
-                Application.Exit(); 
+                Application.Exit();
             }
+        }
+
+        private void LobbyForm_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }
