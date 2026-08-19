@@ -10,7 +10,7 @@ namespace Client.Forms
         private const int COLS = 10;
         private const int CELL_SIZE = 50;
 
-        private Button[,] board;
+        private Button[,]? board;
 
         public GameForm()
         {
