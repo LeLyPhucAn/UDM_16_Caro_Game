@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using CaroGame.Protocol;
 
 namespace Client.Network
 {
@@ -7,8 +8,8 @@ namespace Client.Network
     {
         private readonly TcpClientService _networkService;
 
-        // Các event để giao tiếp với tầng UI / Game Logic
-        public event Action<string>? OnMessageReceived;
+        // Sự kiện gửi Message chuẩn lên tầng UI Form
+        public event Action<BaseMessage>? OnMessageReceived;
         public event Action? OnConnectionLost;
         public event Action<Exception>? OnError;
 
@@ -18,10 +19,9 @@ namespace Client.Network
         {
             _networkService = new TcpClientService();
 
-            // Lắng nghe các sự kiện từ tầng Network (TcpClientService)
-            _networkService.OnDataReceived += HandleDataReceived;
-            _networkService.OnDisconnected += HandleDisconnected;
-            _networkService.OnError += HandleError;
+            _networkService.OnMessageReceived += msg => OnMessageReceived?.Invoke(msg);
+            _networkService.OnDisconnected += () => OnConnectionLost?.Invoke();
+            _networkService.OnError += ex => OnError?.Invoke(ex);
         }
 
         public async Task ConnectToServer(string ip, int port)
@@ -34,26 +34,9 @@ namespace Client.Network
             _networkService.Disconnect();
         }
 
-        public async Task SendMessage(string message)
+        public async Task SendMessageAsync(BaseMessage message)
         {
-            await _networkService.SendDataAsync(message);
-        }
-
-        // Xử lý dữ liệu nhận được trước khi đẩy lên UI
-        private void HandleDataReceived(string data)
-        {
-            OnMessageReceived?.Invoke(data);
-        }
-
-        private void HandleDisconnected()
-        {
-            OnConnectionLost?.Invoke();
-        }
-
-        private void HandleError(Exception ex)
-        {
-            Console.WriteLine($"[ClientConnection Error]: {ex.Message}");
-            OnError?.Invoke(ex);
+            await _networkService.SendAsync(message);
         }
     }
 }

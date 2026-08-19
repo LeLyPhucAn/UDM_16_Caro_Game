@@ -9,28 +9,29 @@ namespace Client.Forms
 {
     public partial class LoginForm : Form
     {
-        private ClientConnection _clientConnection;
+        private readonly ClientConnection _clientConnection;
 
         public LoginForm()
         {
             InitializeComponent();
             _clientConnection = new ClientConnection();
             btnEnterLobby.Click += btnEnterLobby_Click;
+            this.Load += LoginForm_Load;
         }
 
         private void LoginForm_Load(object? sender, EventArgs e)
         {
             this.ActiveControl = null;
 
-            // Đăng ký sự kiện khi nhận tin nhắn từ Server
+            // Đăng ký sự kiện khi nhận được Message từ Server
             _clientConnection.OnMessageReceived += XyLyKetQuaLogin;
 
-            // Xử lý luôn sự kiện nếu mạng bị lỗi đứt gánh
+            // Xử lý lỗi mạng
             _clientConnection.OnError += (ex) => {
                 if (this.InvokeRequired)
                 {
                     this.Invoke(new Action(() => {
-                        MessageBox.Show("Lỗi mạng: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show("Lỗi mạng: " + ex.Message, "Lỗi kết nối", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         btnEnterLobby.Enabled = true;
                         btnEnterLobby.Text = "VÀO SẢNH CHỜ";
                     }));
@@ -38,7 +39,7 @@ namespace Client.Forms
             };
         }
 
-        private void XyLyKetQuaLogin(string message)
+        private void XyLyKetQuaLogin(BaseMessage message)
         {
             if (this.InvokeRequired)
             {
@@ -46,23 +47,25 @@ namespace Client.Forms
                 return;
             }
 
-            // KIỂM TRA LOGIC KẾT QUẢ ĐĂNG NHẬP
-            // Tạm thời giả định Server sẽ gửi về chữ "SUCCESS" hoặc gói tin có chứa chữ này
-            if (message.Contains("SUCCESS") || message.Contains("True"))
+            // Server phản hồi ResponseMessage
+            if (message is ResponseMessage res)
             {
-                string playerName = txtPlayerName.Text.Trim();
+                if (res.Success)
+                {
+                    string playerName = txtPlayerName.Text.Trim();
 
-                LobbyForm formLobby = new LobbyForm(playerName, _clientConnection);
-                formLobby.FormClosed += (s, args) => this.Close();
+                    LobbyForm formLobby = new LobbyForm(playerName, _clientConnection);
+                    formLobby.FormClosed += (s, args) => this.Close();
 
-                formLobby.Show();
-                this.Hide();
-            }
-            else
-            {
-                MessageBox.Show("Server thông báo: " + message, "Đăng nhập thất bại", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                btnEnterLobby.Enabled = true;
-                btnEnterLobby.Text = "VÀO SẢNH CHỜ";
+                    formLobby.Show();
+                    this.Hide();
+                }
+                else
+                {
+                    MessageBox.Show("Đăng nhập thất bại: " + res.ErrorMessage, "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    btnEnterLobby.Enabled = true;
+                    btnEnterLobby.Text = "VÀO SẢNH CHỜ";
+                }
             }
         }
 
@@ -72,7 +75,7 @@ namespace Client.Forms
 
             if (string.IsNullOrWhiteSpace(playerName))
             {
-                MessageBox.Show("Vui lòng nhập tên!");
+                MessageBox.Show("Vui lòng nhập tên người chơi!", "Lỗi nhập liệu", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -81,26 +84,26 @@ namespace Client.Forms
                 btnEnterLobby.Enabled = false;
                 btnEnterLobby.Text = "ĐANG KẾT NỐI...";
 
-                // 1. Kết nối đến Server
+                // 1. Kết nối đến Server nếu chưa kết nối
                 if (!_clientConnection.IsConnected)
                 {
                     await _clientConnection.ConnectToServer("127.0.0.1", 5000);
                 }
 
-                // 2. Tạo gói tin (Bắt buộc dùng CaroGame.Protocol)
-                CaroGame.Protocol.LoginMessage loginMsg = new CaroGame.Protocol.LoginMessage();
-                loginMsg.Username = playerName;
-                loginMsg.Password = "";
+                // 2. Tạo đối tượng LoginMessage chuẩn
+                LoginMessage loginMsg = new LoginMessage
+                {
+                    Username = playerName,
+                    Password = string.Empty,
+                    SenderId = playerName
+                };
 
-                string packetStr = CaroGame.Protocol.JsonSerializer.Serialize(loginMsg);
-
-                // 3. GỬI TIN NHẮN THÔNG QUA ĐƯỜNG ỐNG CHUẨN
-                // Nó sẽ tự động trỏ về hàm SendDataAsync có 4 byte kích thước của bạn
-                await _clientConnection.SendMessage(packetStr);
+                // 3. Gửi Message qua socket đã được đóng gói chuẩn 8 byte Header
+                await _clientConnection.SendMessageAsync(loginMsg);
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Lỗi kết nối: " + ex.Message);
+                MessageBox.Show("Lỗi kết nối Server: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 btnEnterLobby.Enabled = true;
                 btnEnterLobby.Text = "VÀO SẢNH CHỜ";
             }
@@ -109,10 +112,6 @@ namespace Client.Forms
         private void btnExit_Click(object? sender, EventArgs e)
         {
             Application.Exit();
-        }
-
-        private void LoginForm_Load_1(object? sender, EventArgs e)
-        {
         }
     }
 }

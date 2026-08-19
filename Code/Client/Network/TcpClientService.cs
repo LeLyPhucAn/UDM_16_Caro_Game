@@ -1,22 +1,22 @@
 using System;
+using System.IO;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using CaroGame.Protocol;
+
 namespace Client.Network
 {
     public class TcpClientService
     {
-        // Sử dụng hằng số để tránh hard-code giá trị cấu hình
-        private const int ReceiveBufferSize = 4096;
-
         private TcpClient? _client;
         private NetworkStream? _stream;
         private CancellationTokenSource? _cancellationTokenSource;
 
         public bool IsConnected => _client != null && _client.Connected;
 
-        public event Action<string>? OnDataReceived;
+        // Sự kiện bắn ra khi nhận được một Message hoàn chỉnh từ Server
+        public event Action<BaseMessage>? OnMessageReceived;
         public event Action? OnDisconnected;
         public event Action<Exception>? OnError;
 
@@ -29,7 +29,7 @@ namespace Client.Network
                 _stream = _client.GetStream();
                 _cancellationTokenSource = new CancellationTokenSource();
 
-                // Khởi chạy vòng lặp nhận dữ liệu ngầm sau khi kết nối thành công
+                // Khởi chạy vòng lặp nhận gói tin ngầm
                 _ = ReceiveDataAsync(_cancellationTokenSource.Token);
             }
             catch (Exception ex)
@@ -45,7 +45,6 @@ namespace Client.Network
 
             try
             {
-                // Hủy token để dừng vòng lặp nhận dữ liệu bất đồng bộ một cách an toàn
                 _cancellationTokenSource?.Cancel();
                 _stream?.Close();
                 _client?.Close();
@@ -60,56 +59,86 @@ namespace Client.Network
             }
         }
 
-        public async Task SendDataAsync(string data)
+        /// <summary>
+        /// Gửi gói tin chuẩn định dạng (Header 8 byte + Body JSON)
+        /// </summary>
+        public async Task SendAsync(BaseMessage message)
         {
             if (!IsConnected || _stream == null) return;
 
             try
             {
-                byte[] buffer = Encoding.UTF8.GetBytes(data);
-                await _stream.WriteAsync(buffer, 0, buffer.Length);
+                byte[] packetBytes = PacketParser.Pack(message);
+                await _stream.WriteAsync(packetBytes.AsMemory());
+                await _stream.FlushAsync();
             }
             catch (Exception ex)
             {
                 HandleError(ex);
                 Disconnect();
             }
+        }
+
+        /// <summary>
+        /// Đọc chính xác đủ số lượng byte từ Stream
+        /// </summary>
+        private static async Task<bool> ReadExactAsync(NetworkStream stream, byte[] buffer, int count, CancellationToken token)
+        {
+            int totalRead = 0;
+            while (totalRead < count)
+            {
+                int read = await stream.ReadAsync(buffer.AsMemory(totalRead, count - totalRead), token);
+                if (read == 0) return false;
+                totalRead += read;
+            }
+            return true;
         }
 
         private async Task ReceiveDataAsync(CancellationToken token)
         {
-            byte[] buffer = new byte[ReceiveBufferSize];
+            byte[] headerBuffer = new byte[8];
 
             try
             {
-                // Lắng nghe dữ liệu liên tục cho đến khi bị hủy hoặc mất kết nối
                 while (IsConnected && !token.IsCancellationRequested && _stream != null)
                 {
-                    int bytesRead = await _stream.ReadAsync(buffer, 0, buffer.Length, token);
+                    // 1. Đọc 8 bytes Header
+                    bool readHeaderSuccess = await ReadExactAsync(_stream, headerBuffer, 8, token);
+                    if (!readHeaderSuccess) break;
 
-                    if (bytesRead > 0)
+                    int bodyLength = BitConverter.ToInt32(headerBuffer, 4);
+
+                    // 2. Đọc Body
+                    byte[] bodyBuffer = new byte[bodyLength];
+                    if (bodyLength > 0)
                     {
-                        string data = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-                        OnDataReceived?.Invoke(data);
+                        bool readBodySuccess = await ReadExactAsync(_stream, bodyBuffer, bodyLength, token);
+                        if (!readBodySuccess) break;
                     }
-                    else
+
+                    // 3. Ghép Header + Body để Unpack thành BaseMessage
+                    byte[] fullPacket = new byte[8 + bodyLength];
+                    Buffer.BlockCopy(headerBuffer, 0, fullPacket, 0, 8);
+                    if (bodyLength > 0)
                     {
-                        // bytesRead = 0 báo hiệu server đã chủ động ngắt kết nối
-                        Disconnect();
-                        break;
+                        Buffer.BlockCopy(bodyBuffer, 0, fullPacket, 8, bodyLength);
                     }
+
+                    BaseMessage message = PacketParser.Unpack(fullPacket);
+                    OnMessageReceived?.Invoke(message);
                 }
             }
-            catch (OperationCanceledException)
-            {
-                // Bỏ qua ngoại lệ này vì nó sinh ra khi người dùng chủ động gọi Disconnect
-            }
+            catch (OperationCanceledException) { }
             catch (Exception ex)
             {
                 HandleError(ex);
+            }
+            finally
+            {
                 Disconnect();
             }
         }
+
         private void HandleError(Exception ex)
         {
             OnError?.Invoke(ex);
