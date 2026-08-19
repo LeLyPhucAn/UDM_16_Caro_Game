@@ -1,31 +1,45 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using Client.Network; // Bổ sung thư viện mạng để dùng ClientConnection
 
 namespace Client.Forms
 {
     public partial class LobbyForm : Form
     {
-        public LobbyForm(string playerName)
+        private string _playerName;
+        private ClientConnection _clientConnection; // Khai báo biến giữ kết nối mạng
+
+        // Cập nhật Constructor để nhận cả tên và cấu hình mạng từ LoginForm
+        public LobbyForm(string playerName, ClientConnection clientConnection)
         {
             InitializeComponent();
 
-            lblPlayerName.Text = playerName;
+            _playerName = playerName;
+            _clientConnection = clientConnection;
+
+            lblPlayerName.Text = _playerName;
+
+            // Đăng ký sự kiện nút bấm
             btnJoinRoom.Click += btnJoinRoom_Click;
-            btnCreateRoom.Click += btnJoinRoom_Click;
+            btnCreateRoom.Click += btnJoinRoom_Click; // Tạm thời dùng chung hàm JoinRoom, sau này tách riêng
             btnExitGame.Click += btnExitGame_Click;
         }
-        private void btnJoinRoom_Click(object sender, EventArgs e)
+
+        // Thêm dấu '?' vào object? sender để sửa lỗi cảnh báo màu vàng trên Terminal
+        private void btnJoinRoom_Click(object? sender, EventArgs e)
         {
+            // Ở Task tiếp theo (Task 3), bạn sẽ cần truyền _clientConnection sang GameForm tương tự như thế này
             GameForm gameForm = new GameForm();
 
-            //Khi rời phòng thì hiển thị lại Sảnh chờ
+            // Khi rời phòng thì hiển thị lại Sảnh chờ
             gameForm.FormClosed += (s, args) => this.Show();
 
             gameForm.Show();
             this.Hide();
         }
-        private void FormLobby_Load(object sender, EventArgs e)
+
+        private void FormLobby_Load(object? sender, EventArgs e)
         {
             LoadDummyData();
         }
@@ -52,7 +66,7 @@ namespace Client.Forms
             row.Cells[3].Style.SelectionForeColor = statusColor;
         }
 
-        private void btnExitGame_Click(object sender, EventArgs e)
+        private void btnExitGame_Click(object? sender, EventArgs e)
         {
             // Xác nhận trước khi thoát
             DialogResult result = MessageBox.Show(
@@ -64,13 +78,14 @@ namespace Client.Forms
 
             if (result == DialogResult.Yes)
             {
+                // Ngắt kết nối mạng trước khi thoát (Nếu cần thiết, gọi _clientConnection.Disconnect();)
                 Application.Exit();
             }
         }
 
-        private void LobbyForm_Load(object sender, EventArgs e)
+        private void LobbyForm_Load(object? sender, EventArgs e)
         {
-
+            // Để trống
         }
     }
 }

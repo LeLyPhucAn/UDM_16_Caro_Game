@@ -3,7 +3,6 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-
 namespace Client.Network
 {
     public class TcpClientService
@@ -111,7 +110,6 @@ namespace Client.Network
                 Disconnect();
             }
         }
-
         private void HandleError(Exception ex)
         {
             OnError?.Invoke(ex);
