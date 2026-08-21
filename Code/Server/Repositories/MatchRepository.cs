@@ -1,26 +1,73 @@
+using System;
 using System.Data;
 using Microsoft.Data.SqlClient;
-using Server.Database;
 
-namespace Server.Repositories;
-
-public class MatchRepository
+namespace Server.Repository
 {
-    public DataTable GetMatchHistory(int userId)
+    public class MatchRepository
     {
-        string query = "SELECT * FROM Matches WHERE Player1ID = @UserId OR Player2ID = @UserId";
-        SqlParameter[] parameters = { new SqlParameter("@UserId", userId) };
-        return DatabaseHelper.ExecuteQuery(query, parameters);
-    }
+        private readonly string _connectionString;
 
-    public int SaveMatch(int player1Id, int player2Id, int winnerId)
-    {
-        string query = "INSERT INTO Matches (Player1ID, Player2ID, WinnerID, MatchDate) VALUES (@P1, @P2, @Winner, GETDATE())";
-        SqlParameter[] parameters = {
-            new SqlParameter("@P1", player1Id),
-            new SqlParameter("@P2", player2Id),
-            new SqlParameter("@Winner", winnerId)
-        };
-        return DatabaseHelper.ExecuteNonQuery(query, parameters);
+        public MatchRepository(string connectionString)
+        {
+            _connectionString = connectionString;
+        }
+
+        private SqlConnection GetConnection() => new SqlConnection(_connectionString);
+
+        // Tạo Match Record mới và trả về MatchId vừa tạo
+        public int CreateMatch(int player1Id, int player2Id, DateTime startTime)
+        {
+            string query = @"INSERT INTO Matches (Player1Id, Player2Id, StartTime, Status) 
+                            OUTPUT INSERTED.Id 
+                            VALUES (@Player1Id, @Player2Id, @StartTime, 'Ongoing')";
+
+            using (var connection = GetConnection())
+            using (var command = new SqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@Player1Id", player1Id);
+                command.Parameters.AddWithValue("@Player2Id", player2Id);
+                command.Parameters.AddWithValue("@StartTime", startTime);
+
+                try
+                {
+                    connection.Open();
+                    return (int)command.ExecuteScalar();
+                }
+                catch (SqlException ex)
+                {
+                    Console.WriteLine($"Database Error (CreateMatch): {ex.Message}");
+                    throw;
+                }
+            }
+        }
+
+        // Cập nhật kết quả khi Match kết thúc
+        public bool EndMatch(int matchId, int? winnerId, string result, DateTime endTime)
+        {
+            string query = @"UPDATE Matches 
+                            SET WinnerId = @WinnerId, Result = @Result, EndTime = @EndTime, Status = 'Completed' 
+                            WHERE Id = @MatchId";
+
+            using (var connection = GetConnection())
+            using (var command = new SqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@MatchId", matchId);
+                command.Parameters.AddWithValue("@WinnerId", (object)winnerId ?? DBNull.Value);
+                command.Parameters.AddWithValue("@Result", result);
+                command.Parameters.AddWithValue("@EndTime", endTime);
+
+                try
+                {
+                    connection.Open();
+                    return command.ExecuteNonQuery() > 0;
+                }
+                catch (SqlException ex)
+                {
+                    Console.WriteLine($"Database Error (EndMatch): {ex.Message}");
+                    throw;
+                }
+            }
+        }
     }
 }
