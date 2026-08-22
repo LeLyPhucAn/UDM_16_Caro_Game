@@ -1,27 +1,25 @@
 ﻿using System;
-using System.Text.Json; // Bổ sung thư viện này để dùng Serialize
 using System.Threading.Tasks;
 using Client.Network;
-using Client.Services; // Thêm namespace của ClientMessageService
+using Client.Managers; // Thêm dòng này để gọi thư mục Managers
 
 namespace Client
 {
     public class ClientConnection
     {
         private TcpClientService _networkService;
-        private ClientMessageService _messageService; // Khai báo thêm MessageService
 
-        // Các event để giao tiếp với tầng UI / Game Logic
-        // Bạn có thể đổi Action<string> thành Action<YourPacketModel> sau này
-        public event Action<string> OnMessageReceived;
+        // Thêm StateManager
+        public ConnectionStateManager StateManager { get; private set; }
+
+        public event Action OnMessageReceived;
         public event Action OnConnectionLost;
 
         public ClientConnection()
         {
             _networkService = new TcpClientService();
-            _messageService = new ClientMessageService(); // Khởi tạo MessageService
+            StateManager = new ConnectionStateManager(); // Khởi tạo Manager
 
-            // Lắng nghe các sự kiện từ tầng Network (TcpClientService)
             _networkService.OnDataReceived += HandleDataReceived;
             _networkService.OnDisconnected += HandleDisconnected;
             _networkService.OnError += HandleError;
@@ -29,41 +27,58 @@ namespace Client
 
         public async Task ConnectToServer(string ip, int port)
         {
-            await _networkService.ConnectAsync(ip, port);
+            try
+            {
+                // 1. Xử lý Connecting
+                StateManager.ChangeState(ConnectionState.Connecting);
+
+                await _networkService.ConnectAsync(ip, port);
+
+                // 2. Xử lý Connected
+                StateManager.ChangeState(ConnectionState.Connected);
+            }
+            catch (Exception ex)
+            {
+                // 3. Xử lý Connection Failed (Lỗi ngay khi cố gắng kết nối)
+                StateManager.ChangeState(ConnectionState.ConnectionFailed);
+                Console.WriteLine($"[Connect Failed]: {ex.Message}");
+            }
         }
 
         public void Disconnect()
         {
+            // Cho phép Client thực hiện Disconnect đúng cách
             _networkService.Disconnect();
+
+            // Xử lý Disconnected (Chủ động ngắt)
+            StateManager.ChangeState(ConnectionState.Disconnected);
         }
 
-        // SỬA HÀM NÀY: Đổi tham số từ 'string' sang 'object' để nhận mọi loại Message từ UI
-        public async Task SendMessage(object messageObj)
+        public async Task SendMessage(string message)
         {
-            // Yêu cầu: Serialize Message
-            string jsonPayload = JsonSerializer.Serialize(messageObj);
-
-            // Yêu cầu: Gửi Message qua TCP
-            await _networkService.SendDataAsync(jsonPayload);
+            await _networkService.SendDataAsync(message);
         }
 
-        // SỬA HÀM NÀY: Xử lý dữ liệu nhận được trước khi đẩy lên UI
         private void HandleDataReceived(string data)
         {
-            // Yêu cầu: Chuyển Message đến tầng xử lý phù hợp
-            _messageService.ProcessMessage(data);
-
-            // Vẫn giữ event để UI có thể cập nhật nếu cần
             OnMessageReceived?.Invoke(data);
         }
 
         private void HandleDisconnected()
         {
+            // Bị ngắt kết nối thụ động (Server sập hoặc mất mạng)
+            // 4. Phát hiện Server Offline
+            if (StateManager.CurrentState != ConnectionState.Disconnected)
+            {
+                StateManager.ChangeState(ConnectionState.ServerOffline);
+            }
+
             OnConnectionLost?.Invoke();
         }
 
         private void HandleError(Exception ex)
         {
+            // Xử lý Send/Receive Error
             Console.WriteLine($"[ClientConnection Error]: {ex.Message}");
         }
     }
