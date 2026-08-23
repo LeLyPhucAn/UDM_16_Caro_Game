@@ -44,6 +44,18 @@ namespace CaroGame.Protocol
                 case MessageType.Error:
                     return System.Text.Json.JsonSerializer.Deserialize<ErrorMessage>(json, OPTIONS) ?? throw new InvalidOperationException("Deserialize ErrorMessage returned null.");
 
+                case MessageType.CreateRoom:
+                    return System.Text.Json.JsonSerializer.Deserialize<CreateRoomMessage>(json, OPTIONS) ?? throw new InvalidOperationException("Deserialize CreateRoomMessage returned null.");
+
+                case MessageType.JoinRoom:
+                    return System.Text.Json.JsonSerializer.Deserialize<JoinRoomMessage>(json, OPTIONS) ?? throw new InvalidOperationException("Deserialize JoinRoomMessage returned null.");
+
+                case MessageType.LeaveRoom:
+                    return System.Text.Json.JsonSerializer.Deserialize<LeaveRoomMessage>(json, OPTIONS) ?? throw new InvalidOperationException("Deserialize LeaveRoomMessage returned null.");
+
+                case MessageType.PlayMove:
+                    return System.Text.Json.JsonSerializer.Deserialize<PlayMoveMessage>(json, OPTIONS) ?? throw new InvalidOperationException("Deserialize PlayMoveMessage returned null.");
+
                 default:
                     throw new NotSupportedException("Chưa hỗ trợ deserialize cho MessageType: " + type);
             }
