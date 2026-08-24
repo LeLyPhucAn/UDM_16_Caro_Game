@@ -1,4 +1,4 @@
-namespace CaroGame.Protocol.Messages.Room
+namespace CaroGame.Protocol
 {
     /// <summary>
     /// Client gửi lên server để xin vào một phòng đã tồn tại.
@@ -7,13 +7,13 @@ namespace CaroGame.Protocol.Messages.Room
     /// </summary>
     public class JoinRoomMessage : BaseMessage
     {
-        public string RoomId { get; set; }
-        public string PlayerId { get; set; }
-        public string PlayerName { get; set; }
+        public string RoomId { get; set; } = string.Empty;
+        public string PlayerId { get; set; } = string.Empty;
+        public string PlayerName { get; set; } = string.Empty;
 
         /// <summary>Mật khẩu phòng, chỉ cần điền khi phòng ở chế độ riêng tư.</summary>
-        public string Password { get; set; }
-
+        public string Password { get; set; } = string.Empty;
+        
         public JoinRoomMessage()
         {
             Type = MessageType.JoinRoom;

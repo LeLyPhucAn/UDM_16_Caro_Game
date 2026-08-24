@@ -8,10 +8,10 @@ namespace CaroGame.Protocol.Messages.Room
     public class CreateRoomMessage : BaseMessage
     {
         /// <summary>Tên phòng hiển thị trong danh sách phòng (Lobby).</summary>
-        public string RoomName { get; set; }
+        public string RoomName { get; set; } = string.Empty;
 
         /// <summary>Id của người tạo phòng, mặc định sẽ là chủ phòng (host).</summary>
-        public string HostId { get; set; }
+        public string HostId { get; set; } = string.Empty;
 
         /// <summary>Số người chơi tối đa được phép vào phòng (Caro thường là 2).</summary>
         public int MaxPlayers { get; set; }
@@ -23,8 +23,8 @@ namespace CaroGame.Protocol.Messages.Room
         public bool IsPrivate { get; set; }
 
         /// <summary>Mật khẩu phòng, chỉ có ý nghĩa khi IsPrivate = true.</summary>
-        public string Password { get; set; }
-
+        public string Password { get; set; } = string.Empty;
+        
         public CreateRoomMessage()
         {
             Type = MessageType.CreateRoom;
