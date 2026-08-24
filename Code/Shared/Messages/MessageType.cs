@@ -15,5 +15,8 @@ namespace CaroGame.Protocol
         // Move,
         // GameState,
         // Chat,
+        GameSync,   // Đồng bộ thông tin ván đấu (Tên người chơi, Ký hiệu X/O)
+        Move,       // Gửi/Nhận tọa độ nước đi
+        GameOver    // Thông báo kết thúc ván (Kèm danh sách 5 ô chiến thắng)
     }
 }

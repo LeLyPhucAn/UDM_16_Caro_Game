@@ -132,7 +132,7 @@ namespace Client.Network
             catch (Exception ex)
             {
                 HandleError(ex);
-            }
+            }                                                                                                                                                                                                                                                                                       
             finally
             {
                 Disconnect();

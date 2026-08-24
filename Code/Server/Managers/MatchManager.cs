@@ -49,7 +49,7 @@ namespace Server.Managers
             PlayerO = playerO;
 
             // Bàn cờ Caro 15x15
-            Board = new Board(15, 15);
+            Board = new Board(10,10);
 
             // X đi trước
             CurrentTurn = CellState.X;

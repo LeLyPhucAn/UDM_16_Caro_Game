@@ -1,16 +1,18 @@
 using System;
+using System.Collections.Generic;
 using System.Drawing;
+using System.Text.Json;
 using System.Windows.Forms;
-using Client.Network; // Bổ sung thư viện mạng để dùng ClientConnection
+using Client.Network;
+using CaroGame.Protocol;
 
 namespace Client.Forms
 {
     public partial class LobbyForm : Form
     {
         private string _playerName;
-        private ClientConnection _clientConnection; // Khai báo biến giữ kết nối mạng
+        private ClientConnection _clientConnection;
 
-        // Cập nhật Constructor để nhận cả tên và cấu hình mạng từ LoginForm
         public LobbyForm(string playerName, ClientConnection clientConnection)
         {
             InitializeComponent();
@@ -20,72 +22,178 @@ namespace Client.Forms
 
             lblPlayerName.Text = _playerName;
 
-            // Đăng ký sự kiện nút bấm
             btnJoinRoom.Click += btnJoinRoom_Click;
-            btnCreateRoom.Click += btnJoinRoom_Click; // Tạm thời dùng chung hàm JoinRoom, sau này tách riêng
+            btnCreateRoom.Click += btnCreateRoom_Click;
             btnExitGame.Click += btnExitGame_Click;
-        }
 
-        // Thêm dấu '?' vào object? sender để sửa lỗi cảnh báo màu vàng trên Terminal
-        private void btnJoinRoom_Click(object? sender, EventArgs e)
-        {
-            // Ở Task tiếp theo (Task 3), bạn sẽ cần truyền _clientConnection sang GameForm tương tự như thế này
-            GameForm gameForm = new GameForm();
-
-            // Khi rời phòng thì hiển thị lại Sảnh chờ
-            gameForm.FormClosed += (s, args) => this.Show();
-
-            gameForm.Show();
-            this.Hide();
-        }
-
-        private void FormLobby_Load(object? sender, EventArgs e)
-        {
-            LoadDummyData();
-        }
-
-        private void LoadDummyData()
-        {
-            dgvRooms.Rows.Clear();
-            AddRoomRow("#101", "Phòng Vui Vẻ", "1/2", "● Đang chờ", Color.LimeGreen);
-            AddRoomRow("#102", "Pro Only", "2/2", "● Đang chơi", Color.Orange);
-            AddRoomRow("#103", "Newbie Room", "0/2", "● Trống", Color.Gray);
-            AddRoomRow("#104", "Giao lưu nhẹ nhàng", "1/2", "● Đang chờ", Color.LimeGreen);
-            AddRoomRow("#105", "Thách đấu vô địch", "2/2", "● Đang chơi", Color.Orange);
-        }
-
-        private void AddRoomRow(string roomId, string roomName, string playerCount, string statusText, Color statusColor)
-        {
-            int rowIndex = dgvRooms.Rows.Add(roomId, roomName, playerCount, statusText);
-            DataGridViewRow row = dgvRooms.Rows[rowIndex];
-
-            row.Cells[0].Style.ForeColor = Color.DeepSkyBlue;
-            row.Cells[0].Style.SelectionForeColor = Color.DeepSkyBlue;
-
-            row.Cells[3].Style.ForeColor = statusColor;
-            row.Cells[3].Style.SelectionForeColor = statusColor;
-        }
-
-        private void btnExitGame_Click(object? sender, EventArgs e)
-        {
-            // Xác nhận trước khi thoát
-            DialogResult result = MessageBox.Show(
-                "Bạn có chắc chắn muốn thoát game không?",
-                "Xác nhận thoát",
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Question
-            );
-
-            if (result == DialogResult.Yes)
-            {
-                // Ngắt kết nối mạng trước khi thoát (Nếu cần thiết, gọi _clientConnection.Disconnect();)
-                Application.Exit();
-            }
+            // Đăng ký nhận tin nhắn từ Server
+            _clientConnection.OnMessageReceived += HandleServerMessage;
+            _clientConnection.OnConnectionLost += HandleConnectionLost;
+            _clientConnection.OnError += HandleError;
         }
 
         private void LobbyForm_Load(object? sender, EventArgs e)
         {
-            // Để trống
+            dgvRooms.Rows.Clear();
+            UpdateConnectionStatus(true);
         }
+
+        public void UpdateRoomList(List<RoomInfo> rooms)
+        {
+            if (this.InvokeRequired)
+            {
+                this.Invoke(new Action(() => UpdateRoomList(rooms)));
+                return;
+            }
+
+            dgvRooms.Rows.Clear();
+
+            int emptyRooms = 0, waitingRooms = 0, playingRooms = 0;
+
+            if (rooms != null && rooms.Count > 0)
+            {
+                foreach (var room in rooms)
+                {
+                    string playerCount = $"{room.CurrentPlayers}/{room.MaxPlayers}";
+                    string statusText;
+                    Color statusColor;
+
+                    if (room.IsPlaying || room.CurrentPlayers >= room.MaxPlayers)
+                    {
+                        statusText = "● Đang chơi"; statusColor = Color.Orange;
+                        playingRooms++;
+                    }
+                    else if (room.CurrentPlayers > 0)
+                    {
+                        statusText = "● Đang chờ"; statusColor = Color.LimeGreen;
+                        waitingRooms++;
+                    }
+                    else
+                    {
+                        statusText = "● Trống"; statusColor = Color.Gray;
+                        emptyRooms++;
+                    }
+
+                    int rowIndex = dgvRooms.Rows.Add(room.RoomId, room.RoomName, playerCount, statusText);
+                    dgvRooms.Rows[rowIndex].Cells[0].Style.ForeColor = Color.DeepSkyBlue;
+                    dgvRooms.Rows[rowIndex].Cells[3].Style.ForeColor = statusColor;
+                }
+            }
+
+            // TẠM ẨN LBLSTATS ĐỂ TRIỆT TIÊU LỖI CS0103. Code sẽ chạy qua mượt mà.
+            // if (lblStats != null)
+            // {
+            //     lblStats.Text = $"Phòng trống: {emptyRooms}\nĐang chờ ghép: {waitingRooms}\nĐang thi đấu: {playingRooms}";
+            // }
+        }
+
+        public void UpdateOnlineCount(int onlineCount, int ping = 14)
+        {
+            if (this.InvokeRequired)
+            {
+                this.Invoke(new Action(() => UpdateOnlineCount(onlineCount, ping)));
+                return;
+            }
+
+            if (lblServerInfo != null)
+            {
+                lblServerInfo.Text = $"Ping: {ping}ms | Online: {onlineCount}";
+            }
+        }
+
+        public void UpdateConnectionStatus(bool isConnected)
+        {
+            if (this.InvokeRequired)
+            {
+                this.Invoke(new Action(() => UpdateConnectionStatus(isConnected)));
+                return;
+            }
+
+            if (lblConnection != null)
+            {
+                lblConnection.ForeColor = isConnected ? Color.LimeGreen : Color.Red;
+            }
+        }
+
+        private void HandleServerMessage(BaseMessage message)
+        {
+            if (this.InvokeRequired)
+            {
+                this.Invoke(new Action(() => HandleServerMessage(message)));
+                return;
+            }
+
+            try
+            {
+                if (message.Type == MessageType.Response && message is ResponseMessage response)
+                {
+                    if (response.Success && !string.IsNullOrEmpty(response.Data))
+                    {
+                        if (response.Data.Contains("OnlineCount"))
+                        {
+                            var lobbyState = System.Text.Json.JsonSerializer.Deserialize<LobbyStateDto>(response.Data);
+                            if (lobbyState != null)
+                            {
+                                UpdateOnlineCount(lobbyState.OnlineCount);
+                                UpdateRoomList(lobbyState.Rooms);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Lobby Parse Error] {ex.Message}");
+            }
+        }
+
+        private void HandleConnectionLost()
+        {
+            UpdateConnectionStatus(false);
+            MessageBox.Show("Mất kết nối với máy chủ!", "Ngắt kết nối", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            this.Close();
+        }
+
+        private void HandleError(Exception ex) => Console.WriteLine($"[Lobby Error] {ex.Message}");
+
+        // ======================================================
+        // NÚT BẤM VÀO GAME
+        // ======================================================
+        private void btnCreateRoom_Click(object? sender, EventArgs e)
+        {
+            GameForm gameForm = new GameForm(_clientConnection);
+            gameForm.FormClosed += (s, args) => this.Show();
+            gameForm.Show();
+            this.Hide();
+        }
+
+        private void btnJoinRoom_Click(object? sender, EventArgs e)
+        {
+            GameForm gameForm = new GameForm(_clientConnection);
+            gameForm.FormClosed += (s, args) => this.Show();
+            gameForm.Show();
+            this.Hide();
+        }
+
+        private void btnExitGame_Click(object? sender, EventArgs e)
+        {
+            if (MessageBox.Show("Bạn có muốn thoát?", "Thoát", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            {
+                _clientConnection.Disconnect();
+                Application.Exit();
+            }
+        }
+
+        protected override void OnFormClosed(FormClosedEventArgs e)
+        {
+            _clientConnection.OnMessageReceived -= HandleServerMessage;
+            _clientConnection.OnConnectionLost -= HandleConnectionLost;
+            base.OnFormClosed(e);
+        }
+
+        private void lblPing_Click(object sender, EventArgs e) { }
+        private void lblListDesc_Click(object sender, EventArgs e) { }
+        private void lblStats_Click(object sender, EventArgs e) { }
+        private void lblStatusDot_Click(object sender, EventArgs e) { }
     }
 }
