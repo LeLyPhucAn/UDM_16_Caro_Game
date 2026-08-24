@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using CaroGame.Protocol;
 using Server.Config;
 using Server.Managers;
+using Server.Services;
 using Server.Utils;
 
 namespace Server.Network;
@@ -18,6 +19,15 @@ public class TcpServer
     private CancellationTokenSource? _cts;
 
     private readonly ConnectionManager _connectionManager = new();
+    private readonly UserService _userService = new();
+    private readonly RoomManager _roomManager = new();
+    private readonly MatchManager _matchManager = new();
+    private readonly MessageHandler _messageHandler;
+
+    public TcpServer()
+    {
+        _messageHandler = new MessageHandler(_userService, _roomManager, _matchManager);
+    }
 
     public ConnectionManager ConnectionManager => _connectionManager;
 
@@ -78,16 +88,8 @@ public class TcpServer
     {
         Logger.Debug($"Nhận Message từ {session.SessionId}: Type={message.Type}, Sender={message.SenderId}");
 
-        // Phản hồi mẫu ResponseMessage lại cho Client
-        ResponseMessage response = new ResponseMessage
-        {
-            SenderId = "Server",
-            Success = true,
-            ErrorMessage = string.Empty,
-            Data = $"Server đã nhận {message.Type} thành công lúc {DateTime.Now:HH:mm:ss}"
-        };
-
-        await session.SendAsync(response);
+        // Chuyển gói tin sang Router (MessageHandler) để xử lý logic
+        await _messageHandler.ProcessMessageAsync(session, message);
     }
 
     private void OnClientDisconnected(ClientSession session)

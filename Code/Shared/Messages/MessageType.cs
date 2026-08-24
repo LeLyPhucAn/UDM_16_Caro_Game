@@ -11,9 +11,9 @@ namespace CaroGame.Protocol
         Response = 2,
         Error = 3,
 
-        // Chuẩn bị mở rộng cho các tuần tiếp theo, ví dụ:
-        // Move,
-        // GameState,
-        // Chat,
+        CreateRoom = 4,
+        JoinRoom = 5,
+        LeaveRoom = 6,
+        PlayMove = 7,
     }
 }
