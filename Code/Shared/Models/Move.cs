@@ -1,12 +1,17 @@
-﻿namespace GameLogic.Models
+﻿namespace Shared.Models
 {
+    /// <summary>
+    /// Đại diện cho một nước đi.
+    /// </summary>
     public class Move
     {
-        public int PlayerId { get; set; }
+        public string PlayerId { get; set; }
 
         public int Row { get; set; }
 
         public int Column { get; set; }
+
+        public CellState Piece { get; set; }
 
         public string Symbol { get; set; }
 
@@ -14,20 +19,33 @@
 
         public Move()
         {
+            PlayerId = string.Empty;
             Symbol = string.Empty;
+            Piece = CellState.Empty;
         }
 
         public Move(
-            int playerId,
+            string playerId,
             int row,
             int column,
-            string symbol,
+            CellState piece,
             int moveNumber)
         {
-            PlayerId = playerId;
+            PlayerId = playerId ?? string.Empty;
+
             Row = row;
+
             Column = column;
-            Symbol = symbol;
+
+            Piece = piece;
+
+            Symbol = piece switch
+            {
+                CellState.X => "X",
+                CellState.O => "O",
+                _ => ""
+            };
+
             MoveNumber = moveNumber;
         }
     }
