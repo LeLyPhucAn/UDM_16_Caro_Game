@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using CaroGame.Protocol;
 using Server.Config;
 using Server.Managers;
+using Server.Services;
 using Server.Utils;
 
 namespace Server.Network
@@ -17,7 +18,17 @@ namespace Server.Network
         private bool _isRunning;
         private CancellationTokenSource? _cts;
 
-        private readonly ConnectionManager _connectionManager = new();
+
+    private readonly ConnectionManager _connectionManager = new();
+    private readonly UserService _userService = new();
+    private readonly RoomManager _roomManager = new();
+    private readonly MatchManager _matchManager = new();
+    private readonly MessageHandler _messageHandler;
+
+    public TcpServer()
+    {
+        _messageHandler = new MessageHandler(_userService, _roomManager, _matchManager);
+    }
 
         // [THÊM MỚI] Khai báo MatchManager để xử lý logic Thắng/Thua/Luật chơi
         private readonly MatchManager _matchManager = new();
@@ -181,6 +192,11 @@ namespace Server.Network
         {
             _connectionManager.Remove(session.SessionId);
         }
+        // Chuyển gói tin sang Router (MessageHandler) để xử lý logic
+        await _messageHandler.ProcessMessageAsync(session, message);
+    }
+
+
 
         public void Stop()
         {

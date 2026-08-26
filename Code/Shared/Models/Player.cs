@@ -1,5 +1,8 @@
-﻿namespace GameLogic.Models
+﻿namespace Shared.Models
 {
+    /// <summary>
+    /// Đại diện cho người chơi trong game.
+    /// </summary>
     public class Player
     {
         public int Id { get; set; }
@@ -16,11 +19,20 @@
             DisplayName = string.Empty;
         }
 
-        public Player(int id, string username, string displayName)
+        public Player(
+            int id,
+            string username,
+            string displayName = "")
         {
             Id = id;
-            Username = username;
-            DisplayName = displayName;
+
+            Username = username ?? string.Empty;
+
+            DisplayName =
+                string.IsNullOrWhiteSpace(displayName)
+                    ? Username
+                    : displayName;
+
             IsOnline = false;
         }
     }
