@@ -58,6 +58,10 @@ namespace Server.Managers
                 Match? existing =
                     FindRoomMatchInternal(roomId);
 
+
+            // Bàn cờ Caro 15x15
+            Board = new Board(10,10);
+              
                 if (existing != null)
                 {
                     return null;

@@ -98,4 +98,30 @@ public class ConnectionManager
         _clients.Clear();
         Logger.Info("Đã dọn dẹp và ngắt toàn bộ kết nối Client.");
     }
+
+    /// <summary>
+    /// Đóng gói trạng thái Sảnh và gửi cho toàn bộ Client
+    /// </summary>
+    public async Task BroadcastLobbyStateAsync()
+    {
+        // Lấy danh sách tên người chơi đang online (Giả sử ClientSession có property Username)
+        var players = _clients.Values
+            .Select(c => c.SessionId.ToString()) // Tạm lấy SessionId làm tên nếu chưa lưu Username
+            .ToList();
+
+        var lobbyData = new LobbyStateDto
+        {
+            OnlineCount = _clients.Count,
+            OnlinePlayers = players,
+            Rooms = new List<RoomInfo>() // Sau này quản lý phòng thì điền vào đây
+        };
+
+        var response = new ResponseMessage
+        {
+            Success = true,
+            Data = System.Text.Json.JsonSerializer.Serialize(lobbyData)
+        };
+
+        await BroadcastAsync(response);
+    }
 }

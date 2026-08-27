@@ -9,6 +9,15 @@ public enum MessageType
     {
         Login, // Giữ nguyên các type cũ ở trên
 
+
+        // Chuẩn bị mở rộng cho các tuần tiếp theo, ví dụ:
+        // Move,
+        // GameState,
+        // Chat,
+        GameSync,   // Đồng bộ thông tin ván đấu (Tên người chơi, Ký hiệu X/O)
+        Move,       // Gửi/Nhận tọa độ nước đi
+        GameOver    // Thông báo kết thúc ván (Kèm danh sách 5 ô chiến thắng)
+
         // ===== Room / Lobby Messages (Task 1) =====
         CreateRoom = 4,
         JoinRoom = 5,
@@ -24,5 +33,6 @@ public enum MessageType
         // ===== Response Messages (Task 1) =====
         Response = 12,
         Error = 13
+
     }
 }
