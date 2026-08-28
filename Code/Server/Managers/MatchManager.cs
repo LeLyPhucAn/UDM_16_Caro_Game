@@ -2,6 +2,8 @@
 using Shared.Models;
 using System;
 using System.Collections.Generic;
+using System.Data;
+using Server.Services;
 
 namespace Server.Managers
 {
@@ -20,20 +22,14 @@ namespace Server.Managers
     // ==============================
     public class Match
     {
-        public string MatchId { get; private set; }
-
+        public string MatchId { get; private set; } // ID quản lý tạm thời trong RAM (Guid)
+        public int DbMatchId { get; set; }          // ID lưu trữ trong Database (Primary Key)
         public string RoomId { get; private set; }
-
         public Player PlayerX { get; private set; }
-
         public Player PlayerO { get; private set; }
-
         public Board Board { get; private set; }
-
         public CellState CurrentTurn { get; private set; }
-
         public MatchStatus Status { get; private set; }
-
         public string? WinnerId { get; private set; }
 
         public Match(
@@ -43,6 +39,7 @@ namespace Server.Managers
             Player playerO)
         {
             MatchId = matchId;
+            DbMatchId = -1; // Mặc định -1 nếu chưa lưu được vào DB
             RoomId = roomId;
 
             PlayerX = playerX;
@@ -59,486 +56,324 @@ namespace Server.Managers
             WinnerId = null;
         }
 
-        // ==============================
-        // BẮT ĐẦU TRẬN
-        // ==============================
         public bool Start()
         {
-            if (PlayerX == null ||
-                PlayerO == null)
-            {
+            if (PlayerX == null || PlayerO == null)
                 return false;
-            }
 
             if (Status != MatchStatus.Waiting)
                 return false;
 
             Board.Reset();
-
             CurrentTurn = CellState.X;
-
             WinnerId = null;
-
             Status = MatchStatus.Playing;
 
-            Console.WriteLine(
-                $"[MATCH] Started: {MatchId}");
-
-            Console.WriteLine(
-                $"[MATCH] X: {PlayerX.PlayerName}");
-
-            Console.WriteLine(
-                $"[MATCH] O: {PlayerO.PlayerName}");
+            Console.WriteLine($"[MATCH] Started: {MatchId}");
+            Console.WriteLine($"[MATCH] X: {PlayerX.PlayerName}");
+            Console.WriteLine($"[MATCH] O: {PlayerO.PlayerName}");
 
             return true;
         }
 
-        // ==============================
-        // ĐẶT QUÂN
-        // ==============================
-        public bool MakeMove(
-            string playerId,
-            int row,
-            int column)
+        public bool MakeMove(string playerId, int row, int column)
         {
-            // Trận chưa bắt đầu
             if (Status != MatchStatus.Playing)
                 return false;
 
-            // Player ID không hợp lệ
             if (string.IsNullOrWhiteSpace(playerId))
                 return false;
 
             CellState playerPiece;
 
-            // ==========================
-            // XÁC ĐỊNH QUÂN
-            // ==========================
-
             if (PlayerX.PlayerId == playerId)
-            {
                 playerPiece = CellState.X;
-            }
             else if (PlayerO.PlayerId == playerId)
-            {
                 playerPiece = CellState.O;
-            }
             else
-            {
-                // Không phải người chơi
                 return false;
-            }
-
-            // ==========================
-            // KIỂM TRA LƯỢT
-            // ==========================
 
             if (playerPiece != CurrentTurn)
             {
-                Console.WriteLine(
-                    $"[MATCH] Wrong turn: {playerId}");
-
+                Console.WriteLine($"[MATCH] Wrong turn: {playerId}");
                 return false;
             }
-
-            // ==========================
-            // KIỂM TRA VỊ TRÍ
-            // ==========================
 
             if (!Board.IsValidPosition(row, column))
             {
-                Console.WriteLine(
-                    $"[MATCH] Invalid position: ({row},{column})");
-
+                Console.WriteLine($"[MATCH] Invalid position: ({row},{column})");
                 return false;
             }
-
-            // ==========================
-            // KIỂM TRA Ô TRỐNG
-            // ==========================
 
             if (!Board.IsEmpty(row, column))
             {
-                Console.WriteLine(
-                    $"[MATCH] Cell already occupied: ({row},{column})");
-
+                Console.WriteLine($"[MATCH] Cell occupied: ({row},{column})");
                 return false;
             }
 
-            // ==========================
-            // ĐẶT QUÂN
-            // ==========================
+            bool placed = Board.PlacePiece(row, column, playerPiece);
+            if (!placed) return false;
 
-            bool placed = Board.PlacePiece(
-                row,
-                column,
-                playerPiece);
+            Console.WriteLine($"[MATCH] {playerId} placed {playerPiece} at ({row},{column})");
 
-            if (!placed)
-                return false;
-
-            Console.WriteLine(
-                $"[MATCH] {playerId} placed " +
-                $"{playerPiece} at ({row},{column})");
-
-            // ==========================
-            // KIỂM TRA THẮNG
-            // ==========================
-
+            // Kiểm tra thắng
             if (Board.CheckWin(row, column))
             {
                 WinnerId = playerId;
-
                 Status = MatchStatus.Finished;
-
-                Console.WriteLine(
-                    $"[MATCH] Winner: {playerId}");
-
+                Console.WriteLine($"[MATCH] Winner: {playerId}");
                 return true;
             }
 
-            // ==========================
-            // KIỂM TRA HÒA
-            // ==========================
-
+            // Kiểm tra hòa
             if (Board.IsFull())
             {
                 Status = MatchStatus.Finished;
-
                 WinnerId = null;
-
-                Console.WriteLine(
-                    $"[MATCH] Draw: {MatchId}");
-
+                Console.WriteLine($"[MATCH] Draw: {MatchId}");
                 return true;
             }
 
-            // ==========================
-            // ĐỔI LƯỢT
-            // ==========================
-
             SwitchTurn();
-
             return true;
         }
 
-        // ==============================
-        // ĐỔI LƯỢT
-        // ==============================
         private void SwitchTurn()
         {
-            if (CurrentTurn == CellState.X)
-            {
-                CurrentTurn = CellState.O;
-            }
-            else
-            {
-                CurrentTurn = CellState.X;
-            }
-
-            Console.WriteLine(
-                $"[MATCH] Current turn: {CurrentTurn}");
+            CurrentTurn = (CurrentTurn == CellState.X) ? CellState.O : CellState.X;
+            Console.WriteLine($"[MATCH] Current turn: {CurrentTurn}");
         }
 
-        // ==============================
-        // LẤY PLAYER ĐANG ĐẾN LƯỢT
-        // ==============================
-        public string GetCurrentPlayerId()
-        {
-            if (CurrentTurn == CellState.X)
-            {
-                return PlayerX.PlayerId;
-            }
+        public string GetCurrentPlayerId() => CurrentTurn == CellState.X ? PlayerX.PlayerId : PlayerO.PlayerId;
+        public Player GetCurrentPlayer() => CurrentTurn == CellState.X ? PlayerX : PlayerO;
 
-            return PlayerO.PlayerId;
-        }
-
-        // ==============================
-        // LẤY PLAYER ĐANG ĐẾN LƯỢT
-        // ==============================
-        public Player GetCurrentPlayer()
-        {
-            if (CurrentTurn == CellState.X)
-            {
-                return PlayerX;
-            }
-
-            return PlayerO;
-        }
-
-        // ==============================
-        // KẾT THÚC TRẬN
-        // ==============================
         public void EndMatch()
         {
             Status = MatchStatus.Finished;
-
-            Console.WriteLine(
-                $"[MATCH] Finished: {MatchId}");
+            Console.WriteLine($"[MATCH] Finished: {MatchId}");
         }
 
-        // ==============================
-        // RESET TRẬN
-        // ==============================
         public void ResetMatch()
         {
             Board.Reset();
-
             CurrentTurn = CellState.X;
-
             WinnerId = null;
-
             Status = MatchStatus.Waiting;
-
-            Console.WriteLine(
-                $"[MATCH] Reset: {MatchId}");
+            Console.WriteLine($"[MATCH] Reset: {MatchId}");
         }
 
-        // ==============================
-        // KIỂM TRA TRẬN ĐANG CHƠI
-        // ==============================
-        public bool IsPlaying()
-        {
-            return Status == MatchStatus.Playing;
-        }
-
-        // ==============================
-        // KIỂM TRA TRẬN ĐÃ KẾT THÚC
-        // ==============================
-        public bool IsFinished()
-        {
-            return Status == MatchStatus.Finished;
-        }
-
-        // ==============================
-        // KIỂM TRA HÒA
-        // ==============================
-        public bool IsDraw()
-        {
-            return Status == MatchStatus.Finished &&
-                   WinnerId == null &&
-                   Board.IsFull();
-        }
+        public bool IsPlaying() => Status == MatchStatus.Playing;
+        public bool IsFinished() => Status == MatchStatus.Finished;
+        public bool IsDraw() => Status == MatchStatus.Finished && WinnerId == null && Board.IsFull();
     }
 
     // ==============================
-    // MATCH MANAGER
+    // MATCH MANAGER (TÍCH HỢP DB)
     // ==============================
     public class MatchManager
     {
         private readonly Dictionary<string, Match> matches;
+        private readonly MatchService _matchService;
 
         public MatchManager()
         {
             matches = new Dictionary<string, Match>();
+            _matchService = new MatchService();
+        }
+
+        // Constructor dùng cho Dependency Injection / Unit Test
+        public MatchManager(MatchService matchService)
+        {
+            matches = new Dictionary<string, Match>();
+            _matchService = matchService ?? new MatchService();
         }
 
         // ==============================
         // TẠO MATCH
         // ==============================
-        public Match? CreateMatch(
-            string roomId,
-            Player playerX,
-            Player playerO)
+        public Match? CreateMatch(string roomId, Player playerX, Player playerO)
         {
-            if (string.IsNullOrWhiteSpace(roomId))
+            if (string.IsNullOrWhiteSpace(roomId) || playerX == null || playerO == null)
                 return null;
 
-            if (playerX == null ||
-                playerO == null)
-            {
-                return null;
-            }
-
-            // Không cho cùng Player đấu với chính mình
             if (playerX.PlayerId == playerO.PlayerId)
             {
-                Console.WriteLine(
-                    "[MATCH] Cannot create match: " +
-                    "same player.");
-
+                Console.WriteLine("[MATCH] Cannot create match: same player.");
                 return null;
             }
 
             string matchId = Guid.NewGuid().ToString();
+            Match match = new Match(matchId, roomId, playerX, playerO);
 
-            Match match = new Match(
-                matchId,
-                roomId,
-                playerX,
-                playerO);
-
-            matches.Add(
-                matchId,
-                match);
-
-            Console.WriteLine(
-                $"[MATCH] Created: {matchId}");
+            matches.Add(matchId, match);
+            Console.WriteLine($"[MATCH] Created: {matchId}");
 
             return match;
         }
 
         // ==============================
-        // LẤY MATCH
-        // ==============================
-        public Match? GetMatch(string matchId)
-        {
-            if (string.IsNullOrWhiteSpace(matchId))
-                return null;
-
-            matches.TryGetValue(
-                matchId,
-                out Match? match);
-
-            return match;
-        }
-
-        // ==============================
-        // BẮT ĐẦU MATCH
+        // BẮT ĐẦU MATCH (TÍCH HỢP DB)
         // ==============================
         public bool StartMatch(string matchId)
         {
             Match? match = GetMatch(matchId);
+            if (match == null) return false;
 
-            if (match == null)
-                return false;
+            bool started = match.Start();
+            if (!started) return false;
 
-            return match.Start();
+            // [TASK 2]: Lưu bản ghi Match mới vào Database khi trận bắt đầu
+            try
+            {
+                // Chuyển PlayerId sang int nếu DB dùng kiểu INT
+                int p1Id = int.TryParse(match.PlayerX.PlayerId, out int id1) ? id1 : 0;
+                int p2Id = int.TryParse(match.PlayerO.PlayerId, out int id2) ? id2 : 0;
+
+                match.DbMatchId = _matchService.StartNewMatch(p1Id, p2Id);
+                Console.WriteLine($"[MATCH DB] Match saved to DB with ID: {match.DbMatchId}");
+            }
+            catch (Exception ex)
+            {
+                // An toàn: Không để lỗi DB làm Server bị crash
+                Console.WriteLine($"[MATCH DB ERROR - StartMatch]: {ex.Message}");
+            }
+
+            return true;
         }
 
         // ==============================
-        // THỰC HIỆN NƯỚC ĐI
+        // THỰC HIỆN NƯỚC ĐI (TÍCH HỢP DB)
         // ==============================
-        public bool MakeMove(
-            string matchId,
-            string playerId,
-            int row,
-            int column)
+        public bool MakeMove(string matchId, string playerId, int row, int column)
         {
             Match? match = GetMatch(matchId);
+            if (match == null) return false;
 
-            if (match == null)
-                return false;
+            bool moveSuccess = match.MakeMove(playerId, row, column);
 
-            return match.MakeMove(
-                playerId,
-                row,
-                column);
+            // [TASK 2]: Nếu nước đi làm trận đấu kết thúc (Thắng hoặc Hòa), cập nhật DB
+            if (moveSuccess && match.IsFinished())
+            {
+                SaveMatchResultToDb(match, match.WinnerId, match.IsDraw() ? "DRAW" : "WIN_NORMAL");
+            }
+
+            return moveSuccess;
         }
 
         // ==============================
-        // KẾT THÚC MATCH
+        // KẾT THÚC MATCH (TÍCH HỢP DB)
         // ==============================
-        public bool EndMatch(string matchId)
+        public bool EndMatch(string matchId, string? winnerId = null, string resultReason = "ENDED_MANUALLY")
         {
             Match? match = GetMatch(matchId);
-
-            if (match == null)
-                return false;
+            if (match == null) return false;
 
             match.EndMatch();
 
+            // [TASK 2]: Cập nhật kết quả trận đấu vào DB khi đầu hàng/rớt mạng
+            SaveMatchResultToDb(match, winnerId ?? match.WinnerId, resultReason);
+
             return true;
         }
 
         // ==============================
-        // RESET MATCH
+        // HÀM BỌC LƯU DB AN TOÀN
         // ==============================
+        private void SaveMatchResultToDb(Match match, string? winnerIdStr, string result)
+        {
+            if (match.DbMatchId <= 0) return; // Không có ID DB hợp lệ thì bỏ qua
+
+            try
+            {
+                int? winnerId = null;
+                if (!string.IsNullOrEmpty(winnerIdStr) && int.TryParse(winnerIdStr, out int wId))
+                {
+                    winnerId = wId;
+                }
+
+                _matchService.SaveMatchResult(match.DbMatchId, winnerId, result);
+                Console.WriteLine($"[MATCH DB] Updated result for Match DB ID {match.DbMatchId}: Winner={winnerIdStr}, Result={result}");
+            }
+            catch (Exception ex)
+            {
+                // Bảo vệ Server không crash
+                Console.WriteLine($"[MATCH DB ERROR - SaveResult]: {ex.Message}");
+            }
+        }
+
+        // ==============================
+        // TRUY VẤN LỊCH SỬ ĐẤU (TASK 2)
+        // ==============================
+        public DataTable GetPlayerHistory(string playerId)
+        {
+            try
+            {
+                if (int.TryParse(playerId, out int userId))
+                {
+                    return _matchService.GetUserMatchHistory(userId);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[MATCH DB ERROR - GetHistory]: {ex.Message}");
+            }
+
+            return new DataTable(); // Trả về bảng rỗng nếu lỗi/không tìm thấy
+        }
+
+        // ==============================
+        // CÁC HÀM TIỆN ÍCH KHÁC
+        // ==============================
+        public Match? GetMatch(string matchId)
+        {
+            if (string.IsNullOrWhiteSpace(matchId)) return null;
+            matches.TryGetValue(matchId, out Match? match);
+            return match;
+        }
+
         public bool ResetMatch(string matchId)
         {
             Match? match = GetMatch(matchId);
-
-            if (match == null)
-                return false;
-
+            if (match == null) return false;
             match.ResetMatch();
-
             return true;
         }
 
-        // ==============================
-        // XÓA MATCH
-        // ==============================
         public bool RemoveMatch(string matchId)
         {
-            if (string.IsNullOrWhiteSpace(matchId))
-                return false;
-
-            if (!matches.ContainsKey(matchId))
+            if (string.IsNullOrWhiteSpace(matchId) || !matches.ContainsKey(matchId))
                 return false;
 
             matches.Remove(matchId);
-
-            Console.WriteLine(
-                $"[MATCH] Removed: {matchId}");
-
+            Console.WriteLine($"[MATCH] Removed: {matchId}");
             return true;
         }
 
-        // ==============================
-        // TÌM MATCH CỦA PLAYER
-        // ==============================
         public Match? FindPlayerMatch(string playerId)
         {
-            if (string.IsNullOrWhiteSpace(playerId))
-                return null;
+            if (string.IsNullOrWhiteSpace(playerId)) return null;
 
             foreach (Match match in matches.Values)
             {
-                if (match.PlayerX.PlayerId == playerId ||
-                    match.PlayerO.PlayerId == playerId)
-                {
+                if (match.PlayerX.PlayerId == playerId || match.PlayerO.PlayerId == playerId)
                     return match;
-                }
             }
-
             return null;
         }
 
-        // ==============================
-        // TÌM MATCH THEO ROOM
-        // ==============================
         public Match? FindRoomMatch(string roomId)
         {
-            if (string.IsNullOrWhiteSpace(roomId))
-                return null;
+            if (string.IsNullOrWhiteSpace(roomId)) return null;
 
             foreach (Match match in matches.Values)
             {
-                if (match.RoomId == roomId)
-                {
-                    return match;
-                }
+                if (match.RoomId == roomId) return match;
             }
-
             return null;
         }
 
-        // ==============================
-        // KIỂM TRA MATCH TỒN TẠI
-        // ==============================
-        public bool MatchExists(string matchId)
-        {
-            if (string.IsNullOrWhiteSpace(matchId))
-                return false;
-
-            return matches.ContainsKey(matchId);
-        }
-
-        // ==============================
-        // LẤY DANH SÁCH MATCH
-        // ==============================
-        public List<Match> GetMatches()
-        {
-            return new List<Match>(matches.Values);
-        }
-
-        // ==============================
-        // LẤY SỐ MATCH
-        // ==============================
-        public int GetMatchCount()
-        {
-            return matches.Count;
-        }
+        public bool MatchExists(string matchId) => !string.IsNullOrWhiteSpace(matchId) && matches.ContainsKey(matchId);
+        public List<Match> GetMatches() => new List<Match>(matches.Values);
+        public int GetMatchCount() => matches.Count;
     }
 }
