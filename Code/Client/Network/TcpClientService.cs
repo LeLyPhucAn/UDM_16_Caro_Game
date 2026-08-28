@@ -1,3 +1,4 @@
+using CaroGame.Protocol.Messages;
 using System;
 using System.IO;
 using System.Net.Sockets;
@@ -68,8 +69,8 @@ namespace Client.Network
 
             try
             {
-                byte[] packetBytes = PacketParser.Pack(message);
-                await _stream.WriteAsync(packetBytes.AsMemory());
+                byte[] packet = Packet.Pack(message);
+                await _stream.WriteAsync(packet.AsMemory());
                 await _stream.FlushAsync();
             }
             catch (Exception ex)
@@ -117,14 +118,14 @@ namespace Client.Network
                     }
 
                     // 3. Ghép Header + Body để Unpack thành BaseMessage
-                    byte[] fullPacket = new byte[8 + bodyLength];
-                    Buffer.BlockCopy(headerBuffer, 0, fullPacket, 0, 8);
+                    byte[] messageBytes = new byte[8 + bodyLength];
+                    Buffer.BlockCopy(headerBuffer, 0, messageBytes, 0, 8);
                     if (bodyLength > 0)
                     {
-                        Buffer.BlockCopy(bodyBuffer, 0, fullPacket, 8, bodyLength);
+                        Buffer.BlockCopy(bodyBuffer, 0, messageBytes, 8, bodyLength);
                     }
 
-                    BaseMessage message = PacketParser.Unpack(fullPacket);
+                    BaseMessage message = Packet.Unpack(messageBytes);
                     OnMessageReceived?.Invoke(message);
                 }
             }

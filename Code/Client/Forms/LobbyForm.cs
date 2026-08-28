@@ -1,3 +1,5 @@
+using CaroGame.Protocol.Messages.Response;
+using CaroGame.Protocol.Messages;
 using System;
 using System.Collections.Generic;
 using System.Drawing;

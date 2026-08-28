@@ -16,7 +16,7 @@ public enum MessageType
         // Chat,
         GameSync,   // Đồng bộ thông tin ván đấu (Tên người chơi, Ký hiệu X/O)
         Move,       // Gửi/Nhận tọa độ nước đi
-        GameOver    // Thông báo kết thúc ván (Kèm danh sách 5 ô chiến thắng)
+        GameOver,   // Thông báo kết thúc ván (Kèm danh sách 5 ô chiến thắng)
 
         // ===== Room / Lobby Messages (Task 1) =====
         CreateRoom = 4,
@@ -25,7 +25,6 @@ public enum MessageType
         Invite = 7,
 
         // ===== Game Messages (Task 1) =====
-        PlayMove = 8, // Thống nhất dùng PlayMove (hoặc Move) tùy ý team bạn, và gán số tiếp theo
         Turn = 9,
         GameState = 10,
         GameResult = 11,

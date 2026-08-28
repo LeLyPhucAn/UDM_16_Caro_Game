@@ -1,3 +1,4 @@
+using CaroGame.Protocol.Messages;
 using System;
 using System.Text;
 using CaroGame.Protocol.Messages;

@@ -1,3 +1,5 @@
+using CaroGame.Protocol.Messages.Game;
+using CaroGame.Protocol.Messages;
 using System;
 using System.Drawing;
 using System.Text.Json;
@@ -88,7 +90,7 @@ namespace Client.Forms
             var moveMsg = new MoveMessage
             {
                 Row = pos.X,
-                Col = pos.Y,
+                Column = pos.Y,
                 Symbol = _mySymbol
             };
 
@@ -176,7 +178,7 @@ namespace Client.Forms
                 else if (message.Type == MessageType.Move && message is MoveMessage moveMsg)
                 {
                     // Vẽ quân cờ lên UI
-                    UpdateBoardUI(moveMsg.Row, moveMsg.Col, moveMsg.Symbol);
+                    UpdateBoardUI(moveMsg.Row, moveMsg.Column, moveMsg.Symbol);
 
                     // Đảo lượt nội bộ
                     _isMyTurn = (moveMsg.Symbol != _mySymbol);

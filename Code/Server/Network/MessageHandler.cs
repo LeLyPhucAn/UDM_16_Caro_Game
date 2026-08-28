@@ -54,9 +54,9 @@ public class MessageHandler
                         await HandleLeaveRoomAsync(session, leaveRoomMsg);
                     break;
 
-                case MessageType.PlayMove:
-                    if (message is PlayMoveMessage playMoveMsg)
-                        await HandlePlayMoveAsync(session, playMoveMsg);
+                case MessageType.Move:
+                    if (message is MoveMessage moveMsg)
+                        await HandlePlayMoveAsync(session, moveMsg);
                     break;
 
                 default:
@@ -160,10 +160,10 @@ public class MessageHandler
         await session.SendAsync(response);
     }
 
-    private async Task HandlePlayMoveAsync(ClientSession session, PlayMoveMessage msg)
+    private async Task HandlePlayMoveAsync(ClientSession session, MoveMessage msg)
     {
-        Logger.Info($"[PlayMove] Session {session.SessionId} đánh cờ tại ({msg.Row}, {msg.Column}) trong trận {msg.MatchId}");
-        bool success = _matchManager.MakeMove(msg.MatchId, session.SessionId.ToString(), msg.Row, msg.Column);
+        Logger.Info($"[PlayMove] Session {session.SessionId} đánh cờ tại ({msg.Row}, {msg.Column}) trong trận {msg.RoomId}");
+        bool success = _matchManager.MakeMove(msg.RoomId, session.SessionId.ToString(), msg.Row, msg.Column);
         
         var response = new ResponseMessage
         {

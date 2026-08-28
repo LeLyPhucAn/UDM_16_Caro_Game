@@ -1,3 +1,6 @@
+using CaroGame.Protocol.Messages;
+using CaroGame.Protocol.Messages.Game;
+using CaroGame.Protocol.Utils;
 using System;
 using System.Text;
 // LƯU Ý: Không thêm 'using System.Text.Json;' ở trên cùng 
@@ -54,7 +57,7 @@ namespace CaroGame.Protocol
                 // Mặc định (Login, Lobby, Response...): 
                 // Trả về hàm Deserialize trong class tùy chỉnh của bạn để giữ nguyên tính ổn định cũ
                 default:
-                    return JsonSerializer.Deserialize(json, type);
+                    return Utils.JsonSerializer.Deserialize(json, type);
             }
         }
     }
