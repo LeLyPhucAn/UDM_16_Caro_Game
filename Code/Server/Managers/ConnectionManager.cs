@@ -1,9 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CaroGame.Protocol;
+using CaroGame.Protocol.Messages;
+using CaroGame.Protocol.Messages.Response;
 using Server.Network;
 using Server.Utils;
 
@@ -84,6 +86,21 @@ public class ConnectionManager
             .Select(client => client.SendAsync(message));
 
         await Task.WhenAll(tasks);
+    }
+
+    /// <summary>
+    /// Gửi thông điệp tới một Client cụ thể
+    /// </summary>
+    public async Task SendMessageToClientAsync(string sessionIdStr, BaseMessage message)
+    {
+        if (Guid.TryParse(sessionIdStr, out Guid sessionId))
+        {
+            var session = Get(sessionId);
+            if (session != null)
+            {
+                await session.SendAsync(message);
+            }
+        }
     }
 
     /// <summary>
