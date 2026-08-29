@@ -9,7 +9,6 @@ namespace Client.Network
     public class TcpClientService
     {
         private const int ReceiveBufferSize = 4096;
-
         private TcpClient _client;
         private NetworkStream _stream;
         private CancellationTokenSource _cancellationTokenSource;
@@ -29,12 +28,12 @@ namespace Client.Network
                 _stream = _client.GetStream();
                 _cancellationTokenSource = new CancellationTokenSource();
 
-                // Khởi chạy vòng lặp nhận dữ liệu ngầm sau khi kết nối thành công
                 _ = ReceiveDataAsync(_cancellationTokenSource.Token);
             }
             catch (Exception ex)
             {
-                HandleError(ex);
+                // Xử lý Connection Error
+                OnError?.Invoke(ex);
                 throw;
             }
         }
@@ -51,7 +50,7 @@ namespace Client.Network
             }
             catch (Exception ex)
             {
-                HandleError(ex);
+                OnError?.Invoke(ex);
             }
             finally
             {
@@ -70,7 +69,8 @@ namespace Client.Network
             }
             catch (Exception ex)
             {
-                HandleError(ex);
+                // Xử lý Send Error - Không văng Exception làm crash app
+                OnError?.Invoke(ex);
                 Disconnect();
             }
         }
@@ -97,19 +97,13 @@ namespace Client.Network
                     }
                 }
             }
-            catch (OperationCanceledException)
-            {
-            }
+            catch (OperationCanceledException) { /* Hủy chủ động, bỏ qua */ }
             catch (Exception ex)
             {
-                HandleError(ex);
+                // Xử lý Receive Error
+                OnError?.Invoke(ex);
                 Disconnect();
             }
-        }
-
-        private void HandleError(Exception ex)
-        {
-            OnError?.Invoke(ex);
         }
     }
 }

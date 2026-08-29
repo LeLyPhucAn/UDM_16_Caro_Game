@@ -7,11 +7,12 @@ namespace Client.Network
     public class ClientConnection
     {
         private TcpClientService _networkService;
-
         public ConnectionStateManager StateManager { get; private set; }
 
         public event Action<string> OnMessageReceived;
-        public event Action OnConnectionLost;
+
+        // Sự kiện báo UI khi Server Disconnect
+        public event Action OnServerDisconnected;
 
         public ClientConnection()
         {
@@ -27,20 +28,26 @@ namespace Client.Network
         {
             try
             {
+                // Quản lý Connecting
                 StateManager.ChangeState(ConnectionState.Connecting);
+
                 await _networkService.ConnectAsync(ip, port);
+
+                // Quản lý Connected
                 StateManager.ChangeState(ConnectionState.Connected);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
+                // Xử lý Connection Failed
                 StateManager.ChangeState(ConnectionState.ConnectionFailed);
-                Console.WriteLine($"[Connect Failed]: {ex.Message}");
             }
         }
 
         public void Disconnect()
         {
             _networkService.Disconnect();
+
+            // Quản lý Disconnected (Client chủ động)
             StateManager.ChangeState(ConnectionState.Disconnected);
         }
 
@@ -51,21 +58,24 @@ namespace Client.Network
 
         private void HandleDataReceived(string data)
         {
+            // Phát Event khi nhận Message
             OnMessageReceived?.Invoke(data);
         }
 
         private void HandleDisconnected()
         {
+            // Xử lý Server Offline (Mất mạng đột ngột hoặc Server sập)
             if (StateManager.CurrentState != ConnectionState.Disconnected)
             {
                 StateManager.ChangeState(ConnectionState.ServerOffline);
+                OnServerDisconnected?.Invoke();
             }
-            OnConnectionLost?.Invoke();
         }
 
         private void HandleError(Exception ex)
         {
-            Console.WriteLine($"[ClientConnection Error]: {ex.Message}");
+            // Bắt log Send/Receive Error ngầm, không báo ra giao diện gây hoang mang
+            Console.WriteLine($"[Network Error]: {ex.Message}");
         }
     }
 }

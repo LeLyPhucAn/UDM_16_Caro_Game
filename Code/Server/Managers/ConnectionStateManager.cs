@@ -1,8 +1,8 @@
 ﻿using System;
+using System.Threading;
 
 namespace Client.Managers
 {
-    // Định nghĩa các trạng thái kết quả cần đạt
     public enum ConnectionState
     {
         Disconnected,
@@ -14,28 +14,34 @@ namespace Client.Managers
 
     public class ConnectionStateManager
     {
-        private ConnectionState _currentState = ConnectionState.Disconnected;
+        public ConnectionState CurrentState { get; private set; } = ConnectionState.Disconnected;
 
-        // Event để UI đăng ký lắng nghe trạng thái thay đổi
         public event Action<ConnectionState> OnStateChanged;
 
-        public ConnectionState CurrentState
+        // Lưu trữ Context của UI Thread để đồng bộ hóa
+        private readonly SynchronizationContext _uiContext;
+
+        public ConnectionStateManager()
         {
-            get => _currentState;
-            private set
-            {
-                if (_currentState != value)
-                {
-                    _currentState = value;
-                    OnStateChanged?.Invoke(_currentState); // Thông báo trạng thái cho UI
-                }
-            }
+            // Yêu cầu: Khởi tạo class này trên Main Thread (Form_Load hoặc Constructor của Form)
+            _uiContext = SynchronizationContext.Current;
         }
 
         public void ChangeState(ConnectionState newState)
         {
+            if (CurrentState == newState) return;
+
             CurrentState = newState;
-            Console.WriteLine($"[State Updated]: {newState}");
+
+            // Đảm bảo Event được bắn ra trên đúng UI Thread
+            if (_uiContext != null)
+            {
+                _uiContext.Post(_ => OnStateChanged?.Invoke(CurrentState), null);
+            }
+            else
+            {
+                OnStateChanged?.Invoke(CurrentState);
+            }
         }
     }
 }
