@@ -5,6 +5,7 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using CaroGame.Protocol;
+using CaroGame.Protocol.Messages;
 using Server.Config;
 using Server.Managers;
 using Server.Services;
@@ -27,11 +28,8 @@ namespace Server.Network
 
     public TcpServer()
     {
-        _messageHandler = new MessageHandler(_userService, _roomManager, _matchManager);
+        _messageHandler = new MessageHandler(_userService, _roomManager, _matchManager, _connectionManager);
     }
-
-        // [THÊM MỚI] Khai báo MatchManager để xử lý logic Thắng/Thua/Luật chơi
-        private readonly MatchManager _matchManager = new();
 
         public ConnectionManager ConnectionManager => _connectionManager;
 
@@ -94,107 +92,15 @@ namespace Server.Network
         private async Task OnMessageReceivedAsync(ClientSession session, BaseMessage message)
         {
             Logger.Debug($"Nhận Message từ {session.SessionId}: Type={message.Type}, Sender={message.SenderId}");
-
             
-            if (message.Type == MessageType.Move && message is MoveMessage moveMsg)
-            {
-                string playerId = session.SessionId.ToString();
-
-                // 1. Tìm trận đấu mà Client này đang ngồi
-                var currentMatch = _matchManager.FindPlayerMatch(playerId);
-
-                // TEST: NẾU CHƯA CÓ TRẬN ĐẤU 
-                // TEST: NẾU CHƯA CÓ TRẬN ĐẤU 
-                if (currentMatch == null)
-                {
-                    // 1. Phát tin đồng bộ tên GIẢ LẬP để test BƯỚC 3
-                    var syncMsg = new GameSyncMessage
-                    {
-                        PlayerXName = "Nam123",
-                        PlayerOName = "Minh456",
-                        MySymbol = "X",             // Giả lập Client test này đang cầm cờ X
-                        CurrentTurnName = "Nam123"  // Lượt đầu tiên là của X
-                    };
-                    await session.SendAsync(syncMsg);
-
-                    // 2. Trả thẳng nước đi về cho Client tự vẽ X
-                    await session.SendAsync(moveMsg);
-                    return;
-                }
-
-                if (currentMatch != null)
-                {
-                    // 2. Thẩm định nước đi (Hàm MakeMove tự động kiểm tra lượt, vị trí, ô trống)
-                    bool isMoveValid = _matchManager.MakeMove(currentMatch.MatchId, playerId, moveMsg.Row, moveMsg.Col);
-
-                    if (isMoveValid)
-                    {
-                        // 3. Nếu hợp lệ -> Lấy Session của 2 người chơi để thông báo
-                        Guid sessionX = Guid.Parse(currentMatch.PlayerX.PlayerId);
-                        Guid sessionO = Guid.Parse(currentMatch.PlayerO.PlayerId);
-
-                        ClientSession? clientX = _connectionManager.Get(sessionX);
-                        ClientSession? clientO = _connectionManager.Get(sessionO);
-
-                        // Gửi thẳng đối tượng MoveMessage (mạng sẽ tự Pack lại thành JSON/Bytes)
-                        if (clientX != null) await clientX.SendAsync(moveMsg);
-
-                        // Không gửi 2 lần nếu test 1 mình (sessionX == sessionO)
-                        if (clientO != null && sessionX != sessionO) await clientO.SendAsync(moveMsg);
-
-                        // 4. Kiểm tra xem nước đi vừa rồi có làm trận đấu kết thúc không
-                        if (currentMatch.IsFinished())
-                        {
-                            var gameOverMsg = new GameOverMessage();
-
-                            if (currentMatch.IsDraw())
-                            {
-                                gameOverMsg.ResultType = "Draw";
-                            }
-                            else
-                            {
-                                gameOverMsg.ResultType = "Win";
-                                // Xác định ai là người chiến thắng
-                                var winner = currentMatch.WinnerId == currentMatch.PlayerX.PlayerId
-                                             ? currentMatch.PlayerX
-                                             : currentMatch.PlayerO;
-                                gameOverMsg.WinnerName = winner.PlayerName;
-                            }
-
-                            // Gửi thông báo kết thúc cho cả phòng
-                            if (clientX != null) await clientX.SendAsync(gameOverMsg);
-                            if (clientO != null && sessionX != sessionO) await clientO.SendAsync(gameOverMsg);
-                        }
-                    }
-                    else
-                    {
-                        Logger.Warn($"[Game] Client {playerId} gửi nước đi không hợp lệ!");
-                    }
-                }
-
-                // Xử lý xong MoveMessage thì thoát hàm, không chạy xuống phần phản hồi mẫu nữa
-                return;
-            }
-
-           
-            ResponseMessage response = new ResponseMessage
-            {
-                SenderId = "Server",
-                Success = true,
-                ErrorMessage = string.Empty,
-                Data = $"Server đã nhận {message.Type} thành công lúc {DateTime.Now:HH:mm:ss}"
-            };
-
-            await session.SendAsync(response);
+            // Chuyển gói tin sang Router (MessageHandler) để xử lý logic
+            await _messageHandler.ProcessMessageAsync(session, message);
         }
 
         private void OnClientDisconnected(ClientSession session)
         {
             _connectionManager.Remove(session.SessionId);
         }
-        // Chuyển gói tin sang Router (MessageHandler) để xử lý logic
-        await _messageHandler.ProcessMessageAsync(session, message);
-    }
 
 
 

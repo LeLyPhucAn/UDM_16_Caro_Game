@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using CaroGame.Protocol;
+using CaroGame.Protocol.Messages;
 
 namespace Server.Network;
 

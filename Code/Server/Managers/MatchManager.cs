@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 using System.Data;
@@ -81,9 +81,11 @@ namespace Server.Managers
 
 
 
+
             // Bàn cờ Caro 15x15
             Board = new Board(10,10);
               
+
                 if (existing != null)
                 {
                     return null;
@@ -143,8 +145,8 @@ namespace Server.Managers
                 return null;
             }
 
-            if (playerX.Id <= 0 ||
-                playerO.Id <= 0)
+            if (string.IsNullOrWhiteSpace(playerX.Id) ||
+                string.IsNullOrWhiteSpace(playerO.Id))
             {
                 return null;
             }
@@ -287,7 +289,7 @@ namespace Server.Managers
                     return false;
                 }
 
-                if (player.Id <= 0)
+                if (string.IsNullOrWhiteSpace(player.Id))
                 {
                     return false;
                 }
@@ -423,9 +425,7 @@ namespace Server.Managers
                 return false;
             }
 
-            if (!int.TryParse(
-                    playerId,
-                    out int id))
+            if (string.IsNullOrWhiteSpace(playerId))
             {
                 return false;
             }
@@ -439,7 +439,7 @@ namespace Server.Managers
                 }
 
                 if (match.PlayerX != null &&
-                    match.PlayerX.Id == id)
+                    match.PlayerX.Id == playerId)
                 {
                     match.PlayerX = null;
 
@@ -447,7 +447,7 @@ namespace Server.Managers
                 }
 
                 if (match.PlayerO != null &&
-                    match.PlayerO.Id == id)
+                    match.PlayerO.Id == playerId)
                 {
                     match.PlayerO = null;
 
@@ -586,14 +586,10 @@ namespace Server.Managers
                 }
 
                 string playerXId =
-                    match.PlayerX!
-                        .Id
-                        .ToString();
+                    match.PlayerX!.Id;
 
                 string playerOId =
-                    match.PlayerO!
-                        .Id
-                        .ToString();
+                    match.PlayerO!.Id;
 
                 // -------------------------
                 // Validate + Apply Move
@@ -865,13 +861,11 @@ namespace Server.Managers
                 {
                     bool validWinner =
                         match.PlayerX != null &&
-                        match.PlayerX.Id
-                            .ToString() == winnerId;
+                        match.PlayerX.Id == winnerId;
 
                     bool validWinner2 =
                         match.PlayerO != null &&
-                        match.PlayerO.Id
-                            .ToString() == winnerId;
+                        match.PlayerO.Id == winnerId;
 
                     if (!validWinner &&
                         !validWinner2)
@@ -952,9 +946,7 @@ namespace Server.Managers
         public Match? FindPlayerMatch(
             string playerId)
         {
-            if (!int.TryParse(
-                    playerId,
-                    out int id))
+            if (string.IsNullOrWhiteSpace(playerId))
             {
                 return null;
             }
@@ -977,10 +969,10 @@ namespace Server.Managers
                     .FirstOrDefault(
                         match =>
                             (match.PlayerX != null &&
-                             match.PlayerX.Id == id)
+                             match.PlayerX.Id == playerId)
                             ||
                             (match.PlayerO != null &&
-                             match.PlayerO.Id == id));
+                             match.PlayerO.Id == playerId));
             }
         }
 

@@ -1,6 +1,11 @@
 using System;
 using System.Threading.Tasks;
 using CaroGame.Protocol;
+using CaroGame.Protocol.Messages;
+using CaroGame.Protocol.Messages.Room;
+using CaroGame.Protocol.Messages.Game;
+using CaroGame.Protocol.Messages.Response;
+using Shared.Models;
 using Server.Managers;
 using Server.Services;
 using Server.Utils;
@@ -15,12 +20,16 @@ public class MessageHandler
     private readonly UserService _userService;
     private readonly RoomManager _roomManager;
     private readonly MatchManager _matchManager;
+    private readonly ConnectionManager _connectionManager;
+    private readonly GameRequestHandler _gameRequestHandler;
 
-    public MessageHandler(UserService userService, RoomManager roomManager, MatchManager matchManager)
+    public MessageHandler(UserService userService, RoomManager roomManager, MatchManager matchManager, ConnectionManager connectionManager)
     {
         _userService = userService ?? throw new ArgumentNullException(nameof(userService));
         _roomManager = roomManager ?? throw new ArgumentNullException(nameof(roomManager));
         _matchManager = matchManager ?? throw new ArgumentNullException(nameof(matchManager));
+        _connectionManager = connectionManager ?? throw new ArgumentNullException(nameof(connectionManager));
+        _gameRequestHandler = new GameRequestHandler(_matchManager, _connectionManager);
     }
 
     /// <summary>
@@ -56,7 +65,7 @@ public class MessageHandler
 
                 case MessageType.Move:
                     if (message is MoveMessage moveMsg)
-                        await HandlePlayMoveAsync(session, moveMsg);
+                        await _gameRequestHandler.HandlePlayMoveAsync(session, moveMsg);
                     break;
 
                 default:
@@ -160,17 +169,5 @@ public class MessageHandler
         await session.SendAsync(response);
     }
 
-    private async Task HandlePlayMoveAsync(ClientSession session, MoveMessage msg)
-    {
-        Logger.Info($"[PlayMove] Session {session.SessionId} đánh cờ tại ({msg.Row}, {msg.Column}) trong trận {msg.RoomId}");
-        bool success = _matchManager.MakeMove(msg.RoomId, session.SessionId.ToString(), msg.Row, msg.Column);
-        
-        var response = new ResponseMessage
-        {
-            SenderId = "Server",
-            Success = success,
-            ErrorMessage = success ? string.Empty : "Nước đi không hợp lệ."
-        };
-        await session.SendAsync(response);
-    }
+
 }
