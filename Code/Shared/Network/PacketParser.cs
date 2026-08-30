@@ -6,34 +6,60 @@ using CaroGame.Protocol.Utils;
 namespace CaroGame.Protocol.Network
 {
     /// <summary>
-    /// Chuẩn hóa cấu trúc dữ liệu gửi/nhận qua Socket, gồm 3 phần:
+    /// Phân loại lỗi packet, dùng để MessageHandler (Task 2) biết chính xác
+    /// cần xử lý theo hướng nào:
+    /// - MissingData          -> ứng với mục "Xử lý Packet thiếu dữ liệu"
+    /// - InvalidMessageType   -> ứng với mục "Xử lý MessageType không hợp lệ"
+    /// - CorruptedPacket      -> ứng với mục "Xử lý Packet bị lỗi" (JSON hỏng,
+    ///   thiếu MessageId, hoặc deserialize thất bại)
+    /// </summary>
+    public enum PacketErrorType
+    {
+        MissingData,
+        InvalidMessageType,
+        CorruptedPacket
+    }
+
+    /// <summary>
+    /// Exception riêng cho lỗi đóng gói/giải mã packet. Có thêm ErrorType để
+    /// MessageHandler không cần đọc chuỗi Message mà vẫn biết chính xác đây
+    /// là loại lỗi nào trong 3 loại mà Task 2 yêu cầu xử lý riêng.
+    /// </summary>
+    public class PacketException : Exception
+    {
+        public PacketErrorType ErrorType { get; }
+
+        public PacketException(PacketErrorType errorType, string message) : base(message)
+        {
+            ErrorType = errorType;
+        }
+
+        public PacketException(PacketErrorType errorType, string message, Exception innerException)
+            : base(message, innerException)
+        {
+            ErrorType = errorType;
+        }
+    }
+
+    /// <summary>
+    /// Chuẩn hóa cấu trúc dữ liệu gửi/nhận qua Socket:
     /// [4 byte Type] [4 byte độ dài Body] [Body JSON dạng UTF-8]
-    /// Cách đóng gói này giúp SocketServer luôn biết chính xác cần đọc
-    /// bao nhiêu byte cho một message hoàn chỉnh.
     ///
-    /// Task 2 - Packet Routing &amp; Validation: Unpack() thực hiện tuần tự
-    /// các bước kiểm tra Header -> MessageType -> Payload -> Validate JSON
-    /// -> kiểm tra MessageId -> Deserialize, mọi lỗi ở bất kỳ bước nào đều
-    /// được gói lại thành PacketException để SocketServer xử lý mà không
-    /// làm crash chương trình. Nên dùng TryUnpack() ở vòng lặp đọc socket
-    /// để không cần try/catch thủ công ở nơi gọi.
+    /// Task 2 - mỗi bước kiểm tra trong đề bài được tách thành một hàm
+    /// riêng (ValidateHeader, ValidateMessageType, ValidatePayload,
+    /// ValidateJson, ValidateMessageId, DeserializePacket) để dễ đối chiếu
+    /// và dễ viết test cho từng mục.
     /// </summary>
     public static class PacketParser
     {
-        // Header gồm 2 phần: 4 byte lưu Type, 4 byte lưu độ dài Body
         private const int TYPE_SIZE = 4;
         private const int LENGTH_SIZE = 4;
         private const int HEADER_SIZE = TYPE_SIZE + LENGTH_SIZE;
 
-        /// <summary>
-        /// Giới hạn kích thước Body tối đa (1 MB) để tránh trường hợp packet
-        /// bị lỗi/giả mạo khai báo độ dài quá lớn làm tràn bộ nhớ khi đọc.
-        /// </summary>
+        /// <summary>Giới hạn Body tối đa (1 MB) để tránh packet giả mạo khai báo độ dài quá lớn.</summary>
         private const int MAX_BODY_SIZE = 1024 * 1024;
 
-        /// <summary>
-        /// Đóng gói một BaseMessage thành byte[] để gửi qua socket.
-        /// </summary>
+        /// <summary>Đóng gói một BaseMessage thành byte[] để gửi qua socket.</summary>
         public static byte[] Pack(BaseMessage message)
         {
             if (message == null)
@@ -55,94 +81,33 @@ namespace CaroGame.Protocol.Network
         }
 
         /// <summary>
-        /// Giải mã một packet hoàn chỉnh (đã đủ Header + Body) thành BaseMessage.
-        /// Nếu dữ liệu không hợp lệ ở bất kỳ bước nào (thiếu byte, sai
-        /// MessageType, JSON hỏng, thiếu MessageId, ...) sẽ ném PacketException
-        /// để nơi gọi (SocketServer) tự xử lý, thay vì làm crash chương trình.
+        /// Giải mã một packet, chạy tuần tự qua đúng các bước Validate theo
+        /// yêu cầu Task 2. Bất kỳ bước nào lỗi cũng ném PacketException kèm
+        /// ErrorType tương ứng để MessageHandler xử lý riêng từng trường hợp.
         /// </summary>
         public static BaseMessage Unpack(byte[] data)
         {
-            // ===== Bước 1: Kiểm tra Header =====
-            if (data == null || data.Length < HEADER_SIZE)
-            {
-                throw new PacketException(
-                    "Dữ liệu không đủ để đọc Header (cần tối thiểu " + HEADER_SIZE + " byte).");
-            }
+            ValidateHeader(data);
 
             int rawType = BitConverter.ToInt32(data, 0);
             int bodyLength = BitConverter.ToInt32(data, TYPE_SIZE);
 
-            // ===== Bước 2: Kiểm tra MessageType =====
-            // rawType phải ứng với một giá trị đã khai báo trong enum MessageType,
-            // tránh trường hợp client cũ/mới lệch phiên bản gửi type không tồn tại.
-            if (!Enum.IsDefined(typeof(MessageType), rawType))
-            {
-                throw new PacketException("MessageType không hợp lệ hoặc không được hỗ trợ: " + rawType);
-            }
+            MessageType type = ValidateMessageType(rawType);
 
-            MessageType type = (MessageType)rawType;
-
-            // ===== Bước 3: Kiểm tra Payload =====
-            if (bodyLength < 0 || data.Length < HEADER_SIZE + bodyLength)
-            {
-                throw new PacketException("Dữ liệu không đủ để đọc Body (cần " + bodyLength + " byte).");
-            }
-
-            if (bodyLength == 0)
-            {
-                throw new PacketException("Payload rỗng, không có dữ liệu để giải mã.");
-            }
-
-            if (bodyLength > MAX_BODY_SIZE)
-            {
-                throw new PacketException(
-                    "Payload vượt quá kích thước cho phép (" + bodyLength + " > " + MAX_BODY_SIZE + " byte).");
-            }
+            ValidatePayload(data, bodyLength);
 
             string json = Encoding.UTF8.GetString(data, HEADER_SIZE, bodyLength);
 
-            // ===== Bước 4: Validate JSON =====
-            // Kiểm tra cú pháp JSON trước, để phân biệt rõ lỗi "JSON hỏng"
-            // với lỗi "JSON đúng nhưng thiếu field" xảy ra ở các bước sau.
-            if (!JsonSerializer.IsValidJson(json))
-            {
-                throw new PacketException("Payload không phải JSON hợp lệ cho message loại " + type + ".");
-            }
+            ValidateJson(json, type);
+            ValidateMessageId(json, type);
 
-            // ===== Bước 5: Kiểm tra MessageId =====
-            // Phải kiểm tra trên chuỗi JSON thô (trước khi Deserialize), vì object
-            // BaseMessage luôn tự sinh MessageId mặc định trong constructor -
-            // nếu kiểm tra sau Deserialize, packet thiếu MessageId vẫn "lọt qua"
-            // một cách sai lệch (xem giải thích chi tiết tại JsonSerializer.HasValidMessageId).
-            if (!JsonSerializer.HasValidMessageId(json))
-            {
-                throw new PacketException("Message loại " + type + " thiếu MessageId hoặc MessageId rỗng.");
-            }
-
-            // ===== Bước 6: Deserialize =====
-            BaseMessage message;
-            try
-            {
-                message = JsonSerializer.Deserialize(json, type);
-            }
-            catch (Exception ex)
-            {
-                throw new PacketException("Không thể giải mã message loại " + type + ": " + ex.Message, ex);
-            }
-
-            if (message == null)
-            {
-                throw new PacketException("Giải mã message loại " + type + " trả về null.");
-            }
-
-            return message;
+            return DeserializePacket(json, type);
         }
 
         /// <summary>
-        /// Phiên bản an toàn của Unpack(): không ném exception ra ngoài mà trả
-        /// về true/false kèm thông báo lỗi, giúp vòng lặp đọc dữ liệu của
-        /// SocketServer xử lý packet lỗi một cách gọn gàng mà không bao giờ
-        /// làm crash chương trình (Task 2 - Không để Packet lỗi làm crash).
+        /// Phiên bản an toàn của Unpack(): không ném exception ra ngoài mà
+        /// trả về true/false kèm thông báo lỗi (Task 2 - Đảm bảo Packet lỗi
+        /// không làm Client/Server crash).
         /// </summary>
         public static bool TryUnpack(byte[] data, out BaseMessage message, out string error)
         {
@@ -160,27 +125,116 @@ namespace CaroGame.Protocol.Network
             }
             catch (Exception ex)
             {
-                // Bắt luôn các lỗi phát sinh ngoài dự kiến (ví dụ lỗi hệ thống khi
-                // Reflection/Deserialize nội bộ) để tuyệt đối không làm sập server.
                 message = null;
                 error = "Lỗi không xác định khi giải mã packet: " + ex.Message;
                 return false;
             }
         }
-    }
 
-    /// <summary>
-    /// Exception riêng cho lỗi đóng gói/giải mã packet, giúp phân biệt với các
-    /// exception hệ thống khác khi SocketServer bắt lỗi.
-    /// </summary>
-    public class PacketException : Exception
-    {
-        public PacketException(string message) : base(message)
+        // ===================== Validate Header =====================
+        /// <summary>Kiểm tra data có đủ byte để đọc 8 byte Header (Type + Length) hay không.</summary>
+        private static void ValidateHeader(byte[] data)
         {
+            if (data == null || data.Length < HEADER_SIZE)
+            {
+                throw new PacketException(
+                    PacketErrorType.MissingData,
+                    "Dữ liệu không đủ để đọc Header (cần tối thiểu " + HEADER_SIZE + " byte).");
+            }
         }
 
-        public PacketException(string message, Exception innerException) : base(message, innerException)
+        // ===================== Validate MessageType =====================
+        /// <summary>Kiểm tra rawType đọc từ Header có tồn tại trong enum MessageType hay không.</summary>
+        private static MessageType ValidateMessageType(int rawType)
         {
+            if (!Enum.IsDefined(typeof(MessageType), rawType))
+            {
+                throw new PacketException(
+                    PacketErrorType.InvalidMessageType,
+                    "MessageType không hợp lệ hoặc không được hỗ trợ: " + rawType);
+            }
+
+            return (MessageType)rawType;
+        }
+
+        // ===================== Validate Payload =====================
+        /// <summary>Kiểm tra độ dài Body hợp lệ: đủ byte, không rỗng, không vượt giới hạn.</summary>
+        private static void ValidatePayload(byte[] data, int bodyLength)
+        {
+            if (bodyLength < 0 || data.Length < HEADER_SIZE + bodyLength)
+            {
+                throw new PacketException(
+                    PacketErrorType.MissingData,
+                    "Dữ liệu không đủ để đọc Body (cần " + bodyLength + " byte).");
+            }
+
+            if (bodyLength == 0)
+            {
+                throw new PacketException(
+                    PacketErrorType.MissingData,
+                    "Payload rỗng, không có dữ liệu để giải mã.");
+            }
+
+            if (bodyLength > MAX_BODY_SIZE)
+            {
+                throw new PacketException(
+                    PacketErrorType.MissingData,
+                    "Payload vượt quá kích thước cho phép (" + bodyLength + " > " + MAX_BODY_SIZE + " byte).");
+            }
+        }
+
+        // ===================== Validate JSON =====================
+        /// <summary>Kiểm tra Body có đúng cú pháp JSON hay không.</summary>
+        private static void ValidateJson(string json, MessageType type)
+        {
+            if (!JsonSerializer.IsValidJson(json))
+            {
+                throw new PacketException(
+                    PacketErrorType.CorruptedPacket,
+                    "Payload không phải JSON hợp lệ cho message loại " + type + ".");
+            }
+        }
+
+        // ===================== Validate MessageId =====================
+        /// <summary>
+        /// Kiểm tra JSON có field MessageId hợp lệ hay không. Phải kiểm tra
+        /// trên chuỗi JSON thô (trước khi Deserialize) vì BaseMessage luôn tự
+        /// sinh MessageId mặc định trong constructor.
+        /// </summary>
+        private static void ValidateMessageId(string json, MessageType type)
+        {
+            if (!JsonSerializer.HasValidMessageId(json))
+            {
+                throw new PacketException(
+                    PacketErrorType.CorruptedPacket,
+                    "Message loại " + type + " thiếu MessageId hoặc MessageId rỗng.");
+            }
+        }
+
+        // ===================== Deserialize Packet =====================
+        /// <summary>Chuyển JSON thành đúng class con tương ứng với MessageType.</summary>
+        private static BaseMessage DeserializePacket(string json, MessageType type)
+        {
+            BaseMessage message;
+            try
+            {
+                message = JsonSerializer.Deserialize(json, type);
+            }
+            catch (Exception ex)
+            {
+                throw new PacketException(
+                    PacketErrorType.CorruptedPacket,
+                    "Không thể giải mã message loại " + type + ": " + ex.Message, ex);
+            }
+
+            if (message == null)
+            {
+                throw new PacketException(
+                    PacketErrorType.CorruptedPacket,
+                    "Giải mã message loại " + type + " trả về null.");
+            }
+
+            return message;
         }
     }
 }

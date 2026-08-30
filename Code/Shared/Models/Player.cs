@@ -1,11 +1,11 @@
-﻿namespace Shared.Models
+namespace Shared.Models
 {
     /// <summary>
     /// Đại diện cho người chơi trong game.
     /// </summary>
     public class Player
     {
-        public int Id { get; set; }
+        public string Id { get; set; }
 
         public string Username { get; set; }
 
@@ -20,7 +20,7 @@
         }
 
         public Player(
-            int id,
+            string id,
             string username,
             string displayName = "")
         {
