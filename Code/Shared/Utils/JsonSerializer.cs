@@ -1,4 +1,3 @@
-using CaroGame.Protocol.Messages;
 using System;
 using CaroGame.Protocol.Messages;
 using CaroGame.Protocol.Messages.Room;
@@ -139,7 +138,6 @@ namespace CaroGame.Protocol.Utils
 
                 case MessageType.Error:
                     return System.Text.Json.JsonSerializer.Deserialize<ErrorMessage>(json, OPTIONS);
-
 
                 default:
                     throw new NotSupportedException("Chưa hỗ trợ deserialize cho MessageType: " + type);
