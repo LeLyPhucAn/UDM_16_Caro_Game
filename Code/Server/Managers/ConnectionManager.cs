@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using CaroGame.Protocol;
 using CaroGame.Protocol.Messages;
 using CaroGame.Protocol.Messages.Response;
+using Shared.Models;
 using Server.Network;
 using Server.Utils;
 

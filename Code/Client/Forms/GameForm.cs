@@ -156,7 +156,7 @@ namespace Client.Forms
                 // ==========================================
                 // 1. XỬ LÝ LÚC VỪA VÀO PHÒNG (BƯỚC 3)
                 // ==========================================
-                if (message.Type == MessageType.GameSync && message is GameSyncMessage syncMsg)
+                if (message.Type == MessageType.GameState && message is GameStateMessage syncMsg)
                 {
                     // Cập nhật giao diện Label
                     lblCurrentTurn.Text = $"X: {syncMsg.PlayerXName}";
@@ -201,7 +201,7 @@ namespace Client.Forms
                 // ==========================================
                 // 3. XỬ LÝ KẾT THÚC TRẬN ĐẤU (BƯỚC 4)
                 // ==========================================
-                else if (message.Type == MessageType.GameOver && message is GameOverMessage gameOverMsg)
+                else if (message.Type == MessageType.GameResult && message is GameResultMessage gameOverMsg)
                 {
                     // 1. Khóa vĩnh viễn bàn cờ không cho click nữa
                     _isMyTurn = false;

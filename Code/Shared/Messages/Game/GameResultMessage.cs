@@ -11,6 +11,8 @@ namespace CaroGame.Protocol.Messages.Game
         /// <summary>Id người thắng cuộc, để trống nếu hòa.</summary>
         public string WinnerId { get; set; }
 
+        public string WinnerName { get; set; }
+
         /// <summary>Loại kết quả: "Win", "Draw", "Surrender", "Disconnect".</summary>
         public string ResultType { get; set; }
 

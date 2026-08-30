@@ -63,20 +63,12 @@ namespace Server.Services
                     if (moveResult.IsWin || moveResult.IsDraw)
                     {
                         string resultType = moveResult.IsWin ? "Win" : "Draw";
-                        string winnerName = string.Empty;
-                        
-                        if (moveResult.IsWin)
+                        var gameOverMsg = new GameResultMessage
                         {
-                            winnerName = (moveResult.Piece == Shared.Models.CellState.X) ? 
-                                match.PlayerX?.Username ?? "X" : 
-                                match.PlayerO?.Username ?? "O";
-                        }
-
-                        var gameOverMsg = new GameOverMessage
-                        {
+                            RoomId = match.MatchId,
                             ResultType = resultType,
-                            WinnerName = winnerName,
-                            WinningLine = new System.Collections.Generic.List<Coordinate>()
+                            WinnerId = moveResult.IsWin ? ((moveResult.Piece == Shared.Models.CellState.X) ? sessionX : sessionO) : string.Empty,
+                            WinningLine = new string[0]
                         };
 
                         if (!string.IsNullOrEmpty(sessionX))

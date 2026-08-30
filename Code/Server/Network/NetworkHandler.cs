@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CaroGame.Protocol;
 using CaroGame.Protocol.Messages;
+using CaroGame.Protocol.Network;
 
 namespace Server.Network;
 
@@ -80,7 +81,7 @@ public class NetworkHandler
                     Buffer.BlockCopy(bodyBuffer, 0, fullPacket, 8, bodyLength);
                 }
 
-                BaseMessage message = Packet.Unpack(fullPacket);
+                BaseMessage message = PacketParser.Unpack(fullPacket);
 
                 // 4. Gọi Callback xử lý Message
                 if (onMessageReceived != null)
@@ -121,7 +122,7 @@ public class NetworkHandler
 
         try
         {
-            byte[] packetBytes = Packet.Pack(message);
+            byte[] packetBytes = PacketParser.Pack(message);
             await session.Stream.WriteAsync(packetBytes.AsMemory());
             await session.Stream.FlushAsync();
             return true;

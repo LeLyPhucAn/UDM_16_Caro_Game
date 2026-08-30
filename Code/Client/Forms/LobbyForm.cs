@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Windows.Forms;
 using Client.Network;
 using CaroGame.Protocol;
+using Shared.Models;
 
 namespace Client.Forms
 {

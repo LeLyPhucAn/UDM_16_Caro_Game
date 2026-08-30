@@ -5,6 +5,7 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using CaroGame.Protocol;
+using CaroGame.Protocol.Network;
 
 namespace Client.Network
 {
@@ -69,7 +70,7 @@ namespace Client.Network
 
             try
             {
-                byte[] packet = Packet.Pack(message);
+                byte[] packet = PacketParser.Pack(message);
                 await _stream.WriteAsync(packet.AsMemory());
                 await _stream.FlushAsync();
             }
@@ -125,7 +126,7 @@ namespace Client.Network
                         Buffer.BlockCopy(bodyBuffer, 0, messageBytes, 8, bodyLength);
                     }
 
-                    BaseMessage message = Packet.Unpack(messageBytes);
+                    BaseMessage message = PacketParser.Unpack(messageBytes);
                     OnMessageReceived?.Invoke(message);
                 }
             }
