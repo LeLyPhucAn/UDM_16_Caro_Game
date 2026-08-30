@@ -1,6 +1,3 @@
-using CaroGame.Protocol.Messages;
-using System;
-
 namespace CaroGame.Protocol.Messages.Game
 {
     /// <summary>
@@ -10,11 +7,8 @@ namespace CaroGame.Protocol.Messages.Game
     /// </summary>
     public class MoveMessage : BaseMessage
     {
-        /// <summary>Mã phòng của ván đấu hiện tại.</summary>
-        public string RoomId { get; set; } = string.Empty;
-
-        /// <summary>ID của người chơi thực hiện nước đi.</summary>
-        public string PlayerId { get; set; } = string.Empty;
+        public string RoomId { get; set; }
+        public string PlayerId { get; set; }
 
         /// <summary>Chỉ số hàng trên bàn cờ, bắt đầu từ 0.</summary>
         public int Row { get; set; }
@@ -23,7 +17,7 @@ namespace CaroGame.Protocol.Messages.Game
         public int Column { get; set; }
 
         /// <summary>Ký hiệu quân cờ của người chơi, ví dụ "X" hoặc "O".</summary>
-        public string Symbol { get; set; } = string.Empty;
+        public string Symbol { get; set; }
 
         public MoveMessage()
         {
