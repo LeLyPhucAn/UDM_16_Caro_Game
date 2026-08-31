@@ -4,6 +4,7 @@ using CaroGame.Protocol;
 using CaroGame.Protocol.Messages;
 using CaroGame.Protocol.Messages.Room;
 using CaroGame.Protocol.Messages.Game;
+using CaroGame.Protocol.Messages.History;
 using CaroGame.Protocol.Messages.Response;
 using Shared.Models;
 using Server.Managers;
@@ -22,6 +23,7 @@ public class MessageHandler
     private readonly MatchManager _matchManager;
     private readonly ConnectionManager _connectionManager;
     private readonly GameRequestHandler _gameRequestHandler;
+    private readonly MatchService _matchService;
 
     public MessageHandler(UserService userService, RoomManager roomManager, MatchManager matchManager, ConnectionManager connectionManager)
     {
@@ -30,6 +32,7 @@ public class MessageHandler
         _matchManager = matchManager ?? throw new ArgumentNullException(nameof(matchManager));
         _connectionManager = connectionManager ?? throw new ArgumentNullException(nameof(connectionManager));
         _gameRequestHandler = new GameRequestHandler(_matchManager, _connectionManager);
+        _matchService = new MatchService();
     }
 
     /// <summary>
@@ -66,6 +69,11 @@ public class MessageHandler
                 case MessageType.Move:
                     if (message is MoveMessage moveMsg)
                         await _gameRequestHandler.HandlePlayMoveAsync(session, moveMsg);
+                    break;
+
+                case MessageType.HistoryRequest:
+                    if (message is HistoryRequestMessage historyReq)
+                        await HandleHistoryRequestAsync(session, historyReq);
                     break;
 
                 default:
@@ -200,5 +208,31 @@ public class MessageHandler
         await session.SendAsync(response);
     }
 
+    private async Task HandleHistoryRequestAsync(ClientSession session, HistoryRequestMessage msg)
+    {
+        Logger.Info($"[HistoryRequest] User {msg.UserId} yêu cầu lịch sử đấu từ Session: {session.SessionId}");
+        
+        // Gọi xuống DB thông qua MatchService
+        var dt = _matchService.GetUserMatchHistory(msg.UserId);
 
+        var response = new HistoryResponseMessage();
+        if (dt != null)
+        {
+            foreach (System.Data.DataRow row in dt.Rows)
+            {
+                response.Matches.Add(new MatchHistoryItem
+                {
+                    MatchId = Convert.ToInt32(row["MatchId"]),
+                    Player1Id = row["Player1Id"] != DBNull.Value ? Convert.ToInt32(row["Player1Id"]) : 0,
+                    Player2Id = row["Player2Id"] != DBNull.Value ? Convert.ToInt32(row["Player2Id"]) : 0,
+                    StartTime = Convert.ToDateTime(row["StartTime"]),
+                    EndTime = row["EndTime"] != DBNull.Value ? (DateTime?)Convert.ToDateTime(row["EndTime"]) : null,
+                    WinnerId = row["WinnerId"] != DBNull.Value ? (int?)Convert.ToInt32(row["WinnerId"]) : null,
+                    Result = row["Result"]?.ToString() ?? "",
+                    Status = row["Status"]?.ToString() ?? ""
+                });
+            }
+        }
+        await session.SendAsync(response);
+    }
 }

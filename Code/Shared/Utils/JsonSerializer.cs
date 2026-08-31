@@ -2,6 +2,7 @@ using System;
 using CaroGame.Protocol.Messages;
 using CaroGame.Protocol.Messages.Room;
 using CaroGame.Protocol.Messages.Game;
+using CaroGame.Protocol.Messages.History;
 using CaroGame.Protocol.Messages.Response;
 
 namespace CaroGame.Protocol.Utils
@@ -131,6 +132,16 @@ namespace CaroGame.Protocol.Utils
 
                 case MessageType.GameResult:
                     return System.Text.Json.JsonSerializer.Deserialize<GameResultMessage>(json, OPTIONS);
+
+                case MessageType.Timer:
+                    return System.Text.Json.JsonSerializer.Deserialize<TimerMessage>(json, OPTIONS);
+
+                // ===== History Messages =====
+                case MessageType.HistoryRequest:
+                    return System.Text.Json.JsonSerializer.Deserialize<HistoryRequestMessage>(json, OPTIONS);
+
+                case MessageType.HistoryResponse:
+                    return System.Text.Json.JsonSerializer.Deserialize<HistoryResponseMessage>(json, OPTIONS);
 
                 // ===== Response Messages =====
                 case MessageType.Response:

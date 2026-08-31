@@ -20,6 +20,11 @@ namespace CaroGame.Protocol.Messages
         Turn,
         GameState,
         GameResult,
+        Timer,
+
+        // ===== History Messages =====
+        HistoryRequest,
+        HistoryResponse,
 
         // ===== Response Messages (Task 1) =====
         Response,
