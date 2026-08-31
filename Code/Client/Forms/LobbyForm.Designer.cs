@@ -17,8 +17,8 @@ namespace Client.Forms
 
         private void InitializeComponent()
         {
-            DataGridViewCellStyle dataGridViewCellStyle3 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle4 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
             pnlTopBar = new Panel();
             btnExitGame = new Button();
             lblServerInfo = new Label();
@@ -28,7 +28,7 @@ namespace Client.Forms
             pnlRightBar = new Panel();
             btnJoinRoom = new Button();
             btnCreateRoom = new Button();
-            lblRoomStats = new Label();
+            lblStats = new Label();
             lblActionTitle = new Label();
             pnlMain = new Panel();
             dgvRooms = new DataGridView();
@@ -36,7 +36,6 @@ namespace Client.Forms
             colRoomName = new DataGridViewTextBoxColumn();
             colPlayerCount = new DataGridViewTextBoxColumn();
             colStatus = new DataGridViewTextBoxColumn();
-            lblListDesc = new Label();
             lblListTitle = new Label();
             pnlTopBar.SuspendLayout();
             pnlRightBar.SuspendLayout();
@@ -76,13 +75,13 @@ namespace Client.Forms
             // 
             lblServerInfo.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             lblServerInfo.AutoSize = true;
+            lblServerInfo.Cursor = Cursors.SizeNESW;
             lblServerInfo.ForeColor = Color.Gray;
-            lblServerInfo.Location = new Point(760, 20);
+            lblServerInfo.Location = new Point(866, 19);
             lblServerInfo.Name = "lblServerInfo";
-            lblServerInfo.Size = new Size(193, 23);
+            lblServerInfo.Size = new Size(78, 23);
             lblServerInfo.TabIndex = 3;
-            lblServerInfo.Text = "Ping: 14ms | Online: 242";
-            lblServerInfo.Click += lblPing_Click;
+            lblServerInfo.Text = "Online: 0";
             // 
             // lblPlayerName
             // 
@@ -91,9 +90,8 @@ namespace Client.Forms
             lblPlayerName.ForeColor = Color.DeepSkyBlue;
             lblPlayerName.Location = new Point(145, 19);
             lblPlayerName.Name = "lblPlayerName";
-            lblPlayerName.Size = new Size(107, 23);
+            lblPlayerName.Size = new Size(0, 23);
             lblPlayerName.TabIndex = 2;
-            lblPlayerName.Text = "Namdeptrai";
             // 
             // lblPlayerTitle
             // 
@@ -121,7 +119,7 @@ namespace Client.Forms
             pnlRightBar.BackColor = Color.FromArgb(42, 44, 48);
             pnlRightBar.Controls.Add(btnJoinRoom);
             pnlRightBar.Controls.Add(btnCreateRoom);
-            pnlRightBar.Controls.Add(lblRoomStats);
+            pnlRightBar.Controls.Add(lblStats);
             pnlRightBar.Controls.Add(lblActionTitle);
             pnlRightBar.Dock = DockStyle.Right;
             pnlRightBar.Location = new Point(805, 60);
@@ -157,16 +155,15 @@ namespace Client.Forms
             btnCreateRoom.Text = "TẠO PHÒNG MỚI";
             btnCreateRoom.UseVisualStyleBackColor = false;
             // 
-            // lblRoomStats
+            // lblStats
             // 
-            lblRoomStats.AutoSize = true;
-            lblRoomStats.ForeColor = Color.DarkGray;
-            lblRoomStats.Location = new Point(21, 75);
-            lblRoomStats.Name = "lblRoomStats";
-            lblRoomStats.Size = new Size(146, 69);
-            lblRoomStats.TabIndex = 1;
-            lblRoomStats.Text = "Phòng trống: 1\nĐang chờ ghép: 2\nĐang thi đấu: 2";
-            lblRoomStats.Click += lblStats_Click;
+            lblStats.AutoSize = true;
+            lblStats.ForeColor = Color.DarkGray;
+            lblStats.Location = new Point(21, 75);
+            lblStats.Name = "lblStats";
+            lblStats.Size = new Size(146, 69);
+            lblStats.TabIndex = 1;
+            lblStats.Text = "Phòng trống: 0\nĐang chờ ghép: 0\nĐang thi đấu: 0";
             // 
             // lblActionTitle
             // 
@@ -181,7 +178,6 @@ namespace Client.Forms
             // pnlMain
             // 
             pnlMain.Controls.Add(dgvRooms);
-            pnlMain.Controls.Add(lblListDesc);
             pnlMain.Controls.Add(lblListTitle);
             pnlMain.Dock = DockStyle.Fill;
             pnlMain.Location = new Point(0, 60);
@@ -200,25 +196,25 @@ namespace Client.Forms
             dgvRooms.BorderStyle = BorderStyle.None;
             dgvRooms.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
             dgvRooms.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.Single;
-            dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle3.BackColor = Color.FromArgb(42, 44, 48);
-            dataGridViewCellStyle3.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
-            dataGridViewCellStyle3.ForeColor = Color.White;
-            dataGridViewCellStyle3.SelectionBackColor = Color.FromArgb(42, 44, 48);
-            dataGridViewCellStyle3.SelectionForeColor = Color.White;
-            dataGridViewCellStyle3.WrapMode = DataGridViewTriState.True;
-            dgvRooms.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle3;
+            dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle1.BackColor = Color.FromArgb(42, 44, 48);
+            dataGridViewCellStyle1.Font = new Font("Segoe UI", 10F);
+            dataGridViewCellStyle1.ForeColor = Color.White;
+            dataGridViewCellStyle1.SelectionBackColor = Color.FromArgb(42, 44, 48);
+            dataGridViewCellStyle1.SelectionForeColor = Color.White;
+            dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
+            dgvRooms.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             dgvRooms.ColumnHeadersHeight = 45;
             dgvRooms.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             dgvRooms.Columns.AddRange(new DataGridViewColumn[] { colRoomId, colRoomName, colPlayerCount, colStatus });
-            dataGridViewCellStyle4.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle4.BackColor = Color.FromArgb(34, 36, 40);
-            dataGridViewCellStyle4.Font = new Font("Segoe UI", 10F);
-            dataGridViewCellStyle4.ForeColor = Color.White;
-            dataGridViewCellStyle4.SelectionBackColor = Color.FromArgb(50, 52, 56);
-            dataGridViewCellStyle4.SelectionForeColor = Color.White;
-            dataGridViewCellStyle4.WrapMode = DataGridViewTriState.False;
-            dgvRooms.DefaultCellStyle = dataGridViewCellStyle4;
+            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle2.BackColor = Color.FromArgb(34, 36, 40);
+            dataGridViewCellStyle2.Font = new Font("Segoe UI", 10F);
+            dataGridViewCellStyle2.ForeColor = Color.White;
+            dataGridViewCellStyle2.SelectionBackColor = Color.FromArgb(50, 52, 56);
+            dataGridViewCellStyle2.SelectionForeColor = Color.White;
+            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.False;
+            dgvRooms.DefaultCellStyle = dataGridViewCellStyle2;
             dgvRooms.EnableHeadersVisualStyles = false;
             dgvRooms.GridColor = Color.FromArgb(60, 60, 60);
             dgvRooms.Location = new Point(30, 80);
@@ -230,6 +226,7 @@ namespace Client.Forms
             dgvRooms.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dgvRooms.Size = new Size(745, 520);
             dgvRooms.TabIndex = 2;
+            dgvRooms.CellContentClick += dgvRooms_CellContentClick;
             // 
             // colRoomId
             // 
@@ -262,18 +259,6 @@ namespace Client.Forms
             colStatus.MinimumWidth = 6;
             colStatus.Name = "colStatus";
             colStatus.ReadOnly = true;
-            // 
-            // lblListDesc
-            // 
-            lblListDesc.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            lblListDesc.AutoSize = true;
-            lblListDesc.ForeColor = Color.Gray;
-            lblListDesc.Location = new Point(551, 33);
-            lblListDesc.Name = "lblListDesc";
-            lblListDesc.Size = new Size(224, 23);
-            lblListDesc.TabIndex = 1;
-            lblListDesc.Text = "Hiển thị 5 phòng hoạt động";
-            lblListDesc.Click += lblListDesc_Click;
             // 
             // lblListTitle
             // 
@@ -318,23 +303,22 @@ namespace Client.Forms
         private System.Windows.Forms.Label lblConnection;
         private System.Windows.Forms.Label lblPlayerTitle;
         private System.Windows.Forms.Label lblPlayerName;
-        private System.Windows.Forms.Label lblServerInfo;
         private System.Windows.Forms.Button btnExitGame;
 
         private System.Windows.Forms.Panel pnlRightBar;
         private System.Windows.Forms.Label lblActionTitle;
-        private System.Windows.Forms.Label lblRoomStats;
+        private System.Windows.Forms.Label lblStats;
         private System.Windows.Forms.Button btnCreateRoom;
         private System.Windows.Forms.Button btnJoinRoom;
 
         private System.Windows.Forms.Panel pnlMain;
         private System.Windows.Forms.Label lblListTitle;
-        private System.Windows.Forms.Label lblListDesc;
         private System.Windows.Forms.DataGridView dgvRooms;
 
         private System.Windows.Forms.DataGridViewTextBoxColumn colRoomId;
         private System.Windows.Forms.DataGridViewTextBoxColumn colRoomName;
         private System.Windows.Forms.DataGridViewTextBoxColumn colPlayerCount;
         private System.Windows.Forms.DataGridViewTextBoxColumn colStatus;
+        private Label lblServerInfo;
     }
 }

@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq; // [ĐÃ THÊM] Bắt buộc phải có thư viện này để dùng .Select()
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using CaroGame.Protocol;
+using CaroGame.Protocol.Messages;
 using Server.Config;
 using Server.Managers;
 using Server.Utils;
@@ -19,12 +21,12 @@ namespace Server.Network
 
         private readonly ConnectionManager _connectionManager = new();
 
-        // [THÊM MỚI] Khai báo MatchManager để xử lý logic Thắng/Thua/Luật chơi
+        // Khai báo MatchManager để xử lý logic Thắng/Thua/Luật chơi
         private readonly MatchManager _matchManager = new();
+        private readonly RoomManager _roomManager = new();
 
+        public RoomManager RoomManager => _roomManager;
         public ConnectionManager ConnectionManager => _connectionManager;
-
-        // [THÊM MỚI] Getter cho MatchManager (sau này dùng cho RoomManager móc nối qua)
         public MatchManager MatchManager => _matchManager;
 
         public void Start(ServerConfig config)
@@ -61,7 +63,7 @@ namespace Server.Network
                     _ = Task.Run(() => NetworkHandler.ListenForMessagesAsync(
                         session,
                         OnMessageReceivedAsync,
-                        OnClientDisconnected,
+                        OnClientDisconnected, // Đã khớp với hàm bên dưới
                         cancellationToken
                     ), cancellationToken);
                 }
@@ -84,54 +86,133 @@ namespace Server.Network
         {
             Logger.Debug($"Nhận Message từ {session.SessionId}: Type={message.Type}, Sender={message.SenderId}");
 
-            
+            // =======================================================
+            // XỬ LÝ LỆNH TỪ CLIENT KHI BẤM "TẠO PHÒNG" HOẶC "LOGIN"
+            // =======================================================
+            if (message.Type == MessageType.Login)
+            {
+                await BroadcastLobbyStateAsync();
+                return; // Có thể return hoặc để code chạy tiếp xuống dưới
+            }
+            if (message.Type == MessageType.Request && message is RequestMessage reqMsg)
+            {
+                // Trích xuất thông tin người gửi
+                string playerId = session.SessionId.ToString();
+                string playerName = reqMsg.SenderId;
+
+                if (reqMsg.Action == "CreateRoom")
+                {
+                    // 1. Tạo phòng mới
+                    var newRoom = _roomManager.CreateRoom(reqMsg.Data);
+
+                    // 2. Ép người tạo phòng phải bước vào chính phòng đó
+                    Player creator = new Player(playerId, playerName);
+                    _roomManager.JoinRoom(newRoom.RoomId, creator);
+
+                    // 3. Cập nhật sảnh (lúc này phòng sẽ hiện 1/2)
+                    await BroadcastLobbyStateAsync();
+                }
+                else if (reqMsg.Action == "JoinRoom")
+                {
+                    string targetRoomId = reqMsg.Data; // Client gửi lên Mã Phòng
+
+                    // 1. Tạo đối tượng Player cho người xin vào
+                    Player joiningPlayer = new Player(playerId, playerName);
+
+                    // 2. Thử cho người chơi vào phòng
+                    bool success = _roomManager.JoinRoom(targetRoomId, joiningPlayer);
+
+                    if (success)
+                    {
+                        // 3. Nếu vào thành công, kiểm tra xem phòng đã đủ 2 người chưa
+                        if (_roomManager.CanStartGame(targetRoomId))
+                        {
+                            // Khóa phòng lại thành trạng thái "Đang chơi"
+                            _roomManager.SetPlaying(targetRoomId, true);
+
+                            // (Phần tạo trận đấu của MatchManager sẽ được móc nối ở đây sau)
+                        }
+
+                        // 4. Phát sóng cập nhật Sảnh (lúc này phòng sẽ hiện 2/2 và đổi màu Đang chơi)
+                        await BroadcastLobbyStateAsync();
+                    }
+                    else
+                    {
+                        Logger.Warn($"[ROOM] {playerName} không thể tham gia phòng {targetRoomId} (Phòng đầy hoặc lỗi).");
+                    }
+                }
+                else if (reqMsg.Action == "LeaveRoom")
+                {
+                    // 1. Tìm xem người chơi này đang ngồi ở phòng nào
+                    var room = _roomManager.FindPlayerRoom(playerId);
+
+                    if (room != null)
+                    {
+                        // 2. Trục xuất người chơi khỏi phòng
+                        // (Hàm LeaveRoom của bạn đã tự động xóa phòng nếu hết người)
+                        _roomManager.LeaveRoom(room.RoomId, playerId);
+
+                        // 3. Nếu phòng chưa bị xóa (vẫn còn 1 người), trả lại trạng thái Đang chờ
+                        if (_roomManager.RoomExists(room.RoomId))
+                        {
+                            _roomManager.SetPlaying(room.RoomId, false);
+                        }
+
+                        // 4. Phát sóng để làm mới bảng của tất cả mọi người
+                        await BroadcastLobbyStateAsync();
+                    }
+                }
+                else if (reqMsg.Action == "RefreshLobby")
+                {
+                    await BroadcastLobbyStateAsync();
+                }
+
+                return; // Xử lý xong Request thì thoát nhánh này
+            }
+
+            // =======================================================
+            // XỬ LÝ NƯỚC ĐI (MOVE) TRONG GAME
+            // =======================================================
             if (message.Type == MessageType.Move && message is MoveMessage moveMsg)
             {
                 string playerId = session.SessionId.ToString();
-
-                // 1. Tìm trận đấu mà Client này đang ngồi
                 var currentMatch = _matchManager.FindPlayerMatch(playerId);
 
-                // TEST: NẾU CHƯA CÓ TRẬN ĐẤU 
-                // TEST: NẾU CHƯA CÓ TRẬN ĐẤU 
                 if (currentMatch == null)
                 {
-                    // 1. Phát tin đồng bộ tên GIẢ LẬP để test BƯỚC 3
+                    // Giả lập tạo trận đấu cho 1 người test (Đối thủ ảo)
+                    var testPlayerX = new Player(Guid.NewGuid().ToString(), "Nam_Test");
+                    var testPlayerO = new Player(Guid.NewGuid().ToString(), "Minh_Bot");
+
+                    currentMatch = _matchManager.CreateMatch("TEST_ROOM", testPlayerX, testPlayerO);
+                    currentMatch?.Start();
+
                     var syncMsg = new GameSyncMessage
                     {
-                        PlayerXName = "Nam123",
-                        PlayerOName = "Minh456",
-                        MySymbol = "X",             // Giả lập Client test này đang cầm cờ X
-                        CurrentTurnName = "Nam123"  // Lượt đầu tiên là của X
+                        PlayerXName = testPlayerX.PlayerName,
+                        PlayerOName = testPlayerO.PlayerName,
+                        MySymbol = "X",
+                        CurrentTurnName = testPlayerX.PlayerName
                     };
-                    await session.SendAsync(syncMsg);
 
-                    // 2. Trả thẳng nước đi về cho Client tự vẽ X
-                    await session.SendAsync(moveMsg);
-                    return;
+                    await session.SendAsync(syncMsg);
                 }
 
                 if (currentMatch != null)
                 {
-                    // 2. Thẩm định nước đi (Hàm MakeMove tự động kiểm tra lượt, vị trí, ô trống)
                     bool isMoveValid = _matchManager.MakeMove(currentMatch.MatchId, playerId, moveMsg.Row, moveMsg.Col);
 
                     if (isMoveValid)
                     {
-                        // 3. Nếu hợp lệ -> Lấy Session của 2 người chơi để thông báo
                         Guid sessionX = Guid.Parse(currentMatch.PlayerX.PlayerId);
                         Guid sessionO = Guid.Parse(currentMatch.PlayerO.PlayerId);
 
                         ClientSession? clientX = _connectionManager.Get(sessionX);
                         ClientSession? clientO = _connectionManager.Get(sessionO);
 
-                        // Gửi thẳng đối tượng MoveMessage (mạng sẽ tự Pack lại thành JSON/Bytes)
                         if (clientX != null) await clientX.SendAsync(moveMsg);
-
-                        // Không gửi 2 lần nếu test 1 mình (sessionX == sessionO)
                         if (clientO != null && sessionX != sessionO) await clientO.SendAsync(moveMsg);
 
-                        // 4. Kiểm tra xem nước đi vừa rồi có làm trận đấu kết thúc không
                         if (currentMatch.IsFinished())
                         {
                             var gameOverMsg = new GameOverMessage();
@@ -143,14 +224,12 @@ namespace Server.Network
                             else
                             {
                                 gameOverMsg.ResultType = "Win";
-                                // Xác định ai là người chiến thắng
                                 var winner = currentMatch.WinnerId == currentMatch.PlayerX.PlayerId
                                              ? currentMatch.PlayerX
                                              : currentMatch.PlayerO;
                                 gameOverMsg.WinnerName = winner.PlayerName;
                             }
 
-                            // Gửi thông báo kết thúc cho cả phòng
                             if (clientX != null) await clientX.SendAsync(gameOverMsg);
                             if (clientO != null && sessionX != sessionO) await clientO.SendAsync(gameOverMsg);
                         }
@@ -160,12 +239,12 @@ namespace Server.Network
                         Logger.Warn($"[Game] Client {playerId} gửi nước đi không hợp lệ!");
                     }
                 }
-
-                // Xử lý xong MoveMessage thì thoát hàm, không chạy xuống phần phản hồi mẫu nữa
                 return;
             }
 
-           
+            // =======================================================
+            // TRẢ LỜI MẶC ĐỊNH NẾU KHÔNG PHẢI CÁC LOẠI TRÊN
+            // =======================================================
             ResponseMessage response = new ResponseMessage
             {
                 SenderId = "Server",
@@ -177,9 +256,30 @@ namespace Server.Network
             await session.SendAsync(response);
         }
 
-        private void OnClientDisconnected(ClientSession session)
+        // [ĐÃ SỬA] Đưa hàm này vào đúng vị trí bên trong class và thêm async
+        private async void OnClientDisconnected(ClientSession session)
         {
             _connectionManager.Remove(session.SessionId);
+
+            // 👉 BỔ SUNG: Dọn dẹp phòng nếu người này đang trong Game mà bị rớt mạng
+            string disconnectedPlayerId = session.SessionId.ToString();
+            var currentRoom = _roomManager.FindPlayerRoom(disconnectedPlayerId);
+
+            if (currentRoom != null)
+            {
+                // Trục xuất người chơi khỏi phòng
+                // (Hàm LeaveRoom của bạn đã có sẵn logic: tự xóa phòng nếu số người = 0)
+                _roomManager.LeaveRoom(currentRoom.RoomId, disconnectedPlayerId);
+
+                // Nếu phòng vẫn chưa bị xóa (tức là còn người chơi kia ở lại), 
+                // thì chuyển phòng đó về trạng thái "Đang chờ" (IsPlaying = false)
+                if (_roomManager.RoomExists(currentRoom.RoomId))
+                {
+                    _roomManager.SetPlaying(currentRoom.RoomId, false);
+                }
+            }
+            // Tự động phát dữ liệu số lượng online mới nhất (và danh sách phòng vừa được dọn dẹp) cho các Client khác
+            await BroadcastLobbyStateAsync();
         }
 
         public void Stop()
@@ -191,6 +291,32 @@ namespace Server.Network
             _listener?.Stop();
 
             Logger.Warn("Server đã dừng hoạt động.");
+        }
+
+        // Hàm phát dữ liệu cho tất cả Client
+        private async Task BroadcastLobbyStateAsync()
+        {
+            var lobbyState = new LobbyStateDto
+            {
+                OnlineCount = _connectionManager.Count,
+                Rooms = _roomManager.GetRooms().Select(r => new RoomInfo
+                {
+                    RoomId = r.RoomId,
+                    RoomName = r.RoomName,
+                    CurrentPlayers = r.Players.Count,
+                    MaxPlayers = r.MaxPlayers,
+                    IsPlaying = r.IsPlaying
+                }).ToList()
+            };
+
+            var response = new ResponseMessage
+            {
+                SenderId = "Server",
+                Success = true,
+                Data = System.Text.Json.JsonSerializer.Serialize(lobbyState)
+            };
+
+            await _connectionManager.BroadcastAsync(response);
         }
     }
 }

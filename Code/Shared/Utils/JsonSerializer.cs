@@ -1,5 +1,7 @@
 using System;
 using System.Text.Json;
+using CaroGame.Protocol.Messages;
+
 
 namespace CaroGame.Protocol
 {
@@ -44,6 +46,8 @@ namespace CaroGame.Protocol
                 case MessageType.Error:
                     return System.Text.Json.JsonSerializer.Deserialize<ErrorMessage>(json, OPTIONS) ?? throw new InvalidOperationException("Deserialize ErrorMessage returned null.");
 
+                case MessageType.Request:
+                    return System.Text.Json.JsonSerializer.Deserialize<RequestMessage>(json, OPTIONS);
                 default:
                     throw new NotSupportedException("Chưa hỗ trợ deserialize cho MessageType: " + type);
             }

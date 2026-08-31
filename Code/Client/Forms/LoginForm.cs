@@ -27,10 +27,13 @@ namespace Client.Forms
             _clientConnection.OnMessageReceived += XyLyKetQuaLogin;
 
             // Xử lý lỗi mạng
-            _clientConnection.OnError += (ex) => {
+            _clientConnection.OnError += (ex) =>
+            {
                 if (this.InvokeRequired)
                 {
-                    this.Invoke(new Action(() => {
+                    // 👉 ĐỔI SANG BeginInvoke ĐỂ BẢO VỆ LUỒNG GIAO DIỆN KHỎI DEADLOCK
+                    this.BeginInvoke(new Action(() =>
+                    {
                         MessageBox.Show("Lỗi mạng: " + ex.Message, "Lỗi kết nối", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         btnEnterLobby.Enabled = true;
                         btnEnterLobby.Text = "VÀO SẢNH CHỜ";
@@ -43,7 +46,8 @@ namespace Client.Forms
         {
             if (this.InvokeRequired)
             {
-                this.Invoke(new Action(() => XyLyKetQuaLogin(message)));
+                // 👉 ĐỔI SANG BeginInvoke ĐỂ FORM LOGIN KHÔNG BỊ TREO KHI NHẬN TIN
+                this.BeginInvoke(new Action(() => XyLyKetQuaLogin(message)));
                 return;
             }
 
@@ -53,6 +57,10 @@ namespace Client.Forms
                 if (res.Success)
                 {
                     string playerName = txtPlayerName.Text.Trim();
+
+                    // 👉 DÒNG CODE QUAN TRỌNG NHẤT: BỊT TAI LOGIN FORM LẠI!
+                    // Hủy lắng nghe tin nhắn để nó không tranh chấp dữ liệu với LobbyForm nữa
+                    _clientConnection.OnMessageReceived -= XyLyKetQuaLogin;
 
                     LobbyForm formLobby = new LobbyForm(playerName, _clientConnection);
                     formLobby.FormClosed += (s, args) => this.Close();
@@ -112,6 +120,11 @@ namespace Client.Forms
         private void btnExit_Click(object? sender, EventArgs e)
         {
             Application.Exit();
+        }
+
+        private void LoginForm_Load_1(object sender, EventArgs e)
+        {
+            // Cứ để nguyên hàm trống này, tránh lỗi file Designer nếu bạn lỡ click đúp trên màn hình kéo thả.
         }
     }
 }
