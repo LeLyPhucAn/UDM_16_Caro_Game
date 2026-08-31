@@ -4,6 +4,7 @@ using CaroGame.Protocol.Messages.Room;
 using CaroGame.Protocol.Messages.Game;
 using CaroGame.Protocol.Messages.History;
 using CaroGame.Protocol.Messages.Response;
+using CaroGame.Protocol.Messages.System;
 
 namespace CaroGame.Protocol.Utils
 {
@@ -149,6 +150,13 @@ namespace CaroGame.Protocol.Utils
 
                 case MessageType.Error:
                     return System.Text.Json.JsonSerializer.Deserialize<ErrorMessage>(json, OPTIONS);
+
+                // ===== System Messages =====
+                case MessageType.Ping:
+                    return System.Text.Json.JsonSerializer.Deserialize<PingMessage>(json, OPTIONS);
+
+                case MessageType.Pong:
+                    return System.Text.Json.JsonSerializer.Deserialize<PongMessage>(json, OPTIONS);
 
                 default:
                     throw new NotSupportedException("Chưa hỗ trợ deserialize cho MessageType: " + type);

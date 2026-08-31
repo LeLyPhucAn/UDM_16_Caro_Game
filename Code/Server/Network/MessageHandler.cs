@@ -5,6 +5,7 @@ using CaroGame.Protocol.Messages;
 using CaroGame.Protocol.Messages.Room;
 using CaroGame.Protocol.Messages.Game;
 using CaroGame.Protocol.Messages.History;
+using CaroGame.Protocol.Messages.System;
 using CaroGame.Protocol.Messages.Response;
 using Shared.Models;
 using Server.Managers;
@@ -74,6 +75,11 @@ public class MessageHandler
                 case MessageType.HistoryRequest:
                     if (message is HistoryRequestMessage historyReq)
                         await HandleHistoryRequestAsync(session, historyReq);
+                    break;
+
+                case MessageType.Pong:
+                    if (message is PongMessage)
+                        HandlePongMessage(session);
                     break;
 
                 default:
@@ -234,5 +240,11 @@ public class MessageHandler
             }
         }
         await session.SendAsync(response);
+    }
+
+    private void HandlePongMessage(ClientSession session)
+    {
+        // Cập nhật thời gian nhận Pong cuối cùng
+        session.LastPongTime = DateTime.Now;
     }
 }

@@ -27,13 +27,22 @@ namespace Server.Network
     private readonly RoomManager _roomManager = new();
     private readonly MatchManager _matchManager = new();
     private readonly MessageHandler _messageHandler;
+    private readonly ConnectionStateManager _connectionStateManager;
+    private readonly NetworkDiagnostics _networkDiagnostics;
 
     public TcpServer()
     {
         _messageHandler = new MessageHandler(_userService, _roomManager, _matchManager, _connectionManager);
         
+        // Khởi tạo các Manager cho Diagnostics và Heartbeat
+        _connectionStateManager = new ConnectionStateManager(_connectionManager);
+        _networkDiagnostics = new NetworkDiagnostics();
+
         // Đăng ký sự kiện xử thua do hết giờ từ MatchManager
         _matchManager.OnMatchTimeout += HandleMatchTimeout;
+        
+        // Lắng nghe sự kiện ngắt kết nối chủ động từ Heartbeat
+        NetworkEvents.OnClientDisconnected += OnClientDisconnected;
     }
 
     private void HandleMatchTimeout(Match match, string winnerId, string winnerName)

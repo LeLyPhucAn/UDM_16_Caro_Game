@@ -29,5 +29,9 @@ namespace CaroGame.Protocol.Messages
         // ===== Response Messages (Task 1) =====
         Response,
         Error,
+
+        // ===== System / Network Messages =====
+        Ping,
+        Pong,
     }
 }
