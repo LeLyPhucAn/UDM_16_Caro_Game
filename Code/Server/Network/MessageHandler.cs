@@ -150,6 +150,37 @@ public class MessageHandler
                 {
                     _matchManager.StartMatch(match.MatchId);
                     Logger.Info($"[Match] Đã tạo và bắt đầu trận đấu {match.MatchId} cho phòng {room.RoomId}");
+                    
+                    // Phát GameStateMessage cho người chơi 1 (X)
+                    var gameStateX = new GameStateMessage
+                    {
+                        RoomId = room.RoomId,
+                        BoardState = string.Empty, // Bàn cờ trống lúc mới bắt đầu
+                        BoardSize = 15,
+                        CurrentPlayerId = match.CurrentTurn == CellState.X ? room.Players[0].Id : room.Players[1].Id,
+                        CurrentTurnName = match.CurrentTurn == CellState.X ? room.Players[0].Username : room.Players[1].Username,
+                        PlayerXName = room.Players[0].Username,
+                        PlayerOName = room.Players[1].Username,
+                        Status = "Playing",
+                        MySymbol = "X"
+                    };
+                    
+                    // Phát GameStateMessage cho người chơi 2 (O)
+                    var gameStateO = new GameStateMessage
+                    {
+                        RoomId = room.RoomId,
+                        BoardState = string.Empty,
+                        BoardSize = 15,
+                        CurrentPlayerId = match.CurrentTurn == CellState.X ? room.Players[0].Id : room.Players[1].Id,
+                        CurrentTurnName = match.CurrentTurn == CellState.X ? room.Players[0].Username : room.Players[1].Username,
+                        PlayerXName = room.Players[0].Username,
+                        PlayerOName = room.Players[1].Username,
+                        Status = "Playing",
+                        MySymbol = "O"
+                    };
+                    
+                    await _connectionManager.SendMessageToClientAsync(room.Players[0].Id, gameStateX);
+                    await _connectionManager.SendMessageToClientAsync(room.Players[1].Id, gameStateO);
                 }
             }
         }

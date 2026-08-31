@@ -582,6 +582,35 @@ namespace Server.Managers
         }
 
         // =====================================================
+        // CANCEL MATCH
+        // =====================================================
+
+        public bool CancelMatch(
+            string matchId,
+            string reason)
+        {
+            Match? match =
+                GetMatch(matchId);
+
+            if (match == null)
+            {
+                return false;
+            }
+
+            lock (syncRoot)
+            {
+                match.State =
+                    MatchState.Finished;
+
+                match.WinnerId = null;
+
+                _matchService.CancelMatch(match.DbMatchId, reason);
+
+                return true;
+            }
+        }
+
+        // =====================================================
         // RESET MATCH
         // =====================================================
 

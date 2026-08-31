@@ -6,6 +6,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using CaroGame.Protocol;
 using CaroGame.Protocol.Messages;
+using CaroGame.Protocol.Messages.Game;
+using Shared.Models;
 using Server.Config;
 using Server.Managers;
 using Server.Services;
@@ -99,7 +101,41 @@ namespace Server.Network
 
         private void OnClientDisconnected(ClientSession session)
         {
+            string sessionId = session.SessionId.ToString();
+            
+            // Tìm xem người chơi này có đang trong phòng nào không
+            var room = _roomManager.FindPlayerRoom(sessionId);
+            if (room != null)
+            {
+                Logger.Info($"[Disconnect] Player {sessionId} ngắt kết nối đột ngột khi đang trong phòng {room.RoomId}.");
+                
+                // Nếu trận đấu đang diễn ra, hủy trận
+                var match = _matchManager.GetMatch(room.RoomId);
+                if (match != null && match.State == MatchState.Playing)
+                {
+                    _matchManager.CancelMatch(match.MatchId, "Opponent disconnected.");
+                    
+                    // Thông báo Game Result (Hủy) cho người còn lại
+                    var cancelMsg = new GameResultMessage
+                    {
+                        RoomId = match.MatchId,
+                        ResultType = "Cancel",
+                        WinnerId = string.Empty,
+                        WinningLine = new string[0]
+                    };
+                    
+                    // Gửi tới toàn bộ client trong Room (thực ra chỉ còn lại người kia vì người này disconnect rồi)
+                    _ = _connectionManager.BroadcastExceptAsync(session.SessionId, cancelMsg);
+                }
+
+                // Xóa người chơi khỏi phòng
+                _roomManager.LeaveRoom(room.RoomId, sessionId);
+            }
+
             _connectionManager.Remove(session.SessionId);
+            
+            // Broadcast LobbyState mới
+            _ = _connectionManager.BroadcastLobbyStateAsync();
         }
 
 
