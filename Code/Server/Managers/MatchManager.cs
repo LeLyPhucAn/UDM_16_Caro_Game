@@ -24,12 +24,13 @@ namespace Server.Managers
     public class MatchManager
     {
         private readonly Dictionary<string, Match> matches;
-
         private readonly GameRuleService ruleService;
-
         private readonly MatchService _matchService;
-
+        private readonly GameTimerService _timerService;
         private readonly object syncRoot;
+
+        // Event phát ra khi có người chơi bị xử thua do hết giờ. Args: (Match, WinnerId, WinnerName)
+        public event Action<Match, string, string>? OnMatchTimeout;
 
         public MatchManager()
         {
@@ -42,8 +43,34 @@ namespace Server.Managers
             _matchService =
                 new MatchService();
 
+            _timerService =
+                new GameTimerService(TimeSpan.FromSeconds(30), HandleTimeout);
+
             syncRoot =
                 new object();
+        }
+
+        private void HandleTimeout(string matchId)
+        {
+            var match = GetMatch(matchId);
+            if (match == null) return;
+
+            lock (syncRoot)
+            {
+                if (match.State != MatchState.Playing) return;
+
+                // Xử thua người đang tới lượt. Người kia thắng.
+                string winnerId = match.CurrentTurn == CellState.X ? match.PlayerO!.Id : match.PlayerX!.Id;
+                string winnerName = match.CurrentTurn == CellState.X ? match.PlayerO!.Username : match.PlayerX!.Username;
+
+                match.WinnerId = winnerId;
+                match.State = MatchState.Finished;
+                
+                string resultType = "Timeout";
+                _matchService.SaveMatchResult(match.DbMatchId, match.WinnerId == match.PlayerX?.Id ? 1 : 2, resultType);
+
+                OnMatchTimeout?.Invoke(match, winnerId, winnerName);
+            }
         }
 
         // =====================================================
@@ -334,6 +361,8 @@ namespace Server.Managers
                     match.DbMatchId = _matchService.StartNewMatch(1, 2); // Default mock for test
                 }
 
+                _timerService.StartOrReset(matchId);
+
                 return true;
             }
         }
@@ -474,6 +503,8 @@ namespace Server.Managers
                     string resultType = "Win";
                     _matchService.SaveMatchResult(match.DbMatchId, match.WinnerId == match.PlayerX?.Id ? 1 : (match.WinnerId == match.PlayerO?.Id ? 2 : null), resultType);
 
+                    _timerService.Stop(matchId);
+
                     return result;
                 }
 
@@ -490,6 +521,8 @@ namespace Server.Managers
                         MatchState.Finished;
 
                     _matchService.SaveMatchResult(match.DbMatchId, null, "Draw");
+
+                    _timerService.Stop(matchId);
 
                     return result;
                 }
@@ -509,6 +542,8 @@ namespace Server.Managers
                     match.CurrentTurn =
                         CellState.X;
                 }
+
+                _timerService.StartOrReset(matchId);
 
                 return result;
             }
@@ -577,6 +612,8 @@ namespace Server.Managers
 
                 _matchService.SaveMatchResult(match.DbMatchId, null, "Ended");
 
+                _timerService.Stop(matchId);
+
                 return true;
             }
         }
@@ -605,6 +642,8 @@ namespace Server.Managers
                 match.WinnerId = null;
 
                 _matchService.CancelMatch(match.DbMatchId, reason);
+
+                _timerService.Stop(matchId);
 
                 return true;
             }
@@ -641,6 +680,8 @@ namespace Server.Managers
                 match.State =
                     MatchState.Waiting;
 
+                _timerService.Stop(matchId);
+
                 return true;
             }
         }
@@ -660,6 +701,7 @@ namespace Server.Managers
 
             lock (syncRoot)
             {
+                _timerService.Stop(matchId);
                 return matches.Remove(
                     matchId);
             }

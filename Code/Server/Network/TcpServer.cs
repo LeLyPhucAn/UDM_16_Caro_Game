@@ -31,6 +31,33 @@ namespace Server.Network
     public TcpServer()
     {
         _messageHandler = new MessageHandler(_userService, _roomManager, _matchManager, _connectionManager);
+        
+        // Đăng ký sự kiện xử thua do hết giờ từ MatchManager
+        _matchManager.OnMatchTimeout += HandleMatchTimeout;
+    }
+
+    private void HandleMatchTimeout(Match match, string winnerId, string winnerName)
+    {
+        var timeoutMsg = new GameResultMessage
+        {
+            RoomId = match.MatchId,
+            ResultType = "Timeout",
+            WinnerId = winnerId,
+            WinnerName = winnerName,
+            WinningLine = new string[0]
+        };
+
+        // Gửi thông báo xử thua cho cả 2 người chơi
+        if (match.PlayerX != null)
+        {
+            _ = _connectionManager.SendMessageToClientAsync(match.PlayerX.Id, timeoutMsg);
+        }
+        if (match.PlayerO != null)
+        {
+            _ = _connectionManager.SendMessageToClientAsync(match.PlayerO.Id, timeoutMsg);
+        }
+        
+        Logger.Info($"[Timeout] Trận đấu {match.MatchId} kết thúc do một người quá giờ. Người thắng: {winnerId}");
     }
 
         public ConnectionManager ConnectionManager => _connectionManager;
