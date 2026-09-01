@@ -17,14 +17,22 @@ namespace Client.Forms
         private bool _isMyTurn = false; // Mặc định khóa bàn cờ, chờ Server cấp quyền
         private string _mySymbol = "";  // Sẽ được điền khi nhận GameSyncMessage
 
+        // 👉 BỔ SUNG: Khai báo đủ các biến lưu trữ
         private string _roomName;
-        // Yêu cầu truyền ClientConnection vào từ Lobby
-        public GameForm(ClientConnection clientConnection, string roomName)
+        private string _playerName;
+        private bool _isHost;
+
+        // 👉 CHỈNH SỬA: Hàm khởi tạo giờ đã nhận đủ 4 tham số
+        public GameForm(ClientConnection connection, string roomName, string playerName, bool isHost)
         {
             InitializeComponent();
 
-            _clientConnection = clientConnection;
+            // Gán dữ liệu vào các biến toàn cục của Form
+            _clientConnection = connection;
             _roomName = roomName;
+            _playerName = playerName;
+            _isHost = isHost;
+
             this.Text = "Caro Arena - " + _roomName;
 
             // Đăng ký nhận tin nhắn khi đang trong phòng chơi
@@ -198,7 +206,6 @@ namespace Client.Forms
             }
             else
             {
-                // 👉 BỔ SUNG: Gửi thông báo "Rời phòng" lên Server
                 var requestMsg = new RequestMessage
                 {
                     Type = MessageType.Request,

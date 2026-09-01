@@ -89,6 +89,11 @@ namespace Server.Network
             // =======================================================
             // XỬ LÝ LỆNH TỪ CLIENT KHI BẤM "TẠO PHÒNG" HOẶC "LOGIN"
             // =======================================================
+            if (!string.IsNullOrWhiteSpace(message.SenderId))
+            {
+                session.PlayerName = message.SenderId;
+            }
+
             if (message.Type == MessageType.Login)
             {
                 await BroadcastLobbyStateAsync();
@@ -111,6 +116,7 @@ namespace Server.Network
 
                     // 3. Cập nhật sảnh (lúc này phòng sẽ hiện 1/2)
                     await BroadcastLobbyStateAsync();
+                    await BroadcastRoomStateAsync(newRoom.RoomId);
                 }
                 else if (reqMsg.Action == "JoinRoom")
                 {
@@ -135,6 +141,7 @@ namespace Server.Network
 
                         // 4. Phát sóng cập nhật Sảnh (lúc này phòng sẽ hiện 2/2 và đổi màu Đang chơi)
                         await BroadcastLobbyStateAsync();
+                        await BroadcastRoomStateAsync(targetRoomId);
                     }
                     else
                     {
@@ -160,8 +167,32 @@ namespace Server.Network
 
                         // 4. Phát sóng để làm mới bảng của tất cả mọi người
                         await BroadcastLobbyStateAsync();
+                        await BroadcastRoomStateAsync(room.RoomId);
                     }
                 }
+                else if (message is RequestMessage req && req.Action == "StartGame")
+                {
+                    string targetRoomName = req.Data;
+
+                    // Đổi trạng thái phòng thành Đang chơi (IsPlaying = true)
+                    // (Giả sử RoomManager của bạn có hàm đánh dấu đang chơi, nếu không có bạn có thể bỏ qua dòng SetPlaying này tạm thời)
+                    // _roomManager.SetPlaying(targetRoomName, true); 
+
+                    var startGameResponse = new ResponseMessage
+                    {
+                        SenderId = "Server",
+                        Action = "StartGame",
+                        Success = true,
+                        Data = targetRoomName // Gửi kèm tên phòng để Client check
+                    };
+
+                    // Phát tín hiệu Bắt đầu cho toàn mạng (Client sẽ tự check xem có đúng phòng mình không)
+                    await _connectionManager.BroadcastAsync(startGameResponse);
+
+                    // Cập nhật lại Lobby để những người bên ngoài thấy phòng này đổi trạng thái thành "Đang thi đấu"
+                    await BroadcastLobbyStateAsync();
+                }
+
                 else if (reqMsg.Action == "RefreshLobby")
                 {
                     await BroadcastLobbyStateAsync();
@@ -296,9 +327,14 @@ namespace Server.Network
         // Hàm phát dữ liệu cho tất cả Client
         private async Task BroadcastLobbyStateAsync()
         {
+            // 👉 1. Lấy danh sách tên người chơi (Giả định ConnectionManager của bạn có hàm này)
+            // Nếu chưa có, bạn có thể vào ConnectionManager viết thêm 1 hàm trả về List tên từ Dictionary
+            List<string> onlinePlayers = _connectionManager.GetAllPlayerNames();
+
             var lobbyState = new LobbyStateDto
             {
                 OnlineCount = _connectionManager.Count,
+                OnlinePlayers = onlinePlayers, // 👉 2. Nạp mảng tên vào gói tin phát sóng
                 Rooms = _roomManager.GetRooms().Select(r => new RoomInfo
                 {
                     RoomId = r.RoomId,
@@ -316,6 +352,33 @@ namespace Server.Network
                 Data = System.Text.Json.JsonSerializer.Serialize(lobbyState)
             };
 
+            await _connectionManager.BroadcastAsync(response);
+        }
+
+        private async Task BroadcastRoomStateAsync(string roomId)
+        {
+            var room = _roomManager.GetRoom(roomId);
+            if (room == null) return;
+
+            // Đóng gói thông tin 2 người chơi hiện tại trong phòng
+            var roomState = new RoomStateDto
+            {
+                RoomId = room.RoomId,
+                RoomName = room.RoomName,
+                // Lấy tên người đầu tiên làm X, người thứ hai làm O (nếu có)
+                PlayerX = room.Players.Count > 0 ? room.Players[0].PlayerName : "",
+                PlayerO = room.Players.Count > 1 ? room.Players[1].PlayerName : ""
+            };
+
+            var response = new ResponseMessage
+            {
+                SenderId = "Server",
+                Action = "RoomStateUpdate", // Lệnh mới báo hiệu cập nhật phòng
+                Success = true,
+                Data = System.Text.Json.JsonSerializer.Serialize(roomState)
+            };
+
+            // Gửi cho tất cả Client (Client sẽ tự biết phòng nào cần cập nhật)
             await _connectionManager.BroadcastAsync(response);
         }
     }

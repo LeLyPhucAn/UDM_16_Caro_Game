@@ -124,4 +124,24 @@ public class ConnectionManager
 
         await BroadcastAsync(response);
     }
+
+    public List<string> GetAllPlayerNames()
+    {
+        List<string> playerNames = new List<string>();
+
+        foreach (var session in _clients.Values) // Thay _clients bằng tên biến Dictionary thực tế của bạn
+        {
+            if (!string.IsNullOrWhiteSpace(session.PlayerName))
+            {
+                playerNames.Add(session.PlayerName);
+            }
+            else
+            {
+                // Dự phòng khi vừa kết nối mà chưa kịp gửi tên
+                playerNames.Add("Khách_" + session.SessionId.ToString().Substring(0, 4));
+            }
+        }
+
+        return playerNames;
+    }
 }

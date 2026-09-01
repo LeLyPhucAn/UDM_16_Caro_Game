@@ -1,11 +1,12 @@
+using CaroGame.Protocol;
+using CaroGame.Protocol.Messages;
+using Client.Controls;
+using Client.Network;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Text.Json;
 using System.Windows.Forms;
-using Client.Network;
-using CaroGame.Protocol;
-using CaroGame.Protocol.Messages;
 
 
 namespace Client.Forms
@@ -160,6 +161,12 @@ namespace Client.Forms
                             {
                                 UpdateOnlineCount(lobbyState.OnlineCount);
                                 UpdateRoomList(lobbyState.Rooms);
+
+                                // 👉 3. GỌI CONTROL ĐỂ HIỂN THỊ DANH SÁCH NGƯỜI CHƠI LÊN MÀN HÌNH
+                                if (playerListControl1 != null)
+                                {
+                                    playerListControl1.UpdateList(lobbyState.OnlinePlayers);
+                                }
                             }
                         }
                     }
@@ -202,9 +209,9 @@ namespace Client.Forms
             });
 
             // Mở màn hình Game
-            GameForm gameForm = new GameForm(_clientConnection, roomName);
-            gameForm.FormClosed += (s, args) => this.Show();
-            gameForm.Show();
+            RoomForm roomForm = new RoomForm(_clientConnection, roomName, _playerName, true); // true = Chủ phòng
+            roomForm.FormClosed += (s, args) => this.Show();
+            roomForm.Show();
             this.Hide();
         }
 
@@ -239,15 +246,16 @@ namespace Client.Forms
                 Data = selectedRoomId // Gửi kèm Mã Phòng
             };
 
-            _ = Task.Run(async () => {
+            _ = Task.Run(async () =>
+            {
                 try { await _clientConnection.SendMessageAsync(requestMsg); }
                 catch (Exception ex) { Console.WriteLine(ex.Message); }
             });
 
             // 4. Chuyển sang màn hình thi đấu
-            GameForm gameForm = new GameForm(_clientConnection, selectedRoomName);
-            gameForm.FormClosed += (s, args) => this.Show();
-            gameForm.Show();
+            RoomForm roomForm = new RoomForm(_clientConnection, selectedRoomName, _playerName, false); // false = Khách
+            roomForm.FormClosed += (s, args) => this.Show();
+            roomForm.Show();
             this.Hide();
         }
 
@@ -268,6 +276,11 @@ namespace Client.Forms
         }
 
         private void dgvRooms_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+
+        }
+
+        private void playerListControl1_Load(object sender, EventArgs e)
         {
 
         }

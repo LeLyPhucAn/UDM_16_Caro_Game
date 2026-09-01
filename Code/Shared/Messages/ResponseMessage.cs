@@ -10,6 +10,8 @@ namespace CaroGame.Protocol
         public string ErrorMessage { get; set; }
         public string Data { get; set; }
 
+        public string Action { get; set; } = string.Empty;
+
         public ResponseMessage()
         {
             Type = MessageType.Response;

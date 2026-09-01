@@ -26,6 +26,7 @@ namespace Client.Forms
             lblPlayerTitle = new Label();
             lblConnection = new Label();
             pnlRightBar = new Panel();
+            playerListControl1 = new Client.Controls.PlayerListControl();
             btnJoinRoom = new Button();
             btnCreateRoom = new Button();
             lblStats = new Label();
@@ -117,6 +118,7 @@ namespace Client.Forms
             // pnlRightBar
             // 
             pnlRightBar.BackColor = Color.FromArgb(42, 44, 48);
+            pnlRightBar.Controls.Add(playerListControl1);
             pnlRightBar.Controls.Add(btnJoinRoom);
             pnlRightBar.Controls.Add(btnCreateRoom);
             pnlRightBar.Controls.Add(lblStats);
@@ -127,6 +129,17 @@ namespace Client.Forms
             pnlRightBar.Size = new Size(300, 633);
             pnlRightBar.TabIndex = 1;
             // 
+            // playerListControl1
+            // 
+            playerListControl1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Right;
+            playerListControl1.BackColor = Color.Black;
+            playerListControl1.ForeColor = Color.Black;
+            playerListControl1.Location = new Point(25, 159);
+            playerListControl1.Name = "playerListControl1";
+            playerListControl1.Size = new Size(250, 315);
+            playerListControl1.TabIndex = 3;
+            playerListControl1.Load += playerListControl1_Load;
+            // 
             // btnJoinRoom
             // 
             btnJoinRoom.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
@@ -134,7 +147,7 @@ namespace Client.Forms
             btnJoinRoom.FlatAppearance.BorderColor = Color.Gray;
             btnJoinRoom.FlatStyle = FlatStyle.Flat;
             btnJoinRoom.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
-            btnJoinRoom.Location = new Point(25, 540);
+            btnJoinRoom.Location = new Point(25, 562);
             btnJoinRoom.Name = "btnJoinRoom";
             btnJoinRoom.Size = new Size(250, 50);
             btnJoinRoom.TabIndex = 3;
@@ -148,7 +161,7 @@ namespace Client.Forms
             btnCreateRoom.FlatAppearance.BorderSize = 0;
             btnCreateRoom.FlatStyle = FlatStyle.Flat;
             btnCreateRoom.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
-            btnCreateRoom.Location = new Point(25, 475);
+            btnCreateRoom.Location = new Point(25, 506);
             btnCreateRoom.Name = "btnCreateRoom";
             btnCreateRoom.Size = new Size(250, 50);
             btnCreateRoom.TabIndex = 2;
@@ -320,5 +333,6 @@ namespace Client.Forms
         private System.Windows.Forms.DataGridViewTextBoxColumn colPlayerCount;
         private System.Windows.Forms.DataGridViewTextBoxColumn colStatus;
         private Label lblServerInfo;
+        private Controls.PlayerListControl playerListControl1;
     }
 }

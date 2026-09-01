@@ -14,7 +14,10 @@ namespace CaroGame.Protocol
     public class LobbyStateDto
     {
         public int OnlineCount { get; set; }
+
+        // Chứa danh sách tên người chơi
         public List<string> OnlinePlayers { get; set; } = new List<string>();
+
         public List<RoomInfo> Rooms { get; set; } = new List<RoomInfo>();
     }
 }
