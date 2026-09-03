@@ -17,6 +17,7 @@ namespace CaroGame.Protocol.Messages
         JoinRoom,
         LeaveRoom,
         Invite,
+        StartMatch,
 
         // ===== Game Messages =====
         Move,

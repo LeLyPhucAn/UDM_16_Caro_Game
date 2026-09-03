@@ -1,4 +1,4 @@
-﻿using CaroGame.Protocol;
+using CaroGame.Protocol;
 using CaroGame.Protocol.Messages; // Namespace chứa ResponseMessage và RoomStateDto
 using System;
 using System.Drawing;
@@ -120,10 +120,21 @@ namespace Client.Forms
                         }
                     }
                 }
-                else if (resMsg.Action == "StartGame")
+                else if (resMsg.Action == "StartGame" || message is GameStateMessage)
                 {
-                    if (resMsg.Data == this._roomName)
+                    if (message is GameStateMessage gameState && gameState.RoomId == this._roomName)
                     {
+                        _clientConnection.OnMessageReceived -= HandleRoomMessage;
+
+                        GameForm gameForm = new GameForm(_clientConnection, _roomName, _playerName, _isHost);
+                        gameForm.FormClosed += (s, args) => this.Close();
+
+                        this.Hide();
+                        gameForm.Show();
+                    }
+                    else if (resMsg != null && resMsg.Action == "StartGame" && resMsg.Data == this._roomName)
+                    {
+                        // Fallback for old protocol if any
                         _clientConnection.OnMessageReceived -= HandleRoomMessage;
 
                         GameForm gameForm = new GameForm(_clientConnection, _roomName, _playerName, _isHost);
@@ -142,12 +153,10 @@ namespace Client.Forms
             btnStartGame.Enabled = false;
 
             // Đóng gói yêu cầu Bắt đầu game
-            var request = new RequestMessage
+            var request = new CaroGame.Protocol.Messages.Room.StartMatchMessage
             {
-                Type = MessageType.Request,
                 SenderId = _playerName,
-                Action = "StartGame",
-                Data = _roomName // Gửi tên phòng lên để Server biết phòng nào đòi bắt đầu
+                RoomId = _roomName
             };
 
             _ = Task.Run(async () => {

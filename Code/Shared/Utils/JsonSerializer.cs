@@ -119,6 +119,9 @@ namespace CaroGame.Protocol.Utils
                 case MessageType.JoinRoom:
                     return System.Text.Json.JsonSerializer.Deserialize<JoinRoomMessage>(json, OPTIONS);
 
+                case MessageType.StartMatch:
+                    return System.Text.Json.JsonSerializer.Deserialize<StartMatchMessage>(json, OPTIONS);
+
                 case MessageType.LeaveRoom:
                     return System.Text.Json.JsonSerializer.Deserialize<LeaveRoomMessage>(json, OPTIONS);
 

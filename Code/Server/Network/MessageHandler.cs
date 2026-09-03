@@ -67,6 +67,11 @@ public class MessageHandler
                         await HandleLeaveRoomAsync(session, leaveRoomMsg);
                     break;
 
+                case MessageType.StartMatch:
+                    if (message is StartMatchMessage startMatchMsg)
+                        await HandleStartMatchAsync(session, startMatchMsg);
+                    break;
+
                 case MessageType.Move:
                     if (message is MoveMessage moveMsg)
                         await _gameRequestHandler.HandlePlayMoveAsync(session, moveMsg);
@@ -153,12 +158,24 @@ public class MessageHandler
             ErrorMessage = success ? string.Empty : "Không thể tham gia phòng. Phòng đã đầy hoặc không tồn tại."
         };
         await session.SendAsync(response);
+    }
 
-        if (success && _roomManager.CanStartGame(msg.RoomId))
+    private async Task HandleStartMatchAsync(ClientSession session, StartMatchMessage msg)
+    {
+        Logger.Info($"[StartMatch] Yêu cầu từ Session: {session.SessionId} bắt đầu phòng {msg.RoomId}");
+
+        if (_roomManager.CanStartGame(msg.RoomId))
         {
             var room = _roomManager.GetRoom(msg.RoomId);
             if (room != null && room.Players.Count == 2)
             {
+                // Verify that the sender is the host (Player 1)
+                if (room.Players[0].Id != session.SessionId.ToString())
+                {
+                    Logger.Warn($"[StartMatch] Từ chối: Session {session.SessionId} không phải chủ phòng {msg.RoomId}");
+                    return;
+                }
+
                 _roomManager.SetPlaying(room.RoomId, true);
                 var match = _matchManager.CreateMatch(room.RoomId, room.Players[0], room.Players[1]);
                 if (match != null)
@@ -166,20 +183,29 @@ public class MessageHandler
                     _matchManager.StartMatch(match.MatchId);
                     Logger.Info($"[Match] Đã tạo và bắt đầu trận đấu {match.MatchId} cho phòng {room.RoomId}");
 
-                    var gameStateX = new GameSyncMessage
+                    var gameStateX = new GameStateMessage
                     {
-                        PlayerXName = room.Players[0].Id, // 👉 Đã sửa thành .Id
-                        PlayerOName = room.Players[1].Id, // 👉 Đã sửa thành .Id
-                        CurrentTurnName = match.CurrentTurn == CellState.X ? room.Players[0].Id : room.Players[1].Id, // 👉 Đã sửa thành .Id
+                        RoomId = room.RoomId,
+                        BoardState = string.Empty, // Bàn cờ trống lúc mới bắt đầu
+                        BoardSize = 15,
+                        CurrentPlayerId = match.CurrentTurn == CellState.X ? room.Players[0].Id : room.Players[1].Id,
+                        CurrentTurnName = match.CurrentTurn == CellState.X ? room.Players[0].Username : room.Players[1].Username,
+                        PlayerXName = room.Players[0].Username,
+                        PlayerOName = room.Players[1].Username,
+                        Status = "Playing",
                         MySymbol = "X"
                     };
 
-                    // Phát GameSyncMessage cho người chơi 2 (O)
-                    var gameStateO = new GameSyncMessage
+                    var gameStateO = new GameStateMessage
                     {
-                        PlayerXName = room.Players[0].Id, // 👉 Đã sửa thành .Id
-                        PlayerOName = room.Players[1].Id, // 👉 Đã sửa thành .Id
-                        CurrentTurnName = match.CurrentTurn == CellState.X ? room.Players[0].Id : room.Players[1].Id, // 👉 Đã sửa thành .Id
+                        RoomId = room.RoomId,
+                        BoardState = string.Empty,
+                        BoardSize = 15,
+                        CurrentPlayerId = match.CurrentTurn == CellState.X ? room.Players[0].Id : room.Players[1].Id,
+                        CurrentTurnName = match.CurrentTurn == CellState.X ? room.Players[0].Username : room.Players[1].Username,
+                        PlayerXName = room.Players[0].Username,
+                        PlayerOName = room.Players[1].Username,
+                        Status = "Playing",
                         MySymbol = "O"
                     };
 

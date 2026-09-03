@@ -118,17 +118,17 @@ namespace Client.Forms
                 // ==========================================
                 // 1. XỬ LÝ LÚC VỪA VÀO PHÒNG
                 // ==========================================
-                if (message.Type == MessageType.GameSync && message is GameSyncMessage syncMsg)
+                if (message.Type == MessageType.GameState && message is GameStateMessage syncMsg)
                 {
                     // Cập nhật giao diện Label
                     lblPlayerX.Text = $"X: {syncMsg.PlayerXName}"; // Đã sửa tên label cho chuẩn
                     lblPlayerO.Text = $"O: {syncMsg.PlayerOName}";
 
-                    // Lấy cờ từ Server
+                    // Lưu ký hiệu của mình (X hoặc O)
                     _mySymbol = syncMsg.MySymbol;
 
-                    // Người cầm cờ X luôn được đi trước
-                    _isMyTurn = (_mySymbol == "X");
+                    // Kiểm tra lượt: Nếu tên CurrentTurnName trùng với tên mình thì mở khóa bàn cờ
+                    if (syncMsg.CurrentTurnName == _playerName) _isMyTurn = true;
 
                     // Cập nhật giao diện lượt đi ban đầu
                     lblPlayerX.Text = $"Lượt đi hiện tại: X ({syncMsg.CurrentTurnName})";
