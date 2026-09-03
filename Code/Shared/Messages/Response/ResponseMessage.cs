@@ -15,6 +15,7 @@ namespace CaroGame.Protocol.Messages.Response
         public bool Success { get; set; }
         public string ErrorMessage { get; set; }
         public string Data { get; set; }
+        public string Action { get; set; } = string.Empty;
 
         public ResponseMessage()
         {

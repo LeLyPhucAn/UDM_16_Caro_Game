@@ -15,6 +15,8 @@ public class ClientSession
 
     public TcpClient Client { get; }
 
+    public string PlayerName { get; set; } = string.Empty;
+
     public NetworkStream Stream { get; }
 
     public IPEndPoint? RemoteEndPoint { get; }

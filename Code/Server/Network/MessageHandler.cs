@@ -90,7 +90,7 @@ public class MessageHandler
         catch (Exception ex)
         {
             Logger.Error($"[Network] Lỗi nội bộ khi xử lý {message.Type} từ {session.SessionId}", ex);
-            
+
             ResponseMessage errorResponse = new ResponseMessage
             {
                 SenderId = "Server",
@@ -110,6 +110,7 @@ public class MessageHandler
 
         // Gọi logic nghiệp vụ từ UserService
         bool isValid = _userService.Login(loginMsg.Username, loginMsg.Password);
+        //bool isValid = true;
 
         // Chuẩn bị Response gửi trả Client
         ResponseMessage response = new ResponseMessage
@@ -141,7 +142,7 @@ public class MessageHandler
     private async Task HandleJoinRoomAsync(ClientSession session, JoinRoomMessage msg)
     {
         Logger.Info($"[JoinRoom] Yêu cầu từ Session: {session.SessionId} vào phòng {msg.RoomId}");
-        
+
         var player = new Player(session.SessionId.ToString(), "Player_" + session.SessionId.ToString().Substring(0, 4));
         bool success = _roomManager.JoinRoom(msg.RoomId, player);
 
@@ -164,35 +165,24 @@ public class MessageHandler
                 {
                     _matchManager.StartMatch(match.MatchId);
                     Logger.Info($"[Match] Đã tạo và bắt đầu trận đấu {match.MatchId} cho phòng {room.RoomId}");
-                    
-                    // Phát GameStateMessage cho người chơi 1 (X)
-                    var gameStateX = new GameStateMessage
+
+                    var gameStateX = new GameSyncMessage
                     {
-                        RoomId = room.RoomId,
-                        BoardState = string.Empty, // Bàn cờ trống lúc mới bắt đầu
-                        BoardSize = 15,
-                        CurrentPlayerId = match.CurrentTurn == CellState.X ? room.Players[0].Id : room.Players[1].Id,
-                        CurrentTurnName = match.CurrentTurn == CellState.X ? room.Players[0].Username : room.Players[1].Username,
-                        PlayerXName = room.Players[0].Username,
-                        PlayerOName = room.Players[1].Username,
-                        Status = "Playing",
+                        PlayerXName = room.Players[0].Id, // 👉 Đã sửa thành .Id
+                        PlayerOName = room.Players[1].Id, // 👉 Đã sửa thành .Id
+                        CurrentTurnName = match.CurrentTurn == CellState.X ? room.Players[0].Id : room.Players[1].Id, // 👉 Đã sửa thành .Id
                         MySymbol = "X"
                     };
-                    
-                    // Phát GameStateMessage cho người chơi 2 (O)
-                    var gameStateO = new GameStateMessage
+
+                    // Phát GameSyncMessage cho người chơi 2 (O)
+                    var gameStateO = new GameSyncMessage
                     {
-                        RoomId = room.RoomId,
-                        BoardState = string.Empty,
-                        BoardSize = 15,
-                        CurrentPlayerId = match.CurrentTurn == CellState.X ? room.Players[0].Id : room.Players[1].Id,
-                        CurrentTurnName = match.CurrentTurn == CellState.X ? room.Players[0].Username : room.Players[1].Username,
-                        PlayerXName = room.Players[0].Username,
-                        PlayerOName = room.Players[1].Username,
-                        Status = "Playing",
+                        PlayerXName = room.Players[0].Id, // 👉 Đã sửa thành .Id
+                        PlayerOName = room.Players[1].Id, // 👉 Đã sửa thành .Id
+                        CurrentTurnName = match.CurrentTurn == CellState.X ? room.Players[0].Id : room.Players[1].Id, // 👉 Đã sửa thành .Id
                         MySymbol = "O"
                     };
-                    
+
                     await _connectionManager.SendMessageToClientAsync(room.Players[0].Id, gameStateX);
                     await _connectionManager.SendMessageToClientAsync(room.Players[1].Id, gameStateO);
                 }
@@ -204,7 +194,7 @@ public class MessageHandler
     {
         Logger.Info($"[LeaveRoom] Yêu cầu từ Session: {session.SessionId} rời phòng {msg.RoomId}");
         bool success = _roomManager.LeaveRoom(msg.RoomId, session.SessionId.ToString());
-        
+
         var response = new ResponseMessage
         {
             SenderId = "Server",
@@ -217,7 +207,7 @@ public class MessageHandler
     private async Task HandleHistoryRequestAsync(ClientSession session, HistoryRequestMessage msg)
     {
         Logger.Info($"[HistoryRequest] User {msg.UserId} yêu cầu lịch sử đấu từ Session: {session.SessionId}");
-        
+
         // Gọi xuống DB thông qua MatchService
         var dt = _matchService.GetUserMatchHistory(msg.UserId);
 

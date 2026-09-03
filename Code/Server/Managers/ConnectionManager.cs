@@ -127,11 +127,11 @@ public class ConnectionManager
             .Select(c => c.SessionId.ToString()) // Tạm lấy SessionId làm tên nếu chưa lưu Username
             .ToList();
 
-        var lobbyData = new LobbyStateDto
+        var lobbyData = new Shared.Models.LobbyStateDto
         {
             OnlineCount = _clients.Count,
             OnlinePlayers = players,
-            Rooms = new List<RoomInfo>() // Sau này quản lý phòng thì điền vào đây
+            Rooms = new List<Shared.Models.RoomInfo>()// Sau này quản lý phòng thì điền vào đây
         };
 
         var response = new ResponseMessage
@@ -141,5 +141,25 @@ public class ConnectionManager
         };
 
         await BroadcastAsync(response);
+    }
+
+    public List<string> GetAllPlayerNames()
+    {
+        List<string> playerNames = new List<string>();
+
+        foreach (var session in _clients.Values) // Thay _clients bằng tên biến Dictionary thực tế của bạn
+        {
+            if (!string.IsNullOrWhiteSpace(session.PlayerName))
+            {
+                playerNames.Add(session.PlayerName);
+            }
+            else
+            {
+                // Dự phòng khi vừa kết nối mà chưa kịp gửi tên
+                playerNames.Add("Khách_" + session.SessionId.ToString().Substring(0, 4));
+            }
+        }
+
+        return playerNames;
     }
 }
