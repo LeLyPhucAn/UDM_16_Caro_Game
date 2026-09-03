@@ -1,9 +1,9 @@
 using System;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Client.Network;
-using CaroGame.Protocol;
+using CaroGame.Protocol.Messages;
+using CaroGame.Protocol.Messages.Response;
 
 namespace Client.Forms
 {
@@ -15,6 +15,7 @@ namespace Client.Forms
         {
             InitializeComponent();
             _clientConnection = new ClientConnection();
+
             btnEnterLobby.Click += btnEnterLobby_Click;
             this.Load += LoginForm_Load;
         }
@@ -26,17 +27,16 @@ namespace Client.Forms
             // Đăng ký sự kiện khi nhận được Message từ Server
             _clientConnection.OnMessageReceived += XyLyKetQuaLogin;
 
-            // Xử lý lỗi mạng
+            // Xử lý lỗi mạng an toàn với UI Thread
             _clientConnection.OnError += (ex) =>
             {
                 if (this.InvokeRequired)
                 {
-                    // 👉 ĐỔI SANG BeginInvoke ĐỂ BẢO VỆ LUỒNG GIAO DIỆN KHỎI DEADLOCK
                     this.BeginInvoke(new Action(() =>
                     {
                         MessageBox.Show("Lỗi mạng: " + ex.Message, "Lỗi kết nối", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         btnEnterLobby.Enabled = true;
-                        btnEnterLobby.Text = "VÀO SẢNH CHỜ";
+                        btnEnterLobby.Text = "ĐĂNG NHẬP"; // Đồng bộ chữ hiển thị
                     }));
                 }
             };
@@ -44,9 +44,9 @@ namespace Client.Forms
 
         private void XyLyKetQuaLogin(BaseMessage message)
         {
+            // Bọc toàn bộ hàm này vào UI thread để Form không bao giờ bị treo
             if (this.InvokeRequired)
             {
-                // 👉 ĐỔI SANG BeginInvoke ĐỂ FORM LOGIN KHÔNG BỊ TREO KHI NHẬN TIN
                 this.BeginInvoke(new Action(() => XyLyKetQuaLogin(message)));
                 return;
             }
@@ -58,8 +58,7 @@ namespace Client.Forms
                 {
                     string playerName = txtPlayerName.Text.Trim();
 
-                    // 👉 DÒNG CODE QUAN TRỌNG NHẤT: BỊT TAI LOGIN FORM LẠI!
-                    // Hủy lắng nghe tin nhắn để nó không tranh chấp dữ liệu với LobbyForm nữa
+                    // Hủy lắng nghe tin nhắn để không tranh chấp dữ liệu với LobbyForm
                     _clientConnection.OnMessageReceived -= XyLyKetQuaLogin;
 
                     LobbyForm formLobby = new LobbyForm(playerName, _clientConnection);
@@ -70,9 +69,10 @@ namespace Client.Forms
                 }
                 else
                 {
+                    // Lúc này gọi MessageBox hoàn toàn an toàn, Client không bị Server đá nữa
                     MessageBox.Show("Đăng nhập thất bại: " + res.ErrorMessage, "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     btnEnterLobby.Enabled = true;
-                    btnEnterLobby.Text = "VÀO SẢNH CHỜ";
+                    btnEnterLobby.Text = "ĐĂNG NHẬP"; // Đổi lại thành Đăng nhập cho khớp ảnh
                 }
             }
         }
@@ -98,7 +98,7 @@ namespace Client.Forms
                     await _clientConnection.ConnectToServer("127.0.0.1", 5000);
                 }
 
-                // 2. Tạo đối tượng LoginMessage chuẩn
+                // 2. Tạo đối tượng LoginMessage
                 LoginMessage loginMsg = new LoginMessage
                 {
                     Username = playerName,
@@ -106,14 +106,14 @@ namespace Client.Forms
                     SenderId = playerName
                 };
 
-                // 3. Gửi Message qua socket đã được đóng gói chuẩn 8 byte Header
+                // 3. Gửi Message đi
                 await _clientConnection.SendMessageAsync(loginMsg);
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Lỗi kết nối Server: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 btnEnterLobby.Enabled = true;
-                btnEnterLobby.Text = "VÀO SẢNH CHỜ";
+                btnEnterLobby.Text = "ĐĂNG NHẬP";
             }
         }
 
@@ -124,7 +124,7 @@ namespace Client.Forms
 
         private void LoginForm_Load_1(object sender, EventArgs e)
         {
-            // Cứ để nguyên hàm trống này, tránh lỗi file Designer nếu bạn lỡ click đúp trên màn hình kéo thả.
+            // Trống
         }
     }
 }

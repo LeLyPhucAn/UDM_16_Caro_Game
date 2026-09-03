@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Text.Json;
 using System.Windows.Forms;
+using CaroGame.Protocol.Messages.Game;
+using CaroGame.Protocol.Messages.Response;
 
 
 namespace Client.Forms

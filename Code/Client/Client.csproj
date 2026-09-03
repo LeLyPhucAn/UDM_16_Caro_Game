@@ -14,8 +14,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controls\" />
-    <Folder Include="Forms\" />
     <Folder Include="Managers\" />
     <Folder Include="Utils\" />
     <Folder Include="Services\" />

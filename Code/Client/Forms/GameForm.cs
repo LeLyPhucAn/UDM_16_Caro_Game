@@ -5,6 +5,8 @@ using Client.Network;       // Giao tiếp mạng
 using CaroGame.Protocol;    // Gói tin Protocol
 using CaroGame.Protocol.Messages;
 using Client.Controls;      // Dùng UserControl BoardControl
+using CaroGame.Protocol.Messages.Game;
+using CaroGame.Protocol.Messages.Response;
 
 namespace Client.Forms
 {
@@ -61,7 +63,7 @@ namespace Client.Forms
                 var moveMsg = new MoveMessage
                 {
                     Row = row,
-                    Col = col,
+                    Column = col,
                     Symbol = _mySymbol
                 };
 
@@ -138,7 +140,7 @@ namespace Client.Forms
                 else if (message.Type == MessageType.Move && message is MoveMessage moveMsg)
                 {
                     // Vẽ quân cờ lên UI thông qua BoardControl
-                    _boardControl.UpdateBoardUI(moveMsg.Row, moveMsg.Col, moveMsg.Symbol);
+                    _boardControl.UpdateBoardUI(moveMsg.Row, moveMsg.Column, moveMsg.Symbol);
 
                     // Đảo lượt nội bộ
                     _isMyTurn = (moveMsg.Symbol != _mySymbol);

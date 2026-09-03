@@ -9,24 +9,31 @@ namespace CaroGame.Protocol.Messages
     {
         Login,
 
-        // ===== Room / Lobby Messages (Task 1) =====
+        // 👉 [TASK 1] Bổ sung Type Generic cho các Request chung (StartGame, LeaveRoom...)
+        Request,
+
+        // ===== Room / Lobby Messages (Cấu trúc mới của Team) =====
         CreateRoom,
         JoinRoom,
         LeaveRoom,
         Invite,
 
-        // ===== Game Messages (Task 1) =====
+        // ===== Game Messages =====
         Move,
         Turn,
         GameState,
         GameResult,
         Timer,
 
+        // 👉 [TASK 1] Bổ sung Type cho Bàn cờ (GameForm)
+        GameSync,
+        GameOver,
+
         // ===== History Messages =====
         HistoryRequest,
         HistoryResponse,
 
-        // ===== Response Messages (Task 1) =====
+        // ===== Response Messages =====
         Response,
         Error,
 

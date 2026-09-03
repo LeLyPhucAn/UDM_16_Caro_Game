@@ -5,6 +5,8 @@ using System.Drawing;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Client.Network;
+using CaroGame.Protocol.Messages.Game;
+using CaroGame.Protocol.Messages.Response;
 
 namespace Client.Forms
 {
