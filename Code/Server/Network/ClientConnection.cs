@@ -10,9 +10,11 @@ namespace Client.Network
         public ConnectionStateManager StateManager { get; private set; }
 
         public event Action<string> OnMessageReceived;
-
-        // Sự kiện báo UI khi Server Disconnect
         public event Action OnServerDisconnected;
+
+        // Lưu thông tin để Reconnect
+        private string _lastIp;
+        private int _lastPort;
 
         public ClientConnection()
         {
@@ -28,26 +30,32 @@ namespace Client.Network
         {
             try
             {
-                // Quản lý Connecting
+                _lastIp = ip;
+                _lastPort = port;
                 StateManager.ChangeState(ConnectionState.Connecting);
 
-                await _networkService.ConnectAsync(ip, port);
+                // Timeout 5 giây tránh treo UI
+                await _networkService.ConnectAsync(ip, port, 5000);
 
-                // Quản lý Connected
                 StateManager.ChangeState(ConnectionState.Connected);
             }
             catch (Exception)
             {
-                // Xử lý Connection Failed
                 StateManager.ChangeState(ConnectionState.ConnectionFailed);
+            }
+        }
+
+        public async Task ReconnectToServer()
+        {
+            if (!string.IsNullOrEmpty(_lastIp) && _lastPort > 0)
+            {
+                await ConnectToServer(_lastIp, _lastPort);
             }
         }
 
         public void Disconnect()
         {
             _networkService.Disconnect();
-
-            // Quản lý Disconnected (Client chủ động)
             StateManager.ChangeState(ConnectionState.Disconnected);
         }
 
@@ -58,13 +66,11 @@ namespace Client.Network
 
         private void HandleDataReceived(string data)
         {
-            // Phát Event khi nhận Message
             OnMessageReceived?.Invoke(data);
         }
 
         private void HandleDisconnected()
         {
-            // Xử lý Server Offline (Mất mạng đột ngột hoặc Server sập)
             if (StateManager.CurrentState != ConnectionState.Disconnected)
             {
                 StateManager.ChangeState(ConnectionState.ServerOffline);
@@ -74,7 +80,6 @@ namespace Client.Network
 
         private void HandleError(Exception ex)
         {
-            // Bắt log Send/Receive Error ngầm, không báo ra giao diện gây hoang mang
             Console.WriteLine($"[Network Error]: {ex.Message}");
         }
     }

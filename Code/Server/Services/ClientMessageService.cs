@@ -30,8 +30,6 @@ namespace Client.Services
             _uiContext = SynchronizationContext.Current;
         }
 
-        // --- CÁC HÀM GỬI DATA BẤT ĐỒNG BỘ ---
-
         public async Task SendLoginRequest(string username, string password) =>
             await SendPacketAsync("LoginRequest", new { Username = username, Password = password });
 
@@ -61,8 +59,6 @@ namespace Client.Services
             }
         }
 
-        // --- XỬ LÝ NHẬN DATA THỜI GIAN THỰC ĐẢM BẢO UI THREAD ---
-
         private void ProcessMessage(string jsonPayload)
         {
             try
@@ -72,7 +68,6 @@ namespace Client.Services
 
                 string dataString = packet.Data.ToString();
 
-                // Dispatch sự kiện sang UI Thread để Cập nhật UI an toàn
                 switch (packet.Action)
                 {
                     case "LoginResponse": SafeInvoke(OnLoginResponse, dataString); break;
@@ -92,7 +87,6 @@ namespace Client.Services
             }
         }
 
-        // Hàm hỗ trợ đẩy Event sang đúng UI Thread
         private void SafeInvoke(Action<string> action, string data)
         {
             if (_uiContext != null)

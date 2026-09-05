@@ -13,26 +13,45 @@ namespace Client.Network
         private NetworkStream _stream;
         private CancellationTokenSource _cancellationTokenSource;
 
+        // Khóa luồng an toàn (Thread-safe) chống đụng độ khi gửi dữ liệu liên tục
+        private readonly SemaphoreSlim _sendLock = new SemaphoreSlim(1, 1);
+        private bool _isReceiving = false;
+
         public bool IsConnected => _client != null && _client.Connected;
 
         public event Action<string> OnDataReceived;
         public event Action OnDisconnected;
         public event Action<Exception> OnError;
 
-        public async Task ConnectAsync(string host, int port)
+        public async Task ConnectAsync(string host, int port, int timeoutMs = 5000)
         {
             try
             {
                 _client = new TcpClient();
-                await _client.ConnectAsync(host, port);
+
+                // Xử lý Connection Timeout
+                using (var timeoutCts = new CancellationTokenSource(timeoutMs))
+                {
+                    var connectTask = _client.ConnectAsync(host, port);
+                    if (await Task.WhenAny(connectTask, Task.Delay(timeoutMs, timeoutCts.Token)) != connectTask)
+                    {
+                        throw new TimeoutException("Connection Timeout.");
+                    }
+                    await connectTask;
+                }
+
                 _stream = _client.GetStream();
                 _cancellationTokenSource = new CancellationTokenSource();
 
-                _ = ReceiveDataAsync(_cancellationTokenSource.Token);
+                // Đảm bảo không tạo nhiều Receive Loop
+                if (!_isReceiving)
+                {
+                    _isReceiving = true;
+                    _ = ReceiveDataAsync(_cancellationTokenSource.Token);
+                }
             }
             catch (Exception ex)
             {
-                // Xử lý Connection Error
                 OnError?.Invoke(ex);
                 throw;
             }
@@ -45,6 +64,7 @@ namespace Client.Network
             try
             {
                 _cancellationTokenSource?.Cancel();
+                _isReceiving = false;
                 _stream?.Close();
                 _client?.Close();
             }
@@ -62,6 +82,7 @@ namespace Client.Network
         {
             if (!IsConnected) return;
 
+            await _sendLock.WaitAsync(); // Bắt đầu khóa Thread
             try
             {
                 byte[] buffer = Encoding.UTF8.GetBytes(data + "\n");
@@ -69,9 +90,12 @@ namespace Client.Network
             }
             catch (Exception ex)
             {
-                // Xử lý Send Error - Không văng Exception làm crash app
                 OnError?.Invoke(ex);
                 Disconnect();
+            }
+            finally
+            {
+                _sendLock.Release(); // Mở khóa Thread
             }
         }
 
@@ -97,12 +121,15 @@ namespace Client.Network
                     }
                 }
             }
-            catch (OperationCanceledException) { /* Hủy chủ động, bỏ qua */ }
+            catch (OperationCanceledException) { }
             catch (Exception ex)
             {
-                // Xử lý Receive Error
                 OnError?.Invoke(ex);
                 Disconnect();
+            }
+            finally
+            {
+                _isReceiving = false;
             }
         }
     }
