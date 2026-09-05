@@ -5,24 +5,24 @@ namespace CaroGame.Protocol.Messages
     /// Khi thêm chức năng mới, chỉ cần bổ sung thêm giá trị vào đây,
     /// đồng thời cập nhật JsonSerializer.Deserialize để ánh xạ đúng class.
     /// </summary>
-public enum MessageType
+    public enum MessageType
     {
-        Login, // Giữ nguyên các type cũ ở trên
+        Login,
 
         // ===== Room / Lobby Messages (Task 1) =====
-        CreateRoom = 4,
-        JoinRoom = 5,
-        LeaveRoom = 6,
-        Invite = 7,
+        CreateRoom,
+        JoinRoom,
+        LeaveRoom,
+        Invite,
 
         // ===== Game Messages (Task 1) =====
-        PlayMove = 8, // Thống nhất dùng PlayMove (hoặc Move) tùy ý team bạn, và gán số tiếp theo
-        Turn = 9,
-        GameState = 10,
-        GameResult = 11,
+        Move,
+        Turn,
+        GameState,
+        GameResult,
 
         // ===== Response Messages (Task 1) =====
-        Response = 12,
-        Error = 13
+        Response,
+        Error,
     }
 }
