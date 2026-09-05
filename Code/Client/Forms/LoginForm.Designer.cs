@@ -17,158 +17,152 @@ namespace Client.Forms
 
         private void InitializeComponent()
         {
-            // 1. KHỞI TẠO TẤT CẢ CÁC ĐỐI TƯỢNG TRƯỚC (Tránh lỗi Null)
-            this.lblTitle = new System.Windows.Forms.Label();
-            this.txtPlayerName = new System.Windows.Forms.TextBox();
-            this.btnEnterLobby = new System.Windows.Forms.Button();
-            this.btnExit = new System.Windows.Forms.Button();
-            this.lblDecoX1 = new System.Windows.Forms.Label();
-            this.lblDecoO1 = new System.Windows.Forms.Label();
-            this.lblDecoX2 = new System.Windows.Forms.Label();
-            this.lblDecoO2 = new System.Windows.Forms.Label();
-            this.lblNamePrompt = new System.Windows.Forms.Label();
-            this.SuspendLayout();
-
+            lblTitle = new Label();
+            txtPlayerName = new TextBox();
+            btnEnterLobby = new Button();
+            btnExit = new Button();
+            lblDecoX1 = new Label();
+            lblDecoO1 = new Label();
+            lblDecoX2 = new Label();
+            lblDecoO2 = new Label();
+            lblNamePrompt = new Label();
+            SuspendLayout();
             // 
             // lblTitle
             // 
-            this.lblTitle.AutoSize = true;
-            this.lblTitle.Font = new System.Drawing.Font("Segoe UI", 24F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.lblTitle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(152)))), ((int)(((byte)(219)))));
-            this.lblTitle.Location = new System.Drawing.Point(95, 45);
-            this.lblTitle.Name = "lblTitle";
-            this.lblTitle.Size = new System.Drawing.Size(332, 45);
-            this.lblTitle.TabIndex = 0;
-            this.lblTitle.Text = "GAME CARO ONLINE";
-
+            lblTitle.AutoSize = true;
+            lblTitle.Font = new Font("Segoe UI", 24F, FontStyle.Bold);
+            lblTitle.ForeColor = Color.FromArgb(52, 152, 219);
+            lblTitle.Location = new Point(109, 60);
+            lblTitle.Name = "lblTitle";
+            lblTitle.Size = new Size(417, 54);
+            lblTitle.TabIndex = 0;
+            lblTitle.Text = "GAME CARO ONLINE";
             // 
             // txtPlayerName
             // 
-            this.txtPlayerName.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.txtPlayerName.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.txtPlayerName.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.txtPlayerName.ForeColor = System.Drawing.Color.White;
-            this.txtPlayerName.Location = new System.Drawing.Point(110, 160);
-            this.txtPlayerName.Name = "txtPlayerName";
-            this.txtPlayerName.PlaceholderText = "Tên (3-15 ký tự, không dấu cách)";
-            this.txtPlayerName.Size = new System.Drawing.Size(300, 29);
-            this.txtPlayerName.TabIndex = 1;
-            this.txtPlayerName.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-
+            txtPlayerName.BackColor = Color.FromArgb(64, 64, 64);
+            txtPlayerName.BorderStyle = BorderStyle.FixedSingle;
+            txtPlayerName.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+            txtPlayerName.ForeColor = Color.White;
+            txtPlayerName.Location = new Point(126, 213);
+            txtPlayerName.Margin = new Padding(3, 4, 3, 4);
+            txtPlayerName.Name = "txtPlayerName";
+            txtPlayerName.PlaceholderText = "Tên (3-15 ký tự, không dấu cách)";
+            txtPlayerName.Size = new Size(343, 34);
+            txtPlayerName.TabIndex = 1;
+            txtPlayerName.TextAlign = HorizontalAlignment.Center;
             // 
             // btnEnterLobby
             // 
-            this.btnEnterLobby.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(152)))), ((int)(((byte)(219)))));
-            this.btnEnterLobby.FlatAppearance.BorderSize = 0;
-            this.btnEnterLobby.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnEnterLobby.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.btnEnterLobby.ForeColor = System.Drawing.Color.White;
-            this.btnEnterLobby.Location = new System.Drawing.Point(110, 225);
-            this.btnEnterLobby.Name = "btnEnterLobby";
-            this.btnEnterLobby.Size = new System.Drawing.Size(300, 45);
-            this.btnEnterLobby.TabIndex = 2;
-            this.btnEnterLobby.Text = "VÀO SẢNH CHỜ";
-            this.btnEnterLobby.UseVisualStyleBackColor = false;
-
+            btnEnterLobby.BackColor = Color.FromArgb(52, 152, 219);
+            btnEnterLobby.FlatAppearance.BorderSize = 0;
+            btnEnterLobby.FlatStyle = FlatStyle.Flat;
+            btnEnterLobby.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+            btnEnterLobby.ForeColor = Color.White;
+            btnEnterLobby.Location = new Point(126, 300);
+            btnEnterLobby.Margin = new Padding(3, 4, 3, 4);
+            btnEnterLobby.Name = "btnEnterLobby";
+            btnEnterLobby.Size = new Size(343, 60);
+            btnEnterLobby.TabIndex = 2;
+            btnEnterLobby.Text = "VÀO SẢNH CHỜ";
+            btnEnterLobby.UseVisualStyleBackColor = false;
             // 
             // btnExit
             // 
-            this.btnExit.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(217)))), ((int)(((byte)(83)))), ((int)(((byte)(79)))));
-            this.btnExit.FlatAppearance.BorderSize = 0;
-            this.btnExit.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnExit.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.btnExit.ForeColor = System.Drawing.Color.White;
-            this.btnExit.Location = new System.Drawing.Point(110, 285);
-            this.btnExit.Name = "btnExit";
-            this.btnExit.Size = new System.Drawing.Size(300, 45);
-            this.btnExit.TabIndex = 3;
-            this.btnExit.Text = "THOÁT";
-            this.btnExit.UseVisualStyleBackColor = false;
-            this.btnExit.Click += new System.EventHandler(this.btnExit_Click);
-
+            btnExit.BackColor = Color.FromArgb(217, 83, 79);
+            btnExit.FlatAppearance.BorderSize = 0;
+            btnExit.FlatStyle = FlatStyle.Flat;
+            btnExit.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+            btnExit.ForeColor = Color.White;
+            btnExit.Location = new Point(126, 380);
+            btnExit.Margin = new Padding(3, 4, 3, 4);
+            btnExit.Name = "btnExit";
+            btnExit.Size = new Size(343, 60);
+            btnExit.TabIndex = 3;
+            btnExit.Text = "THOÁT";
+            btnExit.UseVisualStyleBackColor = false;
+            btnExit.Click += btnExit_Click;
             // 
             // lblDecoX1
             // 
-            this.lblDecoX1.AutoSize = true;
-            this.lblDecoX1.Font = new System.Drawing.Font("Comic Sans MS", 24F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.lblDecoX1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(152)))), ((int)(((byte)(219)))));
-            this.lblDecoX1.Location = new System.Drawing.Point(30, 30);
-            this.lblDecoX1.Name = "lblDecoX1";
-            this.lblDecoX1.Size = new System.Drawing.Size(43, 45);
-            this.lblDecoX1.TabIndex = 4;
-            this.lblDecoX1.Text = "X";
-
+            lblDecoX1.AutoSize = true;
+            lblDecoX1.Font = new Font("Comic Sans MS", 24F, FontStyle.Bold);
+            lblDecoX1.ForeColor = Color.FromArgb(52, 152, 219);
+            lblDecoX1.Location = new Point(34, 40);
+            lblDecoX1.Name = "lblDecoX1";
+            lblDecoX1.Size = new Size(53, 55);
+            lblDecoX1.TabIndex = 4;
+            lblDecoX1.Text = "X";
             // 
             // lblDecoO1
             // 
-            this.lblDecoO1.AutoSize = true;
-            this.lblDecoO1.Font = new System.Drawing.Font("Comic Sans MS", 24F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.lblDecoO1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(217)))), ((int)(((byte)(83)))), ((int)(((byte)(79)))));
-            this.lblDecoO1.Location = new System.Drawing.Point(440, 30);
-            this.lblDecoO1.Name = "lblDecoO1";
-            this.lblDecoO1.Size = new System.Drawing.Size(45, 45);
-            this.lblDecoO1.TabIndex = 5;
-            this.lblDecoO1.Text = "O";
-
+            lblDecoO1.AutoSize = true;
+            lblDecoO1.Font = new Font("Comic Sans MS", 24F, FontStyle.Bold);
+            lblDecoO1.ForeColor = Color.FromArgb(217, 83, 79);
+            lblDecoO1.Location = new Point(503, 40);
+            lblDecoO1.Name = "lblDecoO1";
+            lblDecoO1.Size = new Size(56, 55);
+            lblDecoO1.TabIndex = 5;
+            lblDecoO1.Text = "O";
             // 
             // lblDecoX2
             // 
-            this.lblDecoX2.AutoSize = true;
-            this.lblDecoX2.Font = new System.Drawing.Font("Comic Sans MS", 24F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.lblDecoX2.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(152)))), ((int)(((byte)(219)))));
-            this.lblDecoX2.Location = new System.Drawing.Point(440, 320);
-            this.lblDecoX2.Name = "lblDecoX2";
-            this.lblDecoX2.Size = new System.Drawing.Size(43, 45);
-            this.lblDecoX2.TabIndex = 6;
-            this.lblDecoX2.Text = "X";
-
+            lblDecoX2.AutoSize = true;
+            lblDecoX2.Font = new Font("Comic Sans MS", 24F, FontStyle.Bold);
+            lblDecoX2.ForeColor = Color.FromArgb(52, 152, 219);
+            lblDecoX2.Location = new Point(503, 427);
+            lblDecoX2.Name = "lblDecoX2";
+            lblDecoX2.Size = new Size(53, 55);
+            lblDecoX2.TabIndex = 6;
+            lblDecoX2.Text = "X";
             // 
             // lblDecoO2
             // 
-            this.lblDecoO2.AutoSize = true;
-            this.lblDecoO2.Font = new System.Drawing.Font("Comic Sans MS", 24F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.lblDecoO2.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(217)))), ((int)(((byte)(83)))), ((int)(((byte)(79)))));
-            this.lblDecoO2.Location = new System.Drawing.Point(30, 320);
-            this.lblDecoO2.Name = "lblDecoO2";
-            this.lblDecoO2.Size = new System.Drawing.Size(45, 45);
-            this.lblDecoO2.TabIndex = 7;
-            this.lblDecoO2.Text = "O";
-
+            lblDecoO2.AutoSize = true;
+            lblDecoO2.Font = new Font("Comic Sans MS", 24F, FontStyle.Bold);
+            lblDecoO2.ForeColor = Color.FromArgb(217, 83, 79);
+            lblDecoO2.Location = new Point(34, 427);
+            lblDecoO2.Name = "lblDecoO2";
+            lblDecoO2.Size = new Size(56, 55);
+            lblDecoO2.TabIndex = 7;
+            lblDecoO2.Text = "O";
             // 
             // lblNamePrompt
             // 
-            this.lblNamePrompt.AutoSize = true;
-            this.lblNamePrompt.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.lblNamePrompt.ForeColor = System.Drawing.Color.LightGray;
-            this.lblNamePrompt.Location = new System.Drawing.Point(107, 135);
-            this.lblNamePrompt.Name = "lblNamePrompt";
-            this.lblNamePrompt.Size = new System.Drawing.Size(110, 17);
-            this.lblNamePrompt.TabIndex = 8;
-            this.lblNamePrompt.Text = "Nhập tên hiển thị:";
-
+            lblNamePrompt.AutoSize = true;
+            lblNamePrompt.Font = new Font("Segoe UI", 9.75F);
+            lblNamePrompt.ForeColor = Color.LightGray;
+            lblNamePrompt.Location = new Point(122, 180);
+            lblNamePrompt.Name = "lblNamePrompt";
+            lblNamePrompt.Size = new Size(149, 23);
+            lblNamePrompt.TabIndex = 8;
+            lblNamePrompt.Text = "Nhập tên hiển thị:";
             // 
             // LoginForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(33)))), ((int)(((byte)(37)))), ((int)(((byte)(41)))));
-            this.ClientSize = new System.Drawing.Size(520, 400);
-            this.Controls.Add(this.lblNamePrompt);
-            this.Controls.Add(this.lblDecoO2);
-            this.Controls.Add(this.lblDecoX2);
-            this.Controls.Add(this.lblDecoO1);
-            this.Controls.Add(this.lblDecoX1);
-            this.Controls.Add(this.btnExit);
-            this.Controls.Add(this.btnEnterLobby);
-            this.Controls.Add(this.txtPlayerName);
-            this.Controls.Add(this.lblTitle);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
-            this.MaximizeBox = false;
-            this.Name = "LoginForm";
-            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Caro Client - Đăng nhập";
-            this.ResumeLayout(false);
-            this.PerformLayout();
+            AutoScaleDimensions = new SizeF(8F, 20F);
+            AutoScaleMode = AutoScaleMode.Font;
+            BackColor = Color.FromArgb(33, 37, 41);
+            ClientSize = new Size(594, 533);
+            Controls.Add(lblNamePrompt);
+            Controls.Add(lblDecoO2);
+            Controls.Add(lblDecoX2);
+            Controls.Add(lblDecoO1);
+            Controls.Add(lblDecoX1);
+            Controls.Add(btnExit);
+            Controls.Add(btnEnterLobby);
+            Controls.Add(txtPlayerName);
+            Controls.Add(lblTitle);
+            FormBorderStyle = FormBorderStyle.FixedSingle;
+            Margin = new Padding(3, 4, 3, 4);
+            MaximizeBox = false;
+            Name = "LoginForm";
+            StartPosition = FormStartPosition.CenterScreen;
+            Text = "Caro Client - Đăng nhập";
+            Load += LoginForm_Load_1;
+            ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion

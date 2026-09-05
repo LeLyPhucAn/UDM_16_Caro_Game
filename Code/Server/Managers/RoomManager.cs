@@ -1,24 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using Shared.Models;
 
 namespace Server.Managers
 {
-    // ==============================
-    // PLAYER
-    // ==============================
-    public class Player
-    {
-        public string PlayerId { get; set; }
-        public string PlayerName { get; set; }
-
-        public Player(string playerId, string playerName)
-        {
-            PlayerId = playerId;
-            PlayerName = playerName;
-        }
-    }
-
     // ==============================
     // ROOM
     // ==============================
@@ -68,7 +54,7 @@ namespace Server.Managers
 
             // Không cho cùng một Player vào phòng 2 lần
             bool alreadyExists = Players.Any(
-                p => p.PlayerId == player.PlayerId);
+                p => p.Id == player.Id);
 
             if (alreadyExists)
                 return false;
@@ -84,7 +70,7 @@ namespace Server.Managers
         public bool RemovePlayer(string playerId)
         {
             Player? player = Players.FirstOrDefault(
-                p => p.PlayerId == playerId);
+                p => p.Id == playerId);
 
             if (player == null)
                 return false;
@@ -100,7 +86,7 @@ namespace Server.Managers
         public Player? GetPlayer(string playerId)
         {
             return Players.FirstOrDefault(
-                p => p.PlayerId == playerId);
+                p => p.Id == playerId);
         }
 
         // ==============================
@@ -109,7 +95,7 @@ namespace Server.Managers
         public bool ContainsPlayer(string playerId)
         {
             return Players.Any(
-                p => p.PlayerId == playerId);
+                p => p.Id == playerId);
         }
     }
 
@@ -207,7 +193,7 @@ namespace Server.Managers
             if (result)
             {
                 Console.WriteLine(
-                    $"[ROOM] {player.PlayerName} joined {room.RoomName}");
+                    $"[ROOM] {player.Username} joined {room.RoomName}");
             }
 
             return result;
@@ -241,7 +227,7 @@ namespace Server.Managers
             if (result)
             {
                 Console.WriteLine(
-                    $"[ROOM] {player.PlayerName} left {room.RoomName}");
+                    $"[ROOM] {player.Username} left {room.RoomName}");
             }
 
             // Nếu không còn Player nào thì xóa phòng

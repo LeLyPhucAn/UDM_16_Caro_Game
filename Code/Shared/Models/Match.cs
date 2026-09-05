@@ -1,15 +1,36 @@
 using System;
-using Shared.Models;
 
-namespace GameLogic.Models
+namespace Shared.Models
 {
+    public enum MatchState
+    {
+        Waiting,
+        Playing,
+        Finished
+    }
+
+    /// <summary>
+    /// Model đại diện cho một trận đấu Caro.
+    /// </summary>
     public class Match
     {
-        public int Id { get; set; }
+        // =========================
+        // THÔNG TIN MATCH
+        // =========================
 
-        public int RoomId { get; set; }
+        public string MatchId { get; set; }
 
-        public Player Player1 { get; set; }
+        public int DbMatchId { get; set; }
+
+        public string RoomId { get; set; }
+
+
+        // =========================
+        // NGƯỜI CHƠI
+        // =========================
+
+        public Player? PlayerX { get; set; }
+
 
         /// <summary>
         /// ID của trận đấu lưu trong Database (Task 2)
@@ -23,6 +44,7 @@ namespace GameLogic.Models
 
         public Player? PlayerX { get; set; }
 
+
         public Player? PlayerO { get; set; }
 
 
@@ -32,47 +54,177 @@ namespace GameLogic.Models
 
         public Board Board { get; set; }
 
-        public int CurrentPlayerId { get; set; }
+        public CellState CurrentTurn { get; set; }
 
-        public string Status { get; set; }
+        public MatchState State { get; set; }
 
-        public int? WinnerId { get; set; }
+
+        // =========================
+        // KẾT QUẢ
+        // =========================
+
+        public string? WinnerId { get; set; }
+
+        public int MoveCount { get; set; }
+
+
+        // =========================
+        // THỜI GIAN
+        // =========================
+
+        public DateTime CreatedAt { get; set; }
+
+        public DateTime? StartedAt { get; set; }
+
+        public DateTime? FinishedAt { get; set; }
+
+
+        // =========================
+        // CONSTRUCTOR MẶC ĐỊNH
+        // =========================
 
         public Match()
         {
             MatchId = string.Empty;
             RoomId = string.Empty;
+
             DbMatchId = 0;
 
-            Board = new Board();
 
-            Status = "Waiting";
+            PlayerX = null;
+            PlayerO = null;
+
+            Board = new Board(15, 15);
+
+            CurrentTurn = CellState.X;
+
+            State = MatchState.Waiting;
 
             WinnerId = null;
+
+            MoveCount = 0;
+
+            CreatedAt = DateTime.Now;
+
+            StartedAt = null;
+            FinishedAt = null;
         }
 
-        public Match(
-            int id,
-            int roomId,
-            Player player1,
-            Player player2)
-        {
-            Id = id;
-            RoomId = roomId;
 
-            Player1 = player1;
-            Player2 = player2;
+        // =========================
+        // CONSTRUCTOR
+        // =========================
+
+        public Match(
+            string matchId,
+            string roomId)
+        {
+            MatchId = matchId ?? string.Empty;
+
+            RoomId = roomId ?? string.Empty;
+
+            PlayerX = null;
+            PlayerO = null;
+
+            Board = new Board(15, 15);
+
+            CurrentTurn = CellState.X;
+
+            State = MatchState.Waiting;
+
+            WinnerId = null;
+
+            MoveCount = 0;
+
+            CreatedAt = DateTime.Now;
+
+            StartedAt = null;
+            FinishedAt = null;
+        }
+
+
+        // =========================
+        // PLAYER
+        // =========================
+
+        /// <summary>
+        /// Kiểm tra Match đã có đủ 2 người chơi chưa.
+        /// </summary>
+        public bool HasTwoPlayers()
+        {
+            return PlayerX != null &&
+                   PlayerO != null;
+        }
+
+
+        /// <summary>
+        /// Lấy người chơi đang tới lượt.
+        /// </summary>
+        public Player? GetCurrentPlayer()
+        {
+            if (CurrentTurn == CellState.X)
+            {
+                return PlayerX;
+            }
+
+            if (CurrentTurn == CellState.O)
+            {
+                return PlayerO;
+            }
+
+            return null;
+        }
+
+
+        /// <summary>
+        /// Lấy Id của người chơi đang tới lượt.
+        /// </summary>
+        public string? GetCurrentPlayerId()
+        {
+            Player? player = GetCurrentPlayer();
+
+            if (player == null)
+            {
+                return null;
+            }
+
+            return player.Id.ToString();
+        }
+
 
             DbMatchId = 0;
 
             PlayerX = null;
             PlayerO = null;
 
-            CurrentPlayerId = player1.Id;
 
-            Status = "Playing";
+        // =========================
+        // MATCH STATE
+        // =========================
+
+        /// <summary>
+        /// Bắt đầu trận đấu.
+        /// </summary>
+        public bool Start()
+        {
+            if (!HasTwoPlayers())
+            {
+                return false;
+            }
+
+            if (State != MatchState.Waiting)
+            {
+                return false;
+            }
+
+            State = MatchState.Playing;
+
+            CurrentTurn = CellState.X;
+
+            MoveCount = 0;
 
             WinnerId = null;
+
 
             MoveCount = 0;
 
@@ -159,6 +311,7 @@ namespace GameLogic.Models
 
             WinnerId = null;
 
+
             StartedAt = DateTime.Now;
 
             FinishedAt = null;
@@ -186,6 +339,7 @@ namespace GameLogic.Models
 
 
         /// <summary>
+
         /// Kiểm tra trận đấu hòa hay không.
         /// </summary>
         public bool IsDraw()
@@ -195,6 +349,7 @@ namespace GameLogic.Models
 
 
         /// <summary>
+
         /// Kết thúc trận đấu.
         /// </summary>
         public void End(string? winnerId = null)
@@ -207,10 +362,12 @@ namespace GameLogic.Models
         }
 
 
+
         public void EndMatch(string? winnerId = null)
         {
             End(winnerId);
         }
+
 
 
         // =========================
@@ -270,12 +427,14 @@ namespace GameLogic.Models
             StartedAt = null;
 
             FinishedAt = null;
+
         }
 
 
         public void ResetMatch()
         {
             Reset();
+
         }
     }
 }

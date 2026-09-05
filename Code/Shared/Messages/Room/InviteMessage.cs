@@ -1,4 +1,4 @@
-namespace CaroGame.Protocol
+namespace CaroGame.Protocol.Messages.Room
 {
     /// <summary>
     /// Message dùng khi một người chơi mời người chơi khác vào phòng đấu cờ caro.
