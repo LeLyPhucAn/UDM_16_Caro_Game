@@ -1,4 +1,7 @@
-﻿namespace GameLogic.Models
+using System.Collections.Generic;
+using Shared.Models;
+
+namespace GameLogic.Models
 {
     public class Room
     {

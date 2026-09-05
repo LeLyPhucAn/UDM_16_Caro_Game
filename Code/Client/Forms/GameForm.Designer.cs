@@ -17,308 +17,304 @@ namespace Client.Forms
 
         private void InitializeComponent()
         {
-            this.pnlTop = new System.Windows.Forms.Panel();
-            this.btnLeaveRoom = new System.Windows.Forms.Button();
-            this.lblSpectators = new System.Windows.Forms.Label();
-            this.lblBadge = new System.Windows.Forms.Label();
-            this.lblTitle = new System.Windows.Forms.Label();
-            this.pnlRight = new System.Windows.Forms.Panel();
-            this.pnlChat = new System.Windows.Forms.Panel();
-            this.btnSend = new System.Windows.Forms.Button();
-            this.txtChatInput = new System.Windows.Forms.TextBox();
-            this.rtbChatHistory = new System.Windows.Forms.RichTextBox();
-            this.lblChatTitle = new System.Windows.Forms.Label();
-            this.pnlStatus = new System.Windows.Forms.Panel();
-            this.lblTurnValue = new System.Windows.Forms.Label();
-            this.lblTurnText = new System.Windows.Forms.Label();
-            this.lblPlayerO_Status = new System.Windows.Forms.Label();
-            this.lblPlayerO = new System.Windows.Forms.Label();
-            this.lblPlayerX_Status = new System.Windows.Forms.Label();
-            this.lblPlayerX = new System.Windows.Forms.Label();
-            this.lblStatusTitle = new System.Windows.Forms.Label();
-            this.pnlMain = new System.Windows.Forms.Panel();
-            this.pnlBoard = new System.Windows.Forms.Panel();
-            this.pnlTop.SuspendLayout();
-            this.pnlRight.SuspendLayout();
-            this.pnlChat.SuspendLayout();
-            this.pnlStatus.SuspendLayout();
-            this.pnlMain.SuspendLayout();
-            this.SuspendLayout();
+            pnlTop = new Panel();
+            lblSpectators = new Label();
+            lblBadge = new Label();
+            lblTitle = new Label();
+            btnLeaveRoom = new Button();
+            pnlRight = new Panel();
+            pnlChat = new Panel();
+            btnSend = new Button();
+            txtChatInput = new TextBox();
+            rtbChatHistory = new RichTextBox();
+            lblChatTitle = new Label();
+            pnlStatus = new Panel();
+            lblTurnValue = new Label();
+            lblTurnText = new Label();
+            lblPlayerO_Status = new Label();
+            lblPlayerO = new Label();
+            lblPlayerX_Status = new Label();
+            lblCurrentTurn = new Label();
+            lblStatusTitle = new Label();
+            pnlMain = new Panel();
+            pnlBoard = new Panel();
+            pnlTop.SuspendLayout();
+            pnlRight.SuspendLayout();
+            pnlChat.SuspendLayout();
+            pnlStatus.SuspendLayout();
+            pnlMain.SuspendLayout();
+            SuspendLayout();
             // 
             // pnlTop
             // 
-            this.pnlTop.Controls.Add(this.lblSpectators);
-            this.pnlTop.Controls.Add(this.lblBadge);
-            this.pnlTop.Controls.Add(this.lblTitle);
-            this.pnlTop.Dock = System.Windows.Forms.DockStyle.Top;
-            this.pnlTop.Location = new System.Drawing.Point(0, 0);
-            this.pnlTop.Name = "pnlTop";
-            this.pnlTop.Size = new System.Drawing.Size(1150, 70);
-            this.pnlTop.TabIndex = 0;
-            // 
-            // btnLeaveRoom
-            // 
-            this.btnLeaveRoom.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnLeaveRoom.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(217)))), ((int)(((byte)(83)))), ((int)(((byte)(79)))));
-            this.btnLeaveRoom.FlatAppearance.BorderSize = 0;
-            this.btnLeaveRoom.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnLeaveRoom.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
-            this.btnLeaveRoom.Location = new System.Drawing.Point(900, 18);
-            this.btnLeaveRoom.Name = "btnLeaveRoom";
-            this.btnLeaveRoom.Size = new System.Drawing.Size(120, 35);
-            this.btnLeaveRoom.TabIndex = 3;
-            this.btnLeaveRoom.Text = "RỜI PHÒNG";
-            this.btnLeaveRoom.UseVisualStyleBackColor = false;
-            this.btnLeaveRoom.Click += new System.EventHandler(this.btnLeaveRoom_Click);
-
-            // Thêm nút vào pnlTop
-            this.pnlTop.Controls.Add(this.btnLeaveRoom);
+            pnlTop.Controls.Add(lblSpectators);
+            pnlTop.Controls.Add(lblBadge);
+            pnlTop.Controls.Add(lblTitle);
+            pnlTop.Controls.Add(btnLeaveRoom);
+            pnlTop.Dock = DockStyle.Top;
+            pnlTop.Location = new Point(0, 0);
+            pnlTop.Name = "pnlTop";
+            pnlTop.Size = new Size(1150, 70);
+            pnlTop.TabIndex = 0;
             // 
             // lblSpectators
             // 
-            this.lblSpectators.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.lblSpectators.AutoSize = true;
-            this.lblSpectators.ForeColor = System.Drawing.Color.Gray;
-            this.lblSpectators.Location = new System.Drawing.Point(1040, 25);
-            this.lblSpectators.Name = "lblSpectators";
-            this.lblSpectators.Size = new System.Drawing.Size(91, 23);
-            this.lblSpectators.TabIndex = 2;
-            this.lblSpectators.Text = "Khán giả: 4";
+            lblSpectators.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            lblSpectators.AutoSize = true;
+            lblSpectators.ForeColor = Color.Gray;
+            lblSpectators.Location = new Point(1040, 25);
+            lblSpectators.Name = "lblSpectators";
+            lblSpectators.Size = new Size(95, 23);
+            lblSpectators.TabIndex = 2;
+            lblSpectators.Text = "Khán giả: 4";
             // 
             // lblBadge
             // 
-            this.lblBadge.AutoSize = true;
-            this.lblBadge.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(70)))), ((int)(((byte)(120)))));
-            this.lblBadge.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
-            this.lblBadge.Location = new System.Drawing.Point(260, 26);
-            this.lblBadge.Name = "lblBadge";
-            this.lblBadge.Padding = new System.Windows.Forms.Padding(5);
-            this.lblBadge.Size = new System.Drawing.Size(130, 30);
-            this.lblBadge.TabIndex = 1;
-            this.lblBadge.Text = "Standard 10x10";
+            lblBadge.AutoSize = true;
+            lblBadge.BackColor = Color.FromArgb(40, 70, 120);
+            lblBadge.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+            lblBadge.Location = new Point(260, 26);
+            lblBadge.Name = "lblBadge";
+            lblBadge.Padding = new Padding(5);
+            lblBadge.Size = new Size(130, 30);
+            lblBadge.TabIndex = 1;
+            lblBadge.Text = "Standard 10x10";
             // 
             // lblTitle
             // 
-            this.lblTitle.AutoSize = true;
-            this.lblTitle.Font = new System.Drawing.Font("Segoe UI", 16F, System.Drawing.FontStyle.Bold);
-            this.lblTitle.Location = new System.Drawing.Point(20, 18);
-            this.lblTitle.Name = "lblTitle";
-            this.lblTitle.Size = new System.Drawing.Size(227, 37);
-            this.lblTitle.TabIndex = 0;
-            this.lblTitle.Text = "PHÒNG THI ĐẤU";
+            lblTitle.AutoSize = true;
+            lblTitle.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
+            lblTitle.Location = new Point(20, 18);
+            lblTitle.Name = "lblTitle";
+            lblTitle.Size = new Size(234, 37);
+            lblTitle.TabIndex = 0;
+            lblTitle.Text = "PHÒNG THI ĐẤU";
+            // 
+            // btnLeaveRoom
+            // 
+            btnLeaveRoom.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            btnLeaveRoom.BackColor = Color.FromArgb(217, 83, 79);
+            btnLeaveRoom.FlatAppearance.BorderSize = 0;
+            btnLeaveRoom.FlatStyle = FlatStyle.Flat;
+            btnLeaveRoom.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+            btnLeaveRoom.Location = new Point(900, 18);
+            btnLeaveRoom.Name = "btnLeaveRoom";
+            btnLeaveRoom.Size = new Size(120, 35);
+            btnLeaveRoom.TabIndex = 3;
+            btnLeaveRoom.Text = "RỜI PHÒNG";
+            btnLeaveRoom.UseVisualStyleBackColor = false;
+            btnLeaveRoom.Click += btnLeaveRoom_Click;
             // 
             // pnlRight
             // 
-            this.pnlRight.Controls.Add(this.pnlChat);
-            this.pnlRight.Controls.Add(this.pnlStatus);
-            this.pnlRight.Dock = System.Windows.Forms.DockStyle.Right;
-            this.pnlRight.Location = new System.Drawing.Point(800, 70);
-            this.pnlRight.Name = "pnlRight";
-            this.pnlRight.Padding = new System.Windows.Forms.Padding(15);
-            this.pnlRight.Size = new System.Drawing.Size(350, 680);
-            this.pnlRight.TabIndex = 1;
+            pnlRight.Controls.Add(pnlChat);
+            pnlRight.Controls.Add(pnlStatus);
+            pnlRight.Dock = DockStyle.Right;
+            pnlRight.Location = new Point(800, 70);
+            pnlRight.Name = "pnlRight";
+            pnlRight.Padding = new Padding(15);
+            pnlRight.Size = new Size(350, 680);
+            pnlRight.TabIndex = 1;
             // 
             // pnlChat
             // 
-            this.pnlChat.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(42)))), ((int)(((byte)(44)))), ((int)(((byte)(48)))));
-            this.pnlChat.Controls.Add(this.btnSend);
-            this.pnlChat.Controls.Add(this.txtChatInput);
-            this.pnlChat.Controls.Add(this.rtbChatHistory);
-            this.pnlChat.Controls.Add(this.lblChatTitle);
-            this.pnlChat.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pnlChat.Location = new System.Drawing.Point(15, 205);
-            this.pnlChat.Name = "pnlChat";
-            this.pnlChat.Padding = new System.Windows.Forms.Padding(15);
-            this.pnlChat.Size = new System.Drawing.Size(320, 460);
-            this.pnlChat.TabIndex = 1;
+            pnlChat.BackColor = Color.FromArgb(42, 44, 48);
+            pnlChat.Controls.Add(btnSend);
+            pnlChat.Controls.Add(txtChatInput);
+            pnlChat.Controls.Add(rtbChatHistory);
+            pnlChat.Controls.Add(lblChatTitle);
+            pnlChat.Dock = DockStyle.Fill;
+            pnlChat.Location = new Point(15, 205);
+            pnlChat.Name = "pnlChat";
+            pnlChat.Padding = new Padding(15);
+            pnlChat.Size = new Size(320, 460);
+            pnlChat.TabIndex = 1;
             // 
             // btnSend
             // 
-            this.btnSend.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnSend.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(120)))), ((int)(((byte)(215)))));
-            this.btnSend.FlatAppearance.BorderSize = 0;
-            this.btnSend.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnSend.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
-            this.btnSend.Location = new System.Drawing.Point(235, 405);
-            this.btnSend.Name = "btnSend";
-            this.btnSend.Size = new System.Drawing.Size(70, 40);
-            this.btnSend.TabIndex = 3;
-            this.btnSend.Text = "GỬI";
-            this.btnSend.UseVisualStyleBackColor = false;
+            btnSend.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            btnSend.BackColor = Color.FromArgb(0, 120, 215);
+            btnSend.FlatAppearance.BorderSize = 0;
+            btnSend.FlatStyle = FlatStyle.Flat;
+            btnSend.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            btnSend.Location = new Point(235, 405);
+            btnSend.Name = "btnSend";
+            btnSend.Size = new Size(70, 40);
+            btnSend.TabIndex = 3;
+            btnSend.Text = "GỬI";
+            btnSend.UseVisualStyleBackColor = false;
             // 
             // txtChatInput
             // 
-            this.txtChatInput.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtChatInput.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(34)))), ((int)(((byte)(36)))), ((int)(((byte)(40)))));
-            this.txtChatInput.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.txtChatInput.ForeColor = System.Drawing.Color.White;
-            this.txtChatInput.Location = new System.Drawing.Point(15, 405);
-            this.txtChatInput.Multiline = true;
-            this.txtChatInput.Name = "txtChatInput";
-            this.txtChatInput.Size = new System.Drawing.Size(210, 40);
-            this.txtChatInput.TabIndex = 2;
+            txtChatInput.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            txtChatInput.BackColor = Color.FromArgb(34, 36, 40);
+            txtChatInput.BorderStyle = BorderStyle.FixedSingle;
+            txtChatInput.ForeColor = Color.White;
+            txtChatInput.Location = new Point(15, 405);
+            txtChatInput.Multiline = true;
+            txtChatInput.Name = "txtChatInput";
+            txtChatInput.Size = new Size(210, 40);
+            txtChatInput.TabIndex = 2;
             // 
             // rtbChatHistory
             // 
-            this.rtbChatHistory.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.rtbChatHistory.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(34)))), ((int)(((byte)(36)))), ((int)(((byte)(40)))));
-            this.rtbChatHistory.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.rtbChatHistory.ForeColor = System.Drawing.Color.White;
-            this.rtbChatHistory.Location = new System.Drawing.Point(15, 50);
-            this.rtbChatHistory.Name = "rtbChatHistory";
-            this.rtbChatHistory.ReadOnly = true;
-            this.rtbChatHistory.Size = new System.Drawing.Size(290, 340);
-            this.rtbChatHistory.TabIndex = 1;
-            this.rtbChatHistory.Text = "";
+            rtbChatHistory.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            rtbChatHistory.BackColor = Color.FromArgb(34, 36, 40);
+            rtbChatHistory.BorderStyle = BorderStyle.None;
+            rtbChatHistory.ForeColor = Color.White;
+            rtbChatHistory.Location = new Point(15, 50);
+            rtbChatHistory.Name = "rtbChatHistory";
+            rtbChatHistory.ReadOnly = true;
+            rtbChatHistory.Size = new Size(290, 340);
+            rtbChatHistory.TabIndex = 1;
+            rtbChatHistory.Text = "";
             // 
             // lblChatTitle
             // 
-            this.lblChatTitle.AutoSize = true;
-            this.lblChatTitle.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold);
-            this.lblChatTitle.Location = new System.Drawing.Point(15, 15);
-            this.lblChatTitle.Name = "lblChatTitle";
-            this.lblChatTitle.Size = new System.Drawing.Size(176, 25);
-            this.lblChatTitle.TabIndex = 0;
-            this.lblChatTitle.Text = "KÊNH TRÒ CHUYỆN";
+            lblChatTitle.AutoSize = true;
+            lblChatTitle.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
+            lblChatTitle.Location = new Point(15, 15);
+            lblChatTitle.Name = "lblChatTitle";
+            lblChatTitle.Size = new Size(189, 25);
+            lblChatTitle.TabIndex = 0;
+            lblChatTitle.Text = "KÊNH TRÒ CHUYỆN";
             // 
             // pnlStatus
             // 
-            this.pnlStatus.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(42)))), ((int)(((byte)(44)))), ((int)(((byte)(48)))));
-            this.pnlStatus.Controls.Add(this.lblTurnValue);
-            this.pnlStatus.Controls.Add(this.lblTurnText);
-            this.pnlStatus.Controls.Add(this.lblPlayerO_Status);
-            this.pnlStatus.Controls.Add(this.lblPlayerO);
-            this.pnlStatus.Controls.Add(this.lblPlayerX_Status);
-            this.pnlStatus.Controls.Add(this.lblPlayerX);
-            this.pnlStatus.Controls.Add(this.lblStatusTitle);
-            this.pnlStatus.Dock = System.Windows.Forms.DockStyle.Top;
-            this.pnlStatus.Location = new System.Drawing.Point(15, 15);
-            this.pnlStatus.Name = "pnlStatus";
-            this.pnlStatus.Size = new System.Drawing.Size(320, 190);
-            this.pnlStatus.TabIndex = 0;
+            pnlStatus.BackColor = Color.FromArgb(42, 44, 48);
+            pnlStatus.Controls.Add(lblTurnValue);
+            pnlStatus.Controls.Add(lblTurnText);
+            pnlStatus.Controls.Add(lblPlayerO_Status);
+            pnlStatus.Controls.Add(lblPlayerO);
+            pnlStatus.Controls.Add(lblPlayerX_Status);
+            pnlStatus.Controls.Add(lblCurrentTurn);
+            pnlStatus.Controls.Add(lblStatusTitle);
+            pnlStatus.Dock = DockStyle.Top;
+            pnlStatus.Location = new Point(15, 15);
+            pnlStatus.Name = "pnlStatus";
+            pnlStatus.Size = new Size(320, 190);
+            pnlStatus.TabIndex = 0;
             // 
             // lblTurnValue
             // 
-            this.lblTurnValue.AutoSize = true;
-            this.lblTurnValue.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(70)))), ((int)(((byte)(100)))));
-            this.lblTurnValue.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
-            this.lblTurnValue.ForeColor = System.Drawing.Color.DeepSkyBlue;
-            this.lblTurnValue.Location = new System.Drawing.Point(150, 140);
-            this.lblTurnValue.Name = "lblTurnValue";
-            this.lblTurnValue.Padding = new System.Windows.Forms.Padding(5);
-            this.lblTurnValue.Size = new System.Drawing.Size(107, 33);
-            this.lblTurnValue.TabIndex = 6;
-            this.lblTurnValue.Text = "X (Nam123)";
+            lblTurnValue.AutoSize = true;
+            lblTurnValue.BackColor = Color.FromArgb(30, 70, 100);
+            lblTurnValue.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            lblTurnValue.ForeColor = Color.DeepSkyBlue;
+            lblTurnValue.Location = new Point(150, 140);
+            lblTurnValue.Name = "lblTurnValue";
+            lblTurnValue.Padding = new Padding(5);
+            lblTurnValue.Size = new Size(116, 33);
+            lblTurnValue.TabIndex = 6;
+            lblTurnValue.Text = "X (Nam123)";
             // 
             // lblTurnText
             // 
-            this.lblTurnText.AutoSize = true;
-            this.lblTurnText.Location = new System.Drawing.Point(15, 145);
-            this.lblTurnText.Name = "lblTurnText";
-            this.lblTurnText.Size = new System.Drawing.Size(128, 23);
-            this.lblTurnText.TabIndex = 5;
-            this.lblTurnText.Text = "Lượt đi hiện tại:";
+            lblTurnText.AutoSize = true;
+            lblTurnText.Location = new Point(15, 145);
+            lblTurnText.Name = "lblTurnText";
+            lblTurnText.Size = new Size(129, 23);
+            lblTurnText.TabIndex = 5;
+            lblTurnText.Text = "Lượt đi hiện tại:";
             // 
             // lblPlayerO_Status
             // 
-            this.lblPlayerO_Status.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.lblPlayerO_Status.AutoSize = true;
-            this.lblPlayerO_Status.ForeColor = System.Drawing.Color.Gray;
-            this.lblPlayerO_Status.Location = new System.Drawing.Point(235, 100);
-            this.lblPlayerO_Status.Name = "lblPlayerO_Status";
-            this.lblPlayerO_Status.Size = new System.Drawing.Size(78, 23);
-            this.lblPlayerO_Status.TabIndex = 4;
-            this.lblPlayerO_Status.Text = "Sẵn sàng";
+            lblPlayerO_Status.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            lblPlayerO_Status.AutoSize = true;
+            lblPlayerO_Status.ForeColor = Color.Gray;
+            lblPlayerO_Status.Location = new Point(235, 100);
+            lblPlayerO_Status.Name = "lblPlayerO_Status";
+            lblPlayerO_Status.Size = new Size(79, 23);
+            lblPlayerO_Status.TabIndex = 4;
+            lblPlayerO_Status.Text = "Sẵn sàng";
             // 
             // lblPlayerO
             // 
-            this.lblPlayerO.AutoSize = true;
-            this.lblPlayerO.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
-            this.lblPlayerO.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(217)))), ((int)(((byte)(83)))), ((int)(((byte)(79)))));
-            this.lblPlayerO.Location = new System.Drawing.Point(15, 95);
-            this.lblPlayerO.Name = "lblPlayerO";
-            this.lblPlayerO.Size = new System.Drawing.Size(126, 28);
-            this.lblPlayerO.TabIndex = 3;
-            this.lblPlayerO.Text = "O: Minh456";
+            lblPlayerO.AutoSize = true;
+            lblPlayerO.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+            lblPlayerO.ForeColor = Color.FromArgb(217, 83, 79);
+            lblPlayerO.Location = new Point(15, 95);
+            lblPlayerO.Name = "lblPlayerO";
+            lblPlayerO.Size = new Size(123, 28);
+            lblPlayerO.TabIndex = 3;
+            lblPlayerO.Text = "O: Minh456";
             // 
             // lblPlayerX_Status
             // 
-            this.lblPlayerX_Status.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.lblPlayerX_Status.AutoSize = true;
-            this.lblPlayerX_Status.ForeColor = System.Drawing.Color.Gray;
-            this.lblPlayerX_Status.Location = new System.Drawing.Point(265, 65);
-            this.lblPlayerX_Status.Name = "lblPlayerX_Status";
-            this.lblPlayerX_Status.Size = new System.Drawing.Size(45, 23);
-            this.lblPlayerX_Status.TabIndex = 2;
-            this.lblPlayerX_Status.Text = "Host";
+            lblPlayerX_Status.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            lblPlayerX_Status.AutoSize = true;
+            lblPlayerX_Status.ForeColor = Color.Gray;
+            lblPlayerX_Status.Location = new Point(265, 65);
+            lblPlayerX_Status.Name = "lblPlayerX_Status";
+            lblPlayerX_Status.Size = new Size(45, 23);
+            lblPlayerX_Status.TabIndex = 2;
+            lblPlayerX_Status.Text = "Host";
             // 
-            // lblPlayerX
+            // lblCurrentTurn
             // 
-            this.lblPlayerX.AutoSize = true;
-            this.lblPlayerX.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
-            this.lblPlayerX.ForeColor = System.Drawing.Color.DeepSkyBlue;
-            this.lblPlayerX.Location = new System.Drawing.Point(15, 60);
-            this.lblPlayerX.Name = "lblPlayerX";
-            this.lblPlayerX.Size = new System.Drawing.Size(117, 28);
-            this.lblPlayerX.TabIndex = 1;
-            this.lblPlayerX.Text = "X: Nam123";
+            lblCurrentTurn.AutoSize = true;
+            lblCurrentTurn.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+            lblCurrentTurn.ForeColor = Color.DeepSkyBlue;
+            lblCurrentTurn.Location = new Point(15, 60);
+            lblCurrentTurn.Name = "lblCurrentTurn";
+            lblCurrentTurn.Size = new Size(117, 28);
+            lblCurrentTurn.TabIndex = 1;
+            lblCurrentTurn.Text = "X: Nam123";
+            lblCurrentTurn.Click += lblPlayerX_Click;
             // 
             // lblStatusTitle
             // 
-            this.lblStatusTitle.AutoSize = true;
-            this.lblStatusTitle.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold);
-            this.lblStatusTitle.Location = new System.Drawing.Point(15, 15);
-            this.lblStatusTitle.Name = "lblStatusTitle";
-            this.lblStatusTitle.Size = new System.Drawing.Size(166, 25);
-            this.lblStatusTitle.TabIndex = 0;
-            this.lblStatusTitle.Text = "TRẠNG THÁI ĐẤU";
+            lblStatusTitle.AutoSize = true;
+            lblStatusTitle.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
+            lblStatusTitle.Location = new Point(15, 15);
+            lblStatusTitle.Name = "lblStatusTitle";
+            lblStatusTitle.Size = new Size(173, 25);
+            lblStatusTitle.TabIndex = 0;
+            lblStatusTitle.Text = "TRẠNG THÁI ĐẤU";
             // 
             // pnlMain
             // 
-            this.pnlMain.Controls.Add(this.pnlBoard);
-            this.pnlMain.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pnlMain.Location = new System.Drawing.Point(0, 70);
-            this.pnlMain.Name = "pnlMain";
-            this.pnlMain.Size = new System.Drawing.Size(800, 680);
-            this.pnlMain.TabIndex = 2;
+            pnlMain.Controls.Add(pnlBoard);
+            pnlMain.Dock = DockStyle.Fill;
+            pnlMain.Location = new Point(0, 70);
+            pnlMain.Name = "pnlMain";
+            pnlMain.Size = new Size(800, 680);
+            pnlMain.TabIndex = 2;
             // 
             // pnlBoard
             // 
-            this.pnlBoard.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.pnlBoard.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(34)))), ((int)(((byte)(36)))), ((int)(((byte)(40)))));
-            this.pnlBoard.Location = new System.Drawing.Point(150, 90);
-            this.pnlBoard.Name = "pnlBoard";
-            this.pnlBoard.Size = new System.Drawing.Size(500, 500);
-            this.pnlBoard.TabIndex = 0;
+            pnlBoard.Anchor = AnchorStyles.None;
+            pnlBoard.BackColor = Color.FromArgb(34, 36, 40);
+            pnlBoard.Location = new Point(150, 90);
+            pnlBoard.Name = "pnlBoard";
+            pnlBoard.Size = new Size(500, 500);
+            pnlBoard.TabIndex = 0;
             // 
             // GameForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 23F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(34)))), ((int)(((byte)(36)))), ((int)(((byte)(40)))));
-            this.ClientSize = new System.Drawing.Size(1150, 750);
-            this.Controls.Add(this.pnlMain);
-            this.Controls.Add(this.pnlRight);
-            this.Controls.Add(this.pnlTop);
-            this.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.ForeColor = System.Drawing.Color.White;
-            this.MinimumSize = new System.Drawing.Size(1000, 700);
-            this.Name = "GameForm";
-            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Caro Arena - Phòng #101";
-            this.Load += new System.EventHandler(this.GameForm_Load);
-            this.pnlTop.ResumeLayout(false);
-            this.pnlTop.PerformLayout();
-            this.pnlRight.ResumeLayout(false);
-            this.pnlChat.ResumeLayout(false);
-            this.pnlChat.PerformLayout();
-            this.pnlStatus.ResumeLayout(false);
-            this.pnlStatus.PerformLayout();
-            this.pnlMain.ResumeLayout(false);
-            this.ResumeLayout(false);
+            AutoScaleDimensions = new SizeF(9F, 23F);
+            AutoScaleMode = AutoScaleMode.Font;
+            BackColor = Color.FromArgb(34, 36, 40);
+            ClientSize = new Size(1150, 750);
+            Controls.Add(pnlMain);
+            Controls.Add(pnlRight);
+            Controls.Add(pnlTop);
+            Font = new Font("Segoe UI", 10F);
+            ForeColor = Color.White;
+            MinimumSize = new Size(1000, 700);
+            Name = "GameForm";
+            StartPosition = FormStartPosition.CenterScreen;
+            Text = "Caro Arena - Phòng #101";
+            Load += GameForm_Load;
+            pnlTop.ResumeLayout(false);
+            pnlTop.PerformLayout();
+            pnlRight.ResumeLayout(false);
+            pnlChat.ResumeLayout(false);
+            pnlChat.PerformLayout();
+            pnlStatus.ResumeLayout(false);
+            pnlStatus.PerformLayout();
+            pnlMain.ResumeLayout(false);
+            ResumeLayout(false);
 
         }
 
@@ -331,7 +327,7 @@ namespace Client.Forms
         private System.Windows.Forms.Panel pnlRight;
         private System.Windows.Forms.Panel pnlStatus;
         private System.Windows.Forms.Label lblStatusTitle;
-        private System.Windows.Forms.Label lblPlayerX;
+        private System.Windows.Forms.Label lblCurrentTurn;
         private System.Windows.Forms.Label lblPlayerX_Status;
         private System.Windows.Forms.Label lblPlayerO_Status;
         private System.Windows.Forms.Label lblPlayerO;
