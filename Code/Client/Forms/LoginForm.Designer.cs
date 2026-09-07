@@ -26,6 +26,9 @@ namespace Client.Forms
             lblDecoX2 = new Label();
             lblDecoO2 = new Label();
             lblNamePrompt = new Label();
+            lblPasswordPrompt = new Label();
+            txtPassword = new TextBox();
+            btnRegister = new Button();
             SuspendLayout();
             // 
             // lblTitle
@@ -60,13 +63,28 @@ namespace Client.Forms
             btnEnterLobby.FlatStyle = FlatStyle.Flat;
             btnEnterLobby.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
             btnEnterLobby.ForeColor = Color.White;
-            btnEnterLobby.Location = new Point(126, 300);
+            btnEnterLobby.Location = new Point(126, 350);
             btnEnterLobby.Margin = new Padding(3, 4, 3, 4);
             btnEnterLobby.Name = "btnEnterLobby";
-            btnEnterLobby.Size = new Size(343, 60);
+            btnEnterLobby.Size = new Size(165, 50);
             btnEnterLobby.TabIndex = 2;
-            btnEnterLobby.Text = "VÀO SẢNH CHỜ";
+            btnEnterLobby.Text = "ĐĂNG NHẬP";
             btnEnterLobby.UseVisualStyleBackColor = false;
+            // 
+            // btnRegister
+            // 
+            btnRegister.BackColor = Color.FromArgb(46, 204, 113);
+            btnRegister.FlatAppearance.BorderSize = 0;
+            btnRegister.FlatStyle = FlatStyle.Flat;
+            btnRegister.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+            btnRegister.ForeColor = Color.White;
+            btnRegister.Location = new Point(304, 350);
+            btnRegister.Margin = new Padding(3, 4, 3, 4);
+            btnRegister.Name = "btnRegister";
+            btnRegister.Size = new Size(165, 50);
+            btnRegister.TabIndex = 9;
+            btnRegister.Text = "ĐĂNG KÝ";
+            btnRegister.UseVisualStyleBackColor = false;
             // 
             // btnExit
             // 
@@ -75,10 +93,10 @@ namespace Client.Forms
             btnExit.FlatStyle = FlatStyle.Flat;
             btnExit.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
             btnExit.ForeColor = Color.White;
-            btnExit.Location = new Point(126, 380);
+            btnExit.Location = new Point(126, 415);
             btnExit.Margin = new Padding(3, 4, 3, 4);
             btnExit.Name = "btnExit";
-            btnExit.Size = new Size(343, 60);
+            btnExit.Size = new Size(343, 50);
             btnExit.TabIndex = 3;
             btnExit.Text = "THOÁT";
             btnExit.UseVisualStyleBackColor = false;
@@ -133,11 +151,36 @@ namespace Client.Forms
             lblNamePrompt.AutoSize = true;
             lblNamePrompt.Font = new Font("Segoe UI", 9.75F);
             lblNamePrompt.ForeColor = Color.LightGray;
-            lblNamePrompt.Location = new Point(122, 180);
+            lblNamePrompt.Location = new Point(122, 175);
             lblNamePrompt.Name = "lblNamePrompt";
             lblNamePrompt.Size = new Size(149, 23);
             lblNamePrompt.TabIndex = 8;
             lblNamePrompt.Text = "Nhập tên hiển thị:";
+            // 
+            // lblPasswordPrompt
+            // 
+            lblPasswordPrompt.AutoSize = true;
+            lblPasswordPrompt.Font = new Font("Segoe UI", 9.75F);
+            lblPasswordPrompt.ForeColor = Color.LightGray;
+            lblPasswordPrompt.Location = new Point(122, 260);
+            lblPasswordPrompt.Name = "lblPasswordPrompt";
+            lblPasswordPrompt.Size = new Size(133, 23);
+            lblPasswordPrompt.TabIndex = 10;
+            lblPasswordPrompt.Text = "Nhập mật khẩu:";
+            // 
+            // txtPassword
+            // 
+            txtPassword.BackColor = Color.FromArgb(64, 64, 64);
+            txtPassword.BorderStyle = BorderStyle.FixedSingle;
+            txtPassword.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+            txtPassword.ForeColor = Color.White;
+            txtPassword.Location = new Point(126, 290);
+            txtPassword.Margin = new Padding(3, 4, 3, 4);
+            txtPassword.Name = "txtPassword";
+            txtPassword.UseSystemPasswordChar = true;
+            txtPassword.Size = new Size(343, 34);
+            txtPassword.TabIndex = 11;
+            txtPassword.TextAlign = HorizontalAlignment.Center;
             // 
             // LoginForm
             // 
@@ -145,6 +188,9 @@ namespace Client.Forms
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(33, 37, 41);
             ClientSize = new Size(594, 533);
+            Controls.Add(txtPassword);
+            Controls.Add(lblPasswordPrompt);
+            Controls.Add(btnRegister);
             Controls.Add(lblNamePrompt);
             Controls.Add(lblDecoO2);
             Controls.Add(lblDecoX2);
@@ -176,5 +222,8 @@ namespace Client.Forms
         private System.Windows.Forms.Label lblDecoX2;
         private System.Windows.Forms.Label lblDecoO2;
         private System.Windows.Forms.Label lblNamePrompt;
+        private System.Windows.Forms.Label lblPasswordPrompt;
+        private System.Windows.Forms.TextBox txtPassword;
+        private System.Windows.Forms.Button btnRegister;
     }
 }

@@ -52,6 +52,13 @@ public class MessageHandler
                         Logger.Warn($"[Network] Gói tin không đúng định dạng LoginMessage từ {session.SessionId}");
                     break;
 
+                case MessageType.Register:
+                    if (message is RegisterMessage registerMsg)
+                        await HandleRegisterAsync(session, registerMsg);
+                    else
+                        Logger.Warn($"[Network] Gói tin không đúng định dạng RegisterMessage từ {session.SessionId}");
+                    break;
+
                 case MessageType.CreateRoom:
                     if (message is CreateRoomMessage createRoomMsg)
                         await HandleCreateRoomAsync(session, createRoomMsg);
@@ -106,9 +113,6 @@ public class MessageHandler
         }
     }
 
-    /// <summary>
-    /// Xử lý yêu cầu đăng nhập
-    /// </summary>
     private async Task HandleLoginAsync(ClientSession session, LoginMessage loginMsg)
     {
         Logger.Info($"[Login] Processing login for user '{loginMsg.Username}' (Session: {session.SessionId})");
@@ -127,6 +131,26 @@ public class MessageHandler
         };
 
         // Gửi kết quả lại cho Client
+        await session.SendAsync(response);
+    }
+
+    /// <summary>
+    /// Xử lý yêu cầu đăng ký
+    /// </summary>
+    private async Task HandleRegisterAsync(ClientSession session, RegisterMessage registerMsg)
+    {
+        Logger.Info($"[Register] Processing registration for user '{registerMsg.Username}' (Session: {session.SessionId})");
+
+        bool isValid = _userService.Register(registerMsg.Username, registerMsg.Password);
+
+        ResponseMessage response = new ResponseMessage
+        {
+            SenderId = "Server",
+            Success = isValid,
+            ErrorMessage = isValid ? string.Empty : "Tên đăng nhập đã tồn tại hoặc có lỗi xảy ra.",
+            Data = isValid ? "Register thành công" : string.Empty
+        };
+
         await session.SendAsync(response);
     }
 

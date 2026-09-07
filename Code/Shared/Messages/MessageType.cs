@@ -8,6 +8,7 @@ namespace CaroGame.Protocol.Messages
     public enum MessageType
     {
         Login,
+        Register,
 
         // 👉 [TASK 1] Bổ sung Type Generic cho các Request chung (StartGame, LeaveRoom...)
         Request,
