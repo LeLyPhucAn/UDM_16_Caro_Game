@@ -24,16 +24,16 @@ public class UserRepository
     // BỔ SUNG 1: Lấy thông tin User bằng UserId
     public DataTable GetUserById(int userId)
     {
-        string query = "SELECT * FROM Users WHERE UserId = @UserId";
+        string query = "SELECT * FROM Users WHERE Id = @Id";
         SqlParameter[] parameters = {
-            new SqlParameter("@UserId", userId)
+            new SqlParameter("@Id", userId)
         };
         return DatabaseHelper.ExecuteQuery(query, parameters);
     }
 
     public DataTable ValidateUser(string username, string password)
     {
-        string query = "SELECT * FROM Users WHERE Username = @Username AND Password = @Password";
+        string query = "SELECT * FROM Users WHERE Username = @Username AND PasswordHash = @Password";
         SqlParameter[] parameters = {
             new SqlParameter("@Username", username),
             new SqlParameter("@Password", password)
@@ -43,7 +43,7 @@ public class UserRepository
 
     public int InsertUser(string username, string password)
     {
-        string query = "INSERT INTO Users (Username, Password) VALUES (@Username, @Password)";
+        string query = "INSERT INTO Users (Username, PasswordHash) VALUES (@Username, @Password)";
         SqlParameter[] parameters = {
             new SqlParameter("@Username", username),
             new SqlParameter("@Password", password)
@@ -56,12 +56,12 @@ public class UserRepository
     {
         // Thay tên cột WinCount, LossCount hoặc Score theo đúng tên cột trong CSDL của bạn
         string query = isWinner 
-            ? "UPDATE Users SET WinCount = ISNULL(WinCount, 0) + 1 WHERE UserId = @UserId"
-            : "UPDATE Users SET LossCount = ISNULL(LossCount, 0) + 1 WHERE UserId = @UserId";
+            ? "UPDATE Users SET Wins = ISNULL(Wins, 0) + 1 WHERE Id = @Id"
+            : "UPDATE Users SET Losses = ISNULL(Losses, 0) + 1 WHERE Id = @Id";
 
         using (var cmd = new SqlCommand(query, conn, trans))
         {
-            cmd.Parameters.AddWithValue("@UserId", userId);
+            cmd.Parameters.AddWithValue("@Id", userId);
             return cmd.ExecuteNonQuery() > 0;
         }
     }
@@ -72,18 +72,18 @@ public class UserRepository
         string query;
         if (isDraw)
         {
-            query = "UPDATE Users SET DrawCount = ISNULL(DrawCount, 0) + 1 WHERE UserId = @UserId";
+            query = "UPDATE Users SET Draws = ISNULL(Draws, 0) + 1 WHERE Id = @Id";
         }
         else if (isWinner)
         {
-            query = "UPDATE Users SET WinCount = ISNULL(WinCount, 0) + 1 WHERE UserId = @UserId";
+            query = "UPDATE Users SET Wins = ISNULL(Wins, 0) + 1 WHERE Id = @Id";
         }
         else
         {
-            query = "UPDATE Users SET LossCount = ISNULL(LossCount, 0) + 1 WHERE UserId = @UserId";
+            query = "UPDATE Users SET Losses = ISNULL(Losses, 0) + 1 WHERE Id = @Id";
         }
 
-        SqlParameter[] parameters = { new SqlParameter("@UserId", userId) };
+        SqlParameter[] parameters = { new SqlParameter("@Id", userId) };
         return DatabaseHelper.ExecuteNonQuery(query, parameters) > 0;
     }
 }
