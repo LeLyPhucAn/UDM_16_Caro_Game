@@ -1,18 +1,18 @@
 using System;
-using CaroGame.Protocol.Messages;
-using CaroGame.Protocol.Messages.Room;
-using CaroGame.Protocol.Messages.Game;
-using CaroGame.Protocol.Messages.Response;
-using CaroGame.Protocol.Network;
+using Shared.Messages;
+using Shared.Messages.Room;
+using Shared.Messages.Game;
+using Shared.Messages.Response;
+using Shared.Network;
 using CaroGame.Server.Services;
 
-namespace CaroGame.Protocol
+namespace CaroGame.Examples
 {
     public class UsageExample
     {
         public static void Run()
         {
-            // ================= Task 1: Room / Lobby Messages =================
+            // ================= Room / Lobby Messages =================
 
             // 1. Client tạo phòng mới
             CreateRoomMessage createRoom = new CreateRoomMessage
@@ -90,7 +90,7 @@ namespace CaroGame.Protocol
             };
             SendAndReceive(leaveRoom);
 
-            // ================= Task 2: Protocol Integration & Packet Validation =================
+            // ================= Protocol Testing & Bug Fixing =================
 
             // 8. Validate Header -> Xử lý Packet thiếu dữ liệu
             byte[] corruptedPacket = new byte[5]; // ít hơn 8 byte Header cần thiết
@@ -113,18 +113,25 @@ namespace CaroGame.Protocol
                 Console.WriteLine("[Validate JSON] Packet bị lỗi: " + jsonError);
             }
 
+            // 11. Test Packet quá lớn (vượt MAX_BODY_SIZE khai báo trong Header)
+            byte[] oversizedPacket = BuildRawPacket(rawType: (int)MessageType.Move, declaredBodyLength: NetworkMessage.MAX_BODY_SIZE + 1, body: "{}");
+            if (!PacketParser.TryUnpack(oversizedPacket, out _, out string oversizedError))
+            {
+                Console.WriteLine("[Validate Payload] Packet quá lớn: " + oversizedError);
+            }
+
             // ===== Deserialize Packet + Tạo Error Response (thông qua MessageHandler) =====
             MessageHandler handler = new MessageHandler();
 
-            // 11. Test Packet với các Message Lobby (dùng lại createRoom ở Task 1)
+            // 12. Test Packet với các Message Lobby (dùng lại createRoom ở trên)
             byte[] createRoomReply = handler.HandlePacket(PacketParser.Pack(createRoom));
             PrintReply("Test Packet Lobby - CreateRoom", createRoomReply);
 
-            // 12. Test Packet với các Message Game (dùng lại move ở Task 1)
+            // 13. Test Packet với các Message Game (dùng lại move ở trên)
             byte[] moveReply = handler.HandlePacket(PacketParser.Pack(move));
             PrintReply("Test Packet Game - Move", moveReply);
 
-            // 13. Test Packet lỗi đi qua MessageHandler -> phải nhận Error Response, không crash
+            // 14. Test Packet lỗi đi qua MessageHandler -> phải nhận Error Response, không crash
             byte[] errorReply = handler.HandlePacket(invalidJsonPacket);
             PrintReply("Test Packet lỗi - CorruptedPacket", errorReply);
         }
@@ -166,9 +173,20 @@ namespace CaroGame.Protocol
         /// <summary>Dựng thủ công một packet thô [Type][Length][Body] để giả lập dữ liệu lỗi.</summary>
         private static byte[] BuildRawPacket(int rawType, string body)
         {
+            byte[] bodyBytes = System.Text.Encoding.UTF8.GetBytes(body);
+            return BuildRawPacket(rawType, bodyBytes.Length, body);
+        }
+
+        /// <summary>
+        /// Overload cho phép khai báo Length trong Header khác với độ dài Body
+        /// thật sự - dùng để giả lập packet "khai man" độ dài (ví dụ Test
+        /// Packet quá lớn).
+        /// </summary>
+        private static byte[] BuildRawPacket(int rawType, int declaredBodyLength, string body)
+        {
             byte[] typeBytes = BitConverter.GetBytes(rawType);
             byte[] bodyBytes = System.Text.Encoding.UTF8.GetBytes(body);
-            byte[] lengthBytes = BitConverter.GetBytes(bodyBytes.Length);
+            byte[] lengthBytes = BitConverter.GetBytes(declaredBodyLength);
 
             byte[] packet = new byte[8 + bodyBytes.Length];
             Buffer.BlockCopy(typeBytes, 0, packet, 0, 4);
