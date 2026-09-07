@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Server.Services;
@@ -8,238 +8,136 @@ using Shared.Models;
 namespace Server.Managers
 {
     /// <summary>
-    /// Tráº¡ng thĂ¡i cá»§a má»™t tráº­n Ä‘áº¥u.
+    /// Quản lý vòng đời và logic của các trận Caro.
     /// </summary>
-    public enum MatchStatus
+    public sealed class MatchManager : IDisposable
     {
-        Waiting,
+        private readonly Dictionary<string, Match> matches = new();
 
-        Playing,
+        // GameResult chính thức dùng Shared.Enums.GameResultType
+        private readonly Dictionary<string, Shared.Models.GameResult> gameResults = new();
 
-        Finished
-    }
-
-    /// <summary>
-    /// Quáº£n lĂ½ vĂ²ng Ä‘á»i cá»§a má»™t tráº­n Ä‘áº¥u.
-    /// </summary>
-    public class MatchManager
-    {
-        private readonly Dictionary<string, Match> matches;
         private readonly GameRuleService ruleService;
-        private readonly MatchService _matchService;
-        private readonly GameTimerService _timerService;
-        private readonly object syncRoot;
+        private readonly GameTimerService timerService;
 
-        // Event phát ra khi có người chơi bị xử thua do hết giờ. Args: (Match, WinnerId, WinnerName)
-        public event Action<Match, string, string>? OnMatchTimeout;
+        private readonly object syncRoot = new();
+
+        private bool disposed;
+
+        private const int DefaultTurnTimeSeconds = 30;
 
         public MatchManager()
         {
-            matches =
-                new Dictionary<string, Match>();
+            ruleService = new GameRuleService();
 
-            ruleService =
-                new GameRuleService();
-
-            _matchService =
-                new MatchService();
-
-            _timerService =
-                new GameTimerService(TimeSpan.FromSeconds(30), HandleTimeout);
-
-            syncRoot =
-                new object();
+            // GameTimerService yêu cầu TimeSpan
+            timerService = new GameTimerService(
+                TimeSpan.FromSeconds(DefaultTurnTimeSeconds),
+                HandleTimeout);
         }
 
-        private void HandleTimeout(string matchId)
-        {
-            var match = GetMatch(matchId);
-            if (match == null) return;
-
-            lock (syncRoot)
-            {
-                if (match.State != MatchState.Playing) return;
-
-                // Xử thua người đang tới lượt. Người kia thắng.
-                string winnerId = match.CurrentTurn == CellState.X ? match.PlayerO!.Id : match.PlayerX!.Id;
-                string winnerName = match.CurrentTurn == CellState.X ? match.PlayerO!.Username : match.PlayerX!.Username;
-
-                match.WinnerId = winnerId;
-                match.State = MatchState.Finished;
-                
-                string resultType = "Timeout";
-                _matchService.SaveMatchResult(match.DbMatchId, match.WinnerId == match.PlayerX?.Id ? 1 : 2, resultType);
-
-                OnMatchTimeout?.Invoke(match, winnerId, winnerName);
-            }
-        }
-
-        // =====================================================
+        // =========================================================
         // CREATE MATCH
-        // =====================================================
+        // =========================================================
 
-        public Match? CreateMatch(
+        public Match CreateMatch()
+        {
+            string matchId = Guid.NewGuid().ToString();
+
+            return CreateMatch(matchId, string.Empty);
+        }
+
+        public Match CreateMatch(string matchId)
+        {
+            return CreateMatch(matchId, string.Empty);
+        }
+
+        public Match CreateMatch(
+            string matchId,
             string roomId)
         {
-            if (string.IsNullOrWhiteSpace(roomId))
+            if (string.IsNullOrWhiteSpace(matchId))
             {
-                return null;
+                throw new ArgumentException(
+                    "Match ID cannot be empty.",
+                    nameof(matchId));
             }
+
+            roomId ??= string.Empty;
 
             lock (syncRoot)
             {
-                Match? existing =
-                    FindRoomMatchInternal(roomId);
-
-
-                if (existing != null)
+                if (matches.ContainsKey(matchId))
                 {
-                    return null;
+                    throw new InvalidOperationException(
+                        $"Match '{matchId}' already exists.");
                 }
 
-                string matchId =
-                    Guid.NewGuid().ToString();
-
-                Match match =
-                    new Match(
-                        matchId,
-                        roomId);
-
-                matches.Add(
+                Match match = new Match(
                     matchId,
-                    match);
+                    roomId);
+
+                matches.Add(matchId, match);
 
                 return match;
             }
         }
 
-        // =====================================================
-        // CREATE MATCH WITH 2 PLAYERS
-        // =====================================================
-
-        public Match? CreateMatch(
-            string roomId,
-            Player playerX,
-            Player playerO)
-        {
-            if (string.IsNullOrWhiteSpace(roomId))
-            {
-                return null;
-            }
-
-            if (playerX == null ||
-                playerO == null)
-            {
-                return null;
-            }
-
-            if (string.IsNullOrWhiteSpace(playerX.Id) ||
-                string.IsNullOrWhiteSpace(playerO.Id))
-            {
-                return null;
-            }
-
-            if (playerX.Id == playerO.Id)
-            {
-                return null;
-            }
-
-            lock (syncRoot)
-            {
-                if (FindRoomMatchInternal(
-                        roomId) != null)
-                {
-                    return null;
-                }
-
-                string matchId =
-                    Guid.NewGuid().ToString();
-
-                Match match =
-                    new Match(
-                        matchId,
-                        roomId);
-
-                match.PlayerX = playerX;
-
-                match.PlayerO = playerO;
-
-                matches.Add(
-                    matchId,
-                    match);
-
-                return match;
-            }
-        }
-
-        // =====================================================
+        // =========================================================
         // GET MATCH
-        // =====================================================
+        // =========================================================
 
-        public Match? GetMatch(
-            string matchId)
+        public Match? GetMatch(string matchId)
         {
-            if (string.IsNullOrWhiteSpace(
-                    matchId))
-            {
+            if (string.IsNullOrWhiteSpace(matchId))
                 return null;
-            }
 
             lock (syncRoot)
             {
-                if (matches.TryGetValue(
-                        matchId,
-                        out Match? match))
-                {
-                    return match;
-                }
+                matches.TryGetValue(
+                    matchId,
+                    out Match? match);
 
-                return null;
+                return match;
             }
         }
 
-        // =====================================================
+        // =========================================================
         // ADD PLAYER
-        // =====================================================
+        // =========================================================
 
         public bool AddPlayer(
             string matchId,
             Player player)
         {
+            if (string.IsNullOrWhiteSpace(matchId))
+                return false;
+
             if (player == null)
-            {
                 return false;
-            }
-
-            Match? match =
-                GetMatch(matchId);
-
-            if (match == null)
-            {
-                return false;
-            }
 
             lock (syncRoot)
             {
-                if (match.State !=
-                    MatchState.Waiting)
+                if (!matches.TryGetValue(
+                        matchId,
+                        out Match? match))
                 {
                     return false;
                 }
 
-                if (string.IsNullOrWhiteSpace(player.Id))
-                {
+                if (match.IsFinished())
                     return false;
-                }
 
                 if (match.PlayerX != null &&
-                    match.PlayerX.Id == player.Id)
+                    match.PlayerO != null)
                 {
                     return false;
                 }
 
-                if (match.PlayerO != null &&
-                    match.PlayerO.Id == player.Id)
+                // Player.Id là int
+                if (IsPlayerInMatch(
+                        match,
+                        player.Id.ToString()))
                 {
                     return false;
                 }
@@ -247,504 +145,502 @@ namespace Server.Managers
                 if (match.PlayerX == null)
                 {
                     match.PlayerX = player;
-
-                    return true;
                 }
-
-                if (match.PlayerO == null)
+                else
                 {
                     match.PlayerO = player;
-
-                    return true;
                 }
 
-                return false;
+                return true;
             }
         }
 
-        // =====================================================
+        // =========================================================
         // REMOVE PLAYER
-        // =====================================================
+        // =========================================================
 
         public bool RemovePlayer(
             string matchId,
             string playerId)
         {
-            Match? match =
-                GetMatch(matchId);
-
-            if (match == null)
-            {
+            if (string.IsNullOrWhiteSpace(matchId))
                 return false;
-            }
 
             if (string.IsNullOrWhiteSpace(playerId))
-            {
                 return false;
-            }
 
             lock (syncRoot)
             {
-                if (match.State ==
-                    MatchState.Playing)
+                if (!matches.TryGetValue(
+                        matchId,
+                        out Match? match))
                 {
                     return false;
                 }
 
-                if (match.PlayerX != null &&
-                    match.PlayerX.Id == playerId)
+                bool removed = false;
+
+                if (match.PlayerX?.Id.ToString() == playerId)
                 {
                     match.PlayerX = null;
-
-                    return true;
+                    removed = true;
                 }
 
-                if (match.PlayerO != null &&
-                    match.PlayerO.Id == playerId)
+                if (match.PlayerO?.Id.ToString() == playerId)
                 {
                     match.PlayerO = null;
-
-                    return true;
+                    removed = true;
                 }
 
-                return false;
-            }
-        }
-
-        // =====================================================
-        // START MATCH
-        // =====================================================
-
-        public bool StartMatch(
-            string matchId)
-        {
-            Match? match =
-                GetMatch(matchId);
-
-            if (match == null)
-            {
-                return false;
-            }
-
-            lock (syncRoot)
-            {
-                if (match.State !=
-                    MatchState.Waiting)
-                {
+                if (!removed)
                     return false;
-                }
 
-                if (!match.HasTwoPlayers())
+                // Nếu trận đang chơi mà một người rời,
+                // kết thúc trận.
+                if (match.IsPlaying())
                 {
-                    return false;
+                    string? opponentId =
+                        GetOpponentId(
+                            match,
+                            playerId);
+
+                    EndMatch(
+                        matchId,
+                        opponentId,
+                        playerId,
+                        Shared.Enums.GameResultType.Abandoned,
+                        "Player left the match.");
                 }
-
-                match.Board.Reset();
-
-                match.CurrentTurn =
-                    CellState.X;
-
-                match.WinnerId =
-                    null;
-
-                match.MoveCount =
-                    0;
-
-                match.State =
-                    MatchState.Playing;
-
-                if (int.TryParse(match.PlayerX?.Id, out int pX) && int.TryParse(match.PlayerO?.Id, out int pO))
-                {
-                    match.DbMatchId = _matchService.StartNewMatch(pX, pO);
-                }
-                else
-                {
-                    match.DbMatchId = _matchService.StartNewMatch(1, 2); // Default mock for test
-                }
-
-                _timerService.StartOrReset(matchId);
 
                 return true;
             }
         }
 
-        // =====================================================
-        // MAKE MOVE
-        // =====================================================
+        // =========================================================
+        // START MATCH
+        // =========================================================
+
+        public bool StartMatch(string matchId)
+        {
+            if (string.IsNullOrWhiteSpace(matchId))
+                return false;
+
+            lock (syncRoot)
+            {
+                if (!matches.TryGetValue(
+                        matchId,
+                        out Match? match))
+                {
+                    return false;
+                }
+
+                if (!match.HasTwoPlayers())
+                    return false;
+
+                if (match.IsPlaying())
+                    return false;
+
+                if (match.IsFinished())
+                    return false;
+
+                if (!match.Start())
+                    return false;
+
+                // Timer chỉ nhận matchId
+                timerService.StartOrReset(matchId);
+
+                return true;
+            }
+        }
+
+        // =========================================================
+        // TRY MAKE MOVE
+        // =========================================================
 
         public MoveResult TryMakeMove(
             string matchId,
-            string playerId,
-            int row,
-            int column)
+            Move move)
         {
-            Match? match =
-                GetMatch(matchId);
-
-            if (match == null)
+            if (string.IsNullOrWhiteSpace(matchId))
             {
-                return new MoveResult
-                {
-                    Result =
-                        MoveValidationResult
-                            .MatchNotPlaying,
+                return InvalidResult(
+                    MoveValidationResult.MatchNotPlaying,
+                    "Match ID is invalid.");
+            }
 
-                    Message =
-                        "Match not found."
-                };
+            if (move == null)
+            {
+                return InvalidResult(
+                    MoveValidationResult.InvalidPosition,
+                    "Move cannot be null.");
             }
 
             lock (syncRoot)
             {
-                // -------------------------
-                // Game Over
-                // -------------------------
-
-                if (match.State ==
-                    MatchState.Finished)
+                if (!matches.TryGetValue(
+                        matchId,
+                        out Match? match))
                 {
-                    return new MoveResult
-                    {
-                        Result =
-                            MoveValidationResult
-                                .GameOver,
-
-                        Message =
-                            "Game is already over."
-                    };
+                    return InvalidResult(
+                        MoveValidationResult.MatchNotPlaying,
+                        "Match not found.");
                 }
 
-                // -------------------------
-                // ChÆ°a báº¯t Ä‘áº§u
-                // -------------------------
-
-                if (match.State !=
-                    MatchState.Playing)
+                if (match.PlayerX == null ||
+                    match.PlayerO == null)
                 {
-                    return new MoveResult
-                    {
-                        Result =
-                            MoveValidationResult
-                                .MatchNotPlaying,
-
-                        Message =
-                            "Match has not started."
-                    };
+                    return InvalidResult(
+                        MoveValidationResult.InvalidPlayer,
+                        "Match does not have two players.");
                 }
 
-                // -------------------------
-                // Kiá»ƒm tra Player
-                // -------------------------
-
-                if (!match.HasTwoPlayers())
-                {
-                    return new MoveResult
-                    {
-                        Result =
-                            MoveValidationResult
-                                .InvalidPlayer,
-
-                        Message =
-                            "Match does not have two players."
-                    };
-                }
-
+                // Player.Id trong Player là int,
+                // còn GameRuleService dùng string ID.
                 string playerXId =
-                    match.PlayerX!.Id;
+                    match.PlayerX.Id.ToString();
 
                 string playerOId =
-                    match.PlayerO!.Id;
-
-                // -------------------------
-                // Validate + Apply Move
-                // -------------------------
+                    match.PlayerO.Id.ToString();
 
                 MoveResult result =
                     ruleService.ApplyMove(
                         match.Board,
-                        playerId,
+                        move.PlayerId,
                         playerXId,
                         playerOId,
                         match.CurrentTurn,
-                        row,
-                        column,
-                        true);
+                        move.Row,
+                        move.Column,
+                        match.IsPlaying());
 
                 if (!result.IsValid)
-                {
                     return result;
-                }
 
-                // -------------------------
-                // Táº¡o Move
-                // -------------------------
+                // Nước đi hợp lệ
+                match.IncrementMoveCount();
 
-                match.MoveCount++;
+                // Cập nhật Piece của Move nếu cần
+                move.Piece = result.Piece;
 
-                Move move =
-                    new Move(
-                        playerId,
-                        row,
-                        column,
-                        result.Piece,
-                        match.MoveCount);
+                // Tắt timer của lượt cũ
+                timerService.Stop(matchId);
 
-                // -------------------------
-                // Win
-                // -------------------------
+                // =================================================
+                // WIN
+                // =================================================
 
                 if (result.IsWin)
                 {
-                    match.WinnerId =
-                        playerId;
+                    string winnerId =
+                        result.WinnerId ??
+                        move.PlayerId;
 
-                    match.State =
-                        MatchState.Finished;
+                    string? loserId =
+                        result.LoserId ??
+                        GetOpponentId(
+                            match,
+                            winnerId);
 
-                    string resultType = "Win";
-                    _matchService.SaveMatchResult(match.DbMatchId, match.WinnerId == match.PlayerX?.Id ? 1 : (match.WinnerId == match.PlayerO?.Id ? 2 : null), resultType);
+                    match.End(winnerId);
 
-                    _timerService.Stop(matchId);
+                    gameResults[matchId] =
+                        new Shared.Models.GameResult(
+                            match.MatchId,
+                            Shared.Enums.GameResultType.Win,
+                            winnerId,
+                            loserId,
+                            "Player completed five consecutive pieces.");
 
                     return result;
                 }
 
-                // -------------------------
-                // Draw
-                // -------------------------
+                // =================================================
+                // DRAW
+                // =================================================
 
                 if (result.IsDraw)
                 {
-                    match.WinnerId =
-                        null;
+                    match.End();
 
-                    match.State =
-                        MatchState.Finished;
-
-                    _matchService.SaveMatchResult(match.DbMatchId, null, "Draw");
-
-                    _timerService.Stop(matchId);
+                    gameResults[matchId] =
+                        new Shared.Models.GameResult(
+                            match.MatchId,
+                            Shared.Enums.GameResultType.Draw,
+                            null,
+                            null,
+                            "Board is full and there is no winner.");
 
                     return result;
                 }
 
-                // -------------------------
-                // Change Turn
-                // -------------------------
+                // =================================================
+                // CONTINUE MATCH
+                // =================================================
 
-                if (match.CurrentTurn ==
-                    CellState.X)
-                {
-                    match.CurrentTurn =
-                        CellState.O;
-                }
-                else
-                {
-                    match.CurrentTurn =
-                        CellState.X;
-                }
+                match.ChangeTurn();
 
-                _timerService.StartOrReset(matchId);
+                // Timer cho người chơi tiếp theo
+                timerService.StartOrReset(matchId);
 
                 return result;
             }
         }
 
-        // =====================================================
-        // SIMPLE MAKE MOVE
-        // =====================================================
+        // =========================================================
+        // MAKE MOVE
+        // =========================================================
 
-        public bool MakeMove(
+        public MoveResult MakeMove(
             string matchId,
-            string playerId,
-            int row,
-            int column)
+            Move move)
         {
-            MoveResult result =
-                TryMakeMove(
-                    matchId,
-                    playerId,
-                    row,
-                    column);
-
-            return result.IsValid;
+            return TryMakeMove(
+                matchId,
+                move);
         }
 
-        // =====================================================
+        // =========================================================
+        // TIMEOUT
+        // =========================================================
+
+        private void HandleTimeout(
+            string matchId)
+        {
+            if (string.IsNullOrWhiteSpace(matchId))
+                return;
+
+            lock (syncRoot)
+            {
+                if (!matches.TryGetValue(
+                        matchId,
+                        out Match? match))
+                {
+                    return;
+                }
+
+                if (!match.IsPlaying())
+                    return;
+
+                Player? currentPlayer =
+                    match.GetCurrentPlayer();
+
+                if (currentPlayer == null)
+                    return;
+
+                string loserId =
+                    currentPlayer.Id.ToString();
+
+                string? winnerId =
+                    GetOpponentId(
+                        match,
+                        loserId);
+
+                match.End(winnerId);
+
+                gameResults[matchId] =
+                    new Shared.Models.GameResult(
+                        match.MatchId,
+                        Shared.Enums.GameResultType.Timeout,
+                        winnerId,
+                        loserId,
+                        "The current player ran out of time.");
+            }
+        }
+
+        // =========================================================
+        // GET GAME RESULT
+        // =========================================================
+
+        public Shared.Models.GameResult? GetGameResult(
+            string matchId)
+        {
+            if (string.IsNullOrWhiteSpace(matchId))
+                return null;
+
+            lock (syncRoot)
+            {
+                gameResults.TryGetValue(
+                    matchId,
+                    out Shared.Models.GameResult? result);
+
+                return result;
+            }
+        }
+
+        // =========================================================
+        // TIMER
+        // =========================================================
+
+        public int GetRemainingSeconds(
+            string matchId)
+        {
+            if (string.IsNullOrWhiteSpace(matchId))
+                return 0;
+
+            return timerService.GetRemainingSeconds(
+                matchId);
+        }
+
+        public bool IsTimerRunning(
+            string matchId)
+        {
+            if (string.IsNullOrWhiteSpace(matchId))
+                return false;
+
+            return timerService.IsRunning(
+                matchId);
+        }
+
+        public void StopTimer(
+            string matchId)
+        {
+            if (string.IsNullOrWhiteSpace(matchId))
+                return;
+
+            timerService.Stop(matchId);
+        }
+
+        public void ResetTimer(
+            string matchId)
+        {
+            if (string.IsNullOrWhiteSpace(matchId))
+                return;
+
+            lock (syncRoot)
+            {
+                if (!matches.TryGetValue(
+                        matchId,
+                        out Match? match))
+                {
+                    return;
+                }
+
+                if (!match.IsPlaying())
+                    return;
+
+                timerService.StartOrReset(matchId);
+            }
+        }
+
+        // =========================================================
         // END MATCH
-        // =====================================================
+        // =========================================================
 
         public bool EndMatch(
             string matchId,
-            string? winnerId = null)
+            string? winnerId = null,
+            string? loserId = null,
+            Shared.Enums.GameResultType type =
+                Shared.Enums.GameResultType.Abandoned,
+            string? reason = null)
         {
-            Match? match =
-                GetMatch(matchId);
-
-            if (match == null)
-            {
+            if (string.IsNullOrWhiteSpace(matchId))
                 return false;
-            }
 
             lock (syncRoot)
             {
-                if (winnerId != null)
+                if (!matches.TryGetValue(
+                        matchId,
+                        out Match? match))
                 {
-                    bool validWinner =
-                        match.PlayerX != null &&
-                        match.PlayerX.Id == winnerId;
-
-                    bool validWinner2 =
-                        match.PlayerO != null &&
-                        match.PlayerO.Id == winnerId;
-
-                    if (!validWinner &&
-                        !validWinner2)
-                    {
-                        return false;
-                    }
+                    return false;
                 }
 
-                match.WinnerId =
-                    winnerId;
+                timerService.Stop(matchId);
 
-                match.State =
-                    MatchState.Finished;
+                if (!match.IsFinished())
+                {
+                    match.End(winnerId);
+                }
 
-                _matchService.SaveMatchResult(match.DbMatchId, null, "Ended");
-
-                _timerService.Stop(matchId);
-
-                return true;
-            }
-        }
-
-        // =====================================================
-        // CANCEL MATCH
-        // =====================================================
-
-        public bool CancelMatch(
-            string matchId,
-            string reason)
-        {
-            Match? match =
-                GetMatch(matchId);
-
-            if (match == null)
-            {
-                return false;
-            }
-
-            lock (syncRoot)
-            {
-                match.State =
-                    MatchState.Finished;
-
-                match.WinnerId = null;
-
-                _matchService.CancelMatch(match.DbMatchId, reason);
-
-                _timerService.Stop(matchId);
+                gameResults[matchId] =
+                    new Shared.Models.GameResult(
+                        match.MatchId,
+                        type,
+                        winnerId,
+                        loserId,
+                        reason);
 
                 return true;
             }
         }
 
-        // =====================================================
+        // =========================================================
         // RESET MATCH
-        // =====================================================
+        // =========================================================
 
-        public bool ResetMatch(
-            string matchId)
+        public bool ResetMatch(string matchId)
         {
-            Match? match =
-                GetMatch(matchId);
-
-            if (match == null)
-            {
+            if (string.IsNullOrWhiteSpace(matchId))
                 return false;
-            }
 
             lock (syncRoot)
             {
-                match.Board.Reset();
+                if (!matches.TryGetValue(
+                        matchId,
+                        out Match? match))
+                {
+                    return false;
+                }
 
-                match.CurrentTurn =
-                    CellState.X;
+                timerService.Stop(matchId);
 
-                match.WinnerId =
-                    null;
+                match.Reset();
 
-                match.MoveCount =
-                    0;
-
-                match.State =
-                    MatchState.Waiting;
-
-                _timerService.Stop(matchId);
+                gameResults.Remove(matchId);
 
                 return true;
             }
         }
 
-        // =====================================================
+        // =========================================================
         // REMOVE MATCH
-        // =====================================================
+        // =========================================================
 
-        public bool RemoveMatch(
-            string matchId)
+        public bool RemoveMatch(string matchId)
         {
-            if (string.IsNullOrWhiteSpace(
-                    matchId))
-            {
+            if (string.IsNullOrWhiteSpace(matchId))
                 return false;
-            }
 
             lock (syncRoot)
             {
-                _timerService.Stop(matchId);
-                return matches.Remove(
-                    matchId);
+                timerService.Stop(matchId);
+
+                gameResults.Remove(matchId);
+
+                return matches.Remove(matchId);
             }
         }
 
-        // =====================================================
-        // FIND BY PLAYER
-        // =====================================================
+        // =========================================================
+        // FIND PLAYER MATCH
+        // =========================================================
 
         public Match? FindPlayerMatch(
             string playerId)
         {
             if (string.IsNullOrWhiteSpace(playerId))
-            {
                 return null;
-            }
 
             lock (syncRoot)
             {
-                return matches.Values
-                    .FirstOrDefault(
-                        match =>
-                            (match.PlayerX != null &&
-                             match.PlayerX.Id == playerId)
-                            ||
-                            (match.PlayerO != null &&
-                             match.PlayerO.Id == playerId));
+                return matches.Values.FirstOrDefault(
+                    match =>
+                        IsPlayerInMatch(
+                            match,
+                            playerId));
             }
         }
 
-        // =====================================================
-        // FIND BY ROOM
-        // =====================================================
+        // =========================================================
+        // FIND ROOM MATCH
+        // =========================================================
 
         public Match? FindRoomMatch(
             string roomId)
         {
-            if (string.IsNullOrWhiteSpace(
-                    roomId))
-            {
+            if (string.IsNullOrWhiteSpace(roomId))
                 return null;
-            }
 
             lock (syncRoot)
             {
@@ -753,23 +649,27 @@ namespace Server.Managers
             }
         }
 
-        private Match?
-            FindRoomMatchInternal(
-                string roomId)
+        private Match? FindRoomMatchInternal(
+            string roomId)
         {
-            return matches.Values
-                .FirstOrDefault(
-                    match =>
-                        match.RoomId == roomId);
+            return matches.Values.FirstOrDefault(
+                match =>
+                    string.Equals(
+                        match.RoomId,
+                        roomId,
+                        StringComparison.OrdinalIgnoreCase));
         }
 
-        // =====================================================
-        // EXISTS
-        // =====================================================
+        // =========================================================
+        // MATCH EXISTS
+        // =========================================================
 
         public bool MatchExists(
             string matchId)
         {
+            if (string.IsNullOrWhiteSpace(matchId))
+                return false;
+
             lock (syncRoot)
             {
                 return matches.ContainsKey(
@@ -777,40 +677,36 @@ namespace Server.Managers
             }
         }
 
-        // =====================================================
-        // GET ALL
-        // =====================================================
+        // =========================================================
+        // GET ALL MATCHES
+        // =========================================================
 
         public List<Match> GetAllMatches()
         {
             lock (syncRoot)
             {
-                return matches.Values
-                    .ToList();
+                return matches.Values.ToList();
             }
         }
 
-        // =====================================================
+        // =========================================================
         // GET PLAYING MATCHES
-        // =====================================================
+        // =========================================================
 
-        public List<Match>
-            GetPlayingMatches()
+        public List<Match> GetPlayingMatches()
         {
             lock (syncRoot)
             {
                 return matches.Values
                     .Where(
-                        match =>
-                            match.State ==
-                            MatchState.Playing)
+                        match => match.IsPlaying())
                     .ToList();
             }
         }
 
-        // =====================================================
-        // COUNT
-        // =====================================================
+        // =========================================================
+        // GET MATCH COUNT
+        // =========================================================
 
         public int GetMatchCount()
         {
@@ -818,6 +714,74 @@ namespace Server.Managers
             {
                 return matches.Count;
             }
+        }
+
+        // =========================================================
+        // HELPERS
+        // =========================================================
+
+        private static bool IsPlayerInMatch(
+            Match match,
+            string playerId)
+        {
+            if (match == null)
+                return false;
+
+            if (string.IsNullOrWhiteSpace(playerId))
+                return false;
+
+            return match.PlayerX?.Id.ToString() == playerId ||
+                   match.PlayerO?.Id.ToString() == playerId;
+        }
+
+        private static string? GetOpponentId(
+            Match match,
+            string playerId)
+        {
+            if (match == null)
+                return null;
+
+            if (match.PlayerX?.Id.ToString() == playerId)
+            {
+                return match.PlayerO?.Id.ToString();
+            }
+
+            if (match.PlayerO?.Id.ToString() == playerId)
+            {
+                return match.PlayerX?.Id.ToString();
+            }
+
+            return null;
+        }
+
+        private static MoveResult InvalidResult(
+            MoveValidationResult validationResult,
+            string message)
+        {
+            // IsValid là readonly.
+            // Chỉ cần thiết lập Result.
+            return new MoveResult
+            {
+                Result = validationResult,
+                Row = -1,
+                Column = -1,
+                Piece = CellState.Empty,
+                Message = message
+            };
+        }
+
+        // =========================================================
+        // DISPOSE
+        // =========================================================
+
+        public void Dispose()
+        {
+            if (disposed)
+                return;
+
+            disposed = true;
+
+            timerService.Dispose();
         }
     }
 }

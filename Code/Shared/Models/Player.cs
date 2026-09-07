@@ -1,11 +1,11 @@
-namespace Shared.Models
+﻿namespace Shared.Models
 {
     /// <summary>
-    /// Đại diện cho người chơi trong game.
+    /// Người chơi trong game.
     /// </summary>
     public class Player
     {
-        public string Id { get; set; }
+        public int Id { get; set; }
 
         public string Username { get; set; }
 
@@ -17,16 +17,18 @@ namespace Shared.Models
         {
             Username = string.Empty;
             DisplayName = string.Empty;
+            IsOnline = false;
         }
 
         public Player(
-            string id,
+            int id,
             string username,
             string displayName = "")
         {
             Id = id;
 
-            Username = username ?? string.Empty;
+            Username =
+                username ?? string.Empty;
 
             DisplayName =
                 string.IsNullOrWhiteSpace(displayName)
