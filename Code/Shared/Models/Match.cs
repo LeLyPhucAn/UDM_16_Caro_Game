@@ -31,6 +31,20 @@ namespace Shared.Models
 
         public Player? PlayerX { get; set; }
 
+
+        /// <summary>
+        /// ID của trận đấu lưu trong Database (Task 2)
+        /// </summary>
+        public int DbMatchId { get; set; }
+
+
+        // =========================
+        // NGƯỜI CHƠI
+        // =========================
+
+        public Player? PlayerX { get; set; }
+
+
         public Player? PlayerO { get; set; }
 
 
@@ -73,6 +87,9 @@ namespace Shared.Models
         {
             MatchId = string.Empty;
             RoomId = string.Empty;
+
+            DbMatchId = 0;
+
 
             PlayerX = null;
             PlayerO = null;
@@ -175,6 +192,12 @@ namespace Shared.Models
         }
 
 
+            DbMatchId = 0;
+
+            PlayerX = null;
+            PlayerO = null;
+
+
         // =========================
         // MATCH STATE
         // =========================
@@ -201,6 +224,93 @@ namespace Shared.Models
             MoveCount = 0;
 
             WinnerId = null;
+
+
+            MoveCount = 0;
+
+            CreatedAt = DateTime.Now;
+
+            StartedAt = null;
+            FinishedAt = null;
+        }
+
+
+        // =========================
+        // PLAYER
+        // =========================
+
+        /// <summary>
+        /// Kiểm tra Match đã có đủ 2 người chơi chưa.
+        /// </summary>
+        public bool HasTwoPlayers()
+        {
+            return PlayerX != null &&
+                   PlayerO != null;
+        }
+
+
+        /// <summary>
+        /// Lấy người chơi đang tới lượt.
+        /// </summary>
+        public Player? GetCurrentPlayer()
+        {
+            if (CurrentTurn == CellState.X)
+            {
+                return PlayerX;
+            }
+
+            if (CurrentTurn == CellState.O)
+            {
+                return PlayerO;
+            }
+
+            return null;
+        }
+
+
+        /// <summary>
+        /// Lấy Id của người chơi đang tới lượt.
+        /// </summary>
+        public string? GetCurrentPlayerId()
+        {
+            Player? player = GetCurrentPlayer();
+
+            if (player == null)
+            {
+                return null;
+            }
+
+            return player.Id.ToString();
+        }
+
+
+        // =========================
+        // MATCH STATE
+        // =========================
+
+        /// <summary>
+        /// Bắt đầu trận đấu.
+        /// </summary>
+        public bool Start()
+        {
+            if (!HasTwoPlayers())
+            {
+                return false;
+            }
+
+            if (State != MatchState.Waiting)
+            {
+                return false;
+            }
+
+            State = MatchState.Playing;
+
+            CurrentTurn = CellState.X;
+
+            MoveCount = 0;
+
+            WinnerId = null;
+
 
             StartedAt = DateTime.Now;
 
@@ -229,6 +339,17 @@ namespace Shared.Models
 
 
         /// <summary>
+
+        /// Kiểm tra trận đấu hòa hay không.
+        /// </summary>
+        public bool IsDraw()
+        {
+            return State == MatchState.Finished && string.IsNullOrEmpty(WinnerId);
+        }
+
+
+        /// <summary>
+
         /// Kết thúc trận đấu.
         /// </summary>
         public void End(string? winnerId = null)
@@ -239,6 +360,14 @@ namespace Shared.Models
 
             FinishedAt = DateTime.Now;
         }
+
+
+
+        public void EndMatch(string? winnerId = null)
+        {
+            End(winnerId);
+        }
+
 
 
         // =========================
@@ -298,6 +427,14 @@ namespace Shared.Models
             StartedAt = null;
 
             FinishedAt = null;
+
+        }
+
+
+        public void ResetMatch()
+        {
+            Reset();
+
         }
     }
 }
