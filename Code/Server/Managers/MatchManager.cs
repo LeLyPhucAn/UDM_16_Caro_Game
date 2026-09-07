@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Server.Services;
@@ -25,6 +25,15 @@ namespace Server.Managers
         private bool disposed;
 
         private const int DefaultTurnTimeSeconds = 30;
+
+        // =========================================================
+        // EVENT: Thông báo ra ngoài khi một trận hết giờ
+        // =========================================================
+        /// <summary>
+        /// Được kích hoạt khi người chơi hết giờ.
+        /// Args: Match, winnerId (string), winnerName (string)
+        /// </summary>
+        public event Action<Match, string, string>? OnMatchTimeout;
 
         public MatchManager()
         {
@@ -81,6 +90,52 @@ namespace Server.Managers
 
                 return match;
             }
+        }
+
+        /// <summary>
+        /// Tạo match với 2 Player ngay lập tức (dùng bởi MessageHandler.HandleStartMatchAsync).
+        /// </summary>
+        public Match? CreateMatch(
+            string roomId,
+            Player playerX,
+            Player playerO)
+        {
+            if (string.IsNullOrWhiteSpace(roomId))
+                throw new ArgumentException("Room ID cannot be empty.", nameof(roomId));
+
+            if (playerX == null) throw new ArgumentNullException(nameof(playerX));
+            if (playerO == null) throw new ArgumentNullException(nameof(playerO));
+
+            lock (syncRoot)
+            {
+                // Dùng roomId làm matchId để tra cứu dễ hơn
+                if (matches.ContainsKey(roomId))
+                    return matches[roomId]; // trận đã tồn tại
+
+                Match match = new Match(roomId, roomId);
+                match.PlayerX = playerX;
+                match.PlayerO = playerO;
+
+                matches.Add(roomId, match);
+                return match;
+            }
+        }
+
+        // =========================================================
+        // CANCEL MATCH (hủy trận khi có người ngắt kết nối)
+        // =========================================================
+
+        /// <summary>
+        /// Hủy trận đấu đang diễn ra (gọi khi có người disconnect).
+        /// </summary>
+        public bool CancelMatch(string matchId, string reason)
+        {
+            return EndMatch(
+                matchId,
+                winnerId: null,
+                loserId: null,
+                type: Shared.Enums.GameResultType.Abandoned,
+                reason: reason);
         }
 
         // =========================================================
@@ -256,6 +311,25 @@ namespace Server.Managers
         // =========================================================
         // TRY MAKE MOVE
         // =========================================================
+
+        /// <summary>
+        /// Overload tiện lợi: nhận playerId và tọa độ riêng biệt thay vì Move object.
+        /// Gọi bởi GameRequestHandler.
+        /// </summary>
+        public MoveResult TryMakeMove(
+            string matchId,
+            string playerId,
+            int row,
+            int column)
+        {
+            var move = new Move
+            {
+                PlayerId = playerId,
+                Row = row,
+                Column = column
+            };
+            return TryMakeMove(matchId, move);
+        }
 
         public MoveResult TryMakeMove(
             string matchId,
@@ -444,6 +518,20 @@ namespace Server.Managers
                         winnerId,
                         loserId,
                         "The current player ran out of time.");
+
+                // Fire event để TcpServer gửi thông báo cho clients
+                string winnerName = winnerId != null
+                    ? (match.PlayerX?.Id == winnerId ? match.PlayerX?.Username : match.PlayerO?.Username) ?? string.Empty
+                    : string.Empty;
+
+                // Lưu lại match và winnerId trước khi unlock để fire event ngoài lock
+                var capMatch = match;
+                var capWinnerId = winnerId ?? string.Empty;
+                var capWinnerName = winnerName;
+
+                // Fire ngoài lock để tránh deadlock
+                System.Threading.ThreadPool.QueueUserWorkItem(_ =>
+                    OnMatchTimeout?.Invoke(capMatch, capWinnerId, capWinnerName));
             }
         }
 

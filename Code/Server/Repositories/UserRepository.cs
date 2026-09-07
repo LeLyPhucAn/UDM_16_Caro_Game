@@ -65,4 +65,25 @@ public class UserRepository
             return cmd.ExecuteNonQuery() > 0;
         }
     }
+
+    // BỔ SUNG 3: Overload đơn giản (không cần Transaction ngoài) - dùng DatabaseHelper
+    public bool UpdateUserStats(int userId, bool isWinner, bool isDraw = false)
+    {
+        string query;
+        if (isDraw)
+        {
+            query = "UPDATE Users SET DrawCount = ISNULL(DrawCount, 0) + 1 WHERE UserId = @UserId";
+        }
+        else if (isWinner)
+        {
+            query = "UPDATE Users SET WinCount = ISNULL(WinCount, 0) + 1 WHERE UserId = @UserId";
+        }
+        else
+        {
+            query = "UPDATE Users SET LossCount = ISNULL(LossCount, 0) + 1 WHERE UserId = @UserId";
+        }
+
+        SqlParameter[] parameters = { new SqlParameter("@UserId", userId) };
+        return DatabaseHelper.ExecuteNonQuery(query, parameters) > 0;
+    }
 }

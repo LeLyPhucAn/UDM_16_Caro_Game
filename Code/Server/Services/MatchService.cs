@@ -15,7 +15,7 @@ public class MatchService
     /// Constructor mặc định (Khởi tạo tự động các Repository nếu không dùng DI container)
     /// </summary>
     public MatchService() 
-        : this(new MatchRepository(), new HistoryRepository(), new UserRepository(new Server.Database.DatabaseConfig().ConnectionString))
+        : this(new MatchRepository(), new HistoryRepository(), new UserRepository())
     {
     }
 
@@ -116,14 +116,14 @@ public class MatchService
                 
                 if (string.Equals(result, "DRAW", StringComparison.OrdinalIgnoreCase))
                 {
-                    _userRepository.UpdateUserStats(p1, false, true);
-                    _userRepository.UpdateUserStats(p2, false, true);
+                    _userRepository.UpdateUserStats(p1, false, true);  // hòa
+                    _userRepository.UpdateUserStats(p2, false, true);  // hòa
                 }
                 else if (winnerId.HasValue)
                 {
                     int loserId = (winnerId.Value == p1) ? p2 : p1;
-                    _userRepository.UpdateUserStats(winnerId.Value, true, false); // Thắng
-                    _userRepository.UpdateUserStats(loserId, false, false);        // Thua
+                    _userRepository.UpdateUserStats(winnerId.Value, true, false);  // Thắng
+                    _userRepository.UpdateUserStats(loserId, false, false);         // Thua
                 }
             }
 
