@@ -1,4 +1,4 @@
-namespace CaroGame.Protocol.Messages
+namespace Shared.Messages
 {
     /// <summary>
     /// Liệt kê tất cả các loại Message được trao đổi giữa Client và Server.
@@ -8,39 +8,21 @@ namespace CaroGame.Protocol.Messages
     public enum MessageType
     {
         Login,
-        Register,
 
-        // 👉 [TASK 1] Bổ sung Type Generic cho các Request chung (StartGame, LeaveRoom...)
-        Request,
-
-        // ===== Room / Lobby Messages (Cấu trúc mới của Team) =====
+        // ===== Room / Lobby Messages =====
         CreateRoom,
         JoinRoom,
         LeaveRoom,
         Invite,
-        StartMatch,
 
         // ===== Game Messages =====
         Move,
         Turn,
         GameState,
         GameResult,
-        Timer,
-
-        // 👉 [TASK 1] Bổ sung Type cho Bàn cờ (GameForm)
-        GameSync,
-        GameOver,
-
-        // ===== History Messages =====
-        HistoryRequest,
-        HistoryResponse,
 
         // ===== Response Messages =====
         Response,
         Error,
-
-        // ===== System / Network Messages =====
-        Ping,
-        Pong,
     }
 }

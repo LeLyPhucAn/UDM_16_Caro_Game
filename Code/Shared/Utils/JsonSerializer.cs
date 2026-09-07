@@ -1,12 +1,10 @@
 using System;
-using CaroGame.Protocol.Messages;
-using CaroGame.Protocol.Messages.Room;
-using CaroGame.Protocol.Messages.Game;
-using CaroGame.Protocol.Messages.History;
-using CaroGame.Protocol.Messages.Response;
-using CaroGame.Protocol.Messages.System;
+using Shared.Messages;
+using Shared.Messages.Room;
+using Shared.Messages.Game;
+using Shared.Messages.Response;
 
-namespace CaroGame.Protocol.Utils
+namespace Shared.Utils
 {
     /// <summary>
     /// Lớp tiện ích chuyển đổi giữa Object (Message) và chuỗi JSON.
@@ -35,7 +33,7 @@ namespace CaroGame.Protocol.Utils
         /// <summary>
         /// Kiểm tra một chuỗi có phải JSON hợp lệ về mặt cú pháp hay không,
         /// dùng để PacketParser tách riêng lỗi "JSON sai cú pháp" khỏi lỗi
-        /// "JSON đúng cú pháp nhưng thiếu/sai field" (Task 2 - Validate JSON).
+        /// "JSON đúng cú pháp nhưng thiếu/sai field" (Kiểm tra JSON).
         /// </summary>
         public static bool IsValidJson(string json)
         {
@@ -59,7 +57,7 @@ namespace CaroGame.Protocol.Utils
 
         /// <summary>
         /// Kiểm tra chuỗi JSON có chứa field "MessageId" dạng chuỗi và không rỗng
-        /// hay không (Task 2 - Kiểm tra MessageId).
+        /// hay không (Kiểm tra MessageId).
         ///
         /// Bắt buộc phải kiểm tra trên chuỗi JSON THÔ thay vì trên object sau khi
         /// Deserialize: BaseMessage tự sinh MessageId bằng Guid.NewGuid() ngay
@@ -108,22 +106,12 @@ namespace CaroGame.Protocol.Utils
                 case MessageType.Login:
                     return System.Text.Json.JsonSerializer.Deserialize<LoginMessage>(json, OPTIONS);
 
-                case MessageType.Register:
-                    return System.Text.Json.JsonSerializer.Deserialize<RegisterMessage>(json, OPTIONS);
-
-                // 👉 [TASK 1] Ánh xạ cho RequestMessage
-                case MessageType.Request:
-                    return System.Text.Json.JsonSerializer.Deserialize<RequestMessage>(json, OPTIONS);
-
                 // ===== Room Messages =====
                 case MessageType.CreateRoom:
                     return System.Text.Json.JsonSerializer.Deserialize<CreateRoomMessage>(json, OPTIONS);
 
                 case MessageType.JoinRoom:
                     return System.Text.Json.JsonSerializer.Deserialize<JoinRoomMessage>(json, OPTIONS);
-
-                case MessageType.StartMatch:
-                    return System.Text.Json.JsonSerializer.Deserialize<StartMatchMessage>(json, OPTIONS);
 
                 case MessageType.LeaveRoom:
                     return System.Text.Json.JsonSerializer.Deserialize<LeaveRoomMessage>(json, OPTIONS);
@@ -144,36 +132,12 @@ namespace CaroGame.Protocol.Utils
                 case MessageType.GameResult:
                     return System.Text.Json.JsonSerializer.Deserialize<GameResultMessage>(json, OPTIONS);
 
-                case MessageType.Timer:
-                    return System.Text.Json.JsonSerializer.Deserialize<TimerMessage>(json, OPTIONS);
-
-                // Ánh xạ cho GameSync và GameOver của bàn cờ
-                case MessageType.GameSync:
-                    return System.Text.Json.JsonSerializer.Deserialize<GameSyncMessage>(json, OPTIONS);
-
-                case MessageType.GameOver:
-                    return System.Text.Json.JsonSerializer.Deserialize<GameOverMessage>(json, OPTIONS);
-
-                // ===== History Messages =====
-                case MessageType.HistoryRequest:
-                    return System.Text.Json.JsonSerializer.Deserialize<HistoryRequestMessage>(json, OPTIONS);
-
-                case MessageType.HistoryResponse:
-                    return System.Text.Json.JsonSerializer.Deserialize<HistoryResponseMessage>(json, OPTIONS);
-
                 // ===== Response Messages =====
                 case MessageType.Response:
                     return System.Text.Json.JsonSerializer.Deserialize<ResponseMessage>(json, OPTIONS);
 
                 case MessageType.Error:
                     return System.Text.Json.JsonSerializer.Deserialize<ErrorMessage>(json, OPTIONS);
-
-                // ===== System Messages =====
-                case MessageType.Ping:
-                    return System.Text.Json.JsonSerializer.Deserialize<PingMessage>(json, OPTIONS);
-
-                case MessageType.Pong:
-                    return System.Text.Json.JsonSerializer.Deserialize<PongMessage>(json, OPTIONS);
 
                 default:
                     throw new NotSupportedException("Chưa hỗ trợ deserialize cho MessageType: " + type);

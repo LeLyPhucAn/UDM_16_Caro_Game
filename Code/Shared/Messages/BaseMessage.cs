@@ -1,6 +1,6 @@
 using System;
 
-namespace CaroGame.Protocol.Messages
+namespace Shared.Messages
 {
     /// <summary>
     /// Lớp cơ sở cho tất cả các Message. Mọi message cụ thể (LoginMessage,
@@ -12,7 +12,7 @@ namespace CaroGame.Protocol.Messages
 
         /// <summary>
         /// Định danh duy nhất cho từng message, dùng để:
-        /// - PacketParser validate packet (Task 2 - Kiểm tra MessageId).
+        /// - PacketParser validate packet (kiểm tra MessageId).
         /// - Đối chiếu Request/Response (ResponseMessage.RequestMessageId).
         /// - Log/debug khi cần truy vết một message cụ thể.
         /// Được sinh tự động khi tạo message, không cần set thủ công.
