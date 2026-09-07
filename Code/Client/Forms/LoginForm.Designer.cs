@@ -100,7 +100,7 @@ namespace Client.Forms
             lblDecoO1.AutoSize = true;
             lblDecoO1.Font = new Font("Comic Sans MS", 24F, FontStyle.Bold);
             lblDecoO1.ForeColor = Color.FromArgb(217, 83, 79);
-            lblDecoO1.Location = new Point(503, 40);
+            lblDecoO1.Location = new Point(526, 40);
             lblDecoO1.Name = "lblDecoO1";
             lblDecoO1.Size = new Size(56, 55);
             lblDecoO1.TabIndex = 5;
@@ -111,11 +111,12 @@ namespace Client.Forms
             lblDecoX2.AutoSize = true;
             lblDecoX2.Font = new Font("Comic Sans MS", 24F, FontStyle.Bold);
             lblDecoX2.ForeColor = Color.FromArgb(52, 152, 219);
-            lblDecoX2.Location = new Point(503, 427);
+            lblDecoX2.Location = new Point(526, 427);
             lblDecoX2.Name = "lblDecoX2";
             lblDecoX2.Size = new Size(53, 55);
             lblDecoX2.TabIndex = 6;
             lblDecoX2.Text = "X";
+            lblDecoX2.Click += lblDecoX2_Click;
             // 
             // lblDecoO2
             // 

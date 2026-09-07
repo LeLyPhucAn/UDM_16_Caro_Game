@@ -126,5 +126,10 @@ namespace Client.Forms
         {
             // Trống
         }
+
+        private void lblDecoX2_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }
