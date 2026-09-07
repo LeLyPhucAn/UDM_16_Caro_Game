@@ -8,22 +8,24 @@ namespace Server.Services
     {
         private readonly MatchRepository _matchRepository;
         private readonly HistoryRepository _historyRepository;
+        private readonly UserRepository _userRepository;
 
         /// <summary>
         /// Constructor mặc định (Khởi tạo tự động các Repository nếu không dùng DI container)
         /// </summary>
         public MatchService() 
-            : this(new MatchRepository(), new HistoryRepository())
+            : this(new MatchRepository(), new HistoryRepository(), new UserRepository(new Server.Database.DatabaseConfig().ConnectionString))
         {
         }
 
         /// <summary>
         /// Constructor nhận Dependency Injection
         /// </summary>
-        public MatchService(MatchRepository matchRepository, HistoryRepository historyRepository)
+        public MatchService(MatchRepository matchRepository, HistoryRepository historyRepository, UserRepository userRepository)
         {
             _matchRepository = matchRepository ?? throw new ArgumentNullException(nameof(matchRepository));
             _historyRepository = historyRepository ?? throw new ArgumentNullException(nameof(historyRepository));
+            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
         }
 
         /// <summary>
@@ -72,6 +74,27 @@ namespace Server.Services
             try
             {
                 Console.WriteLine($"[MatchService]: Cập nhật kết quả Match #{matchId} (WinnerId: {winnerId?.ToString() ?? "Hòa/Hủy"}, Result: {result})...");
+                
+                // Cập nhật thống kê người chơi trước
+                DataTable matchInfo = _matchRepository.GetMatchById(matchId);
+                if (matchInfo.Rows.Count > 0)
+                {
+                    int p1 = Convert.ToInt32(matchInfo.Rows[0]["Player1Id"]);
+                    int p2 = Convert.ToInt32(matchInfo.Rows[0]["Player2Id"]);
+                    
+                    if (result == "DRAW" || result == "Draw")
+                    {
+                        _userRepository.UpdateUserStats(p1, false, true);
+                        _userRepository.UpdateUserStats(p2, false, true);
+                    }
+                    else if (winnerId.HasValue)
+                    {
+                        int loserId = (winnerId.Value == p1) ? p2 : p1;
+                        _userRepository.UpdateUserStats(winnerId.Value, true, false); // Thắng
+                        _userRepository.UpdateUserStats(loserId, false, false);       // Thua
+                    }
+                }
+
                 return _matchRepository.EndMatch(matchId, winnerId, result, DateTime.Now);
             }
             catch (Exception ex)
