@@ -34,7 +34,7 @@ namespace Client.Forms
             lblPlayerO_Status = new Label();
             lblPlayerO = new Label();
             lblPlayerX_Status = new Label();
-            lblCurrentTurn = new Label();
+            lblPlayerX = new Label();
             lblStatusTitle = new Label();
             pnlMain = new Panel();
             pnlBoard = new Panel();
@@ -187,7 +187,7 @@ namespace Client.Forms
             pnlStatus.Controls.Add(lblPlayerO_Status);
             pnlStatus.Controls.Add(lblPlayerO);
             pnlStatus.Controls.Add(lblPlayerX_Status);
-            pnlStatus.Controls.Add(lblCurrentTurn);
+            pnlStatus.Controls.Add(lblPlayerX);
             pnlStatus.Controls.Add(lblStatusTitle);
             pnlStatus.Dock = DockStyle.Top;
             pnlStatus.Location = new Point(15, 15);
@@ -250,17 +250,17 @@ namespace Client.Forms
             lblPlayerX_Status.TabIndex = 2;
             lblPlayerX_Status.Text = "Host";
             // 
-            // lblCurrentTurn
+            // lblPlayerX
             // 
-            lblCurrentTurn.AutoSize = true;
-            lblCurrentTurn.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
-            lblCurrentTurn.ForeColor = Color.DeepSkyBlue;
-            lblCurrentTurn.Location = new Point(15, 60);
-            lblCurrentTurn.Name = "lblCurrentTurn";
-            lblCurrentTurn.Size = new Size(117, 28);
-            lblCurrentTurn.TabIndex = 1;
-            lblCurrentTurn.Text = "X: Nam123";
-            lblCurrentTurn.Click += lblPlayerX_Click;
+            lblPlayerX.AutoSize = true;
+            lblPlayerX.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+            lblPlayerX.ForeColor = Color.DeepSkyBlue;
+            lblPlayerX.Location = new Point(15, 60);
+            lblPlayerX.Name = "lblPlayerX";
+            lblPlayerX.Size = new Size(117, 28);
+            lblPlayerX.TabIndex = 1;
+            lblPlayerX.Text = "X: Nam123";
+            lblPlayerX.Click += lblPlayerX_Click;
             // 
             // lblStatusTitle
             // 
@@ -327,7 +327,7 @@ namespace Client.Forms
         private System.Windows.Forms.Panel pnlRight;
         private System.Windows.Forms.Panel pnlStatus;
         private System.Windows.Forms.Label lblStatusTitle;
-        private System.Windows.Forms.Label lblCurrentTurn;
+        private System.Windows.Forms.Label lblPlayerX;
         private System.Windows.Forms.Label lblPlayerX_Status;
         private System.Windows.Forms.Label lblPlayerO_Status;
         private System.Windows.Forms.Label lblPlayerO;

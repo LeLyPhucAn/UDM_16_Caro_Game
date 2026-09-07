@@ -1,0 +1,41 @@
+USE master;
+GO
+
+-- Xóa database cũ nếu tồn tại
+IF EXISTS (SELECT name FROM sys.databases WHERE name = N'CaroDB')
+BEGIN
+    ALTER DATABASE CaroDB SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+    DROP DATABASE CaroDB;
+END
+GO
+
+CREATE DATABASE CaroDB;
+GO
+
+USE CaroDB;
+GO
+
+CREATE TABLE Users (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    Username NVARCHAR(50) NOT NULL UNIQUE,
+    PasswordHash NVARCHAR(256) NOT NULL,
+    Email NVARCHAR(256),
+    Score INT NOT NULL DEFAULT 0,
+    Wins INT NOT NULL DEFAULT 0,
+    Losses INT NOT NULL DEFAULT 0,
+    Draws INT NOT NULL DEFAULT 0,
+    CreatedAt DATETIME DEFAULT GETDATE()
+);
+GO
+
+CREATE TABLE Matches (
+    MatchId INT IDENTITY(1,1) PRIMARY KEY,
+    Player1Id INT NOT NULL,
+    Player2Id INT NOT NULL,
+    StartTime DATETIME NOT NULL,
+    EndTime DATETIME,
+    WinnerId INT,
+    Result NVARCHAR(50),
+    Status NVARCHAR(50) NOT NULL DEFAULT 'IN_PROGRESS'
+);
+GO

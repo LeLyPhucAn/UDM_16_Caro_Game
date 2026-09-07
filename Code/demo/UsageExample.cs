@@ -4,6 +4,7 @@ using CaroGame.Protocol.Messages.Room;
 using CaroGame.Protocol.Messages.Game;
 using CaroGame.Protocol.Messages.Response;
 using CaroGame.Protocol.Network;
+using CaroGame.Server.Services;
 
 namespace CaroGame.Protocol
 {
@@ -89,27 +90,61 @@ namespace CaroGame.Protocol
             };
             SendAndReceive(leaveRoom);
 
-            // ================= Task 2: Packet Routing & Validation =================
+            // ================= Task 2: Protocol Integration & Packet Validation =================
 
-            // 8. Packet lỗi: thiếu byte Header -> dùng TryUnpack để không crash
+            // 8. Validate Header -> Xử lý Packet thiếu dữ liệu
             byte[] corruptedPacket = new byte[5]; // ít hơn 8 byte Header cần thiết
             if (!PacketParser.TryUnpack(corruptedPacket, out _, out string headerError))
             {
-                Console.WriteLine("Packet lỗi Header: " + headerError);
+                Console.WriteLine("[Validate Header] Packet thiếu dữ liệu: " + headerError);
             }
 
-            // 9. Packet lỗi: MessageType không tồn tại trong enum
+            // 9. Validate MessageType -> Xử lý MessageType không hợp lệ
             byte[] invalidTypePacket = BuildRawPacket(rawType: 9999, body: "{}");
             if (!PacketParser.TryUnpack(invalidTypePacket, out _, out string typeError))
             {
-                Console.WriteLine("Packet lỗi MessageType: " + typeError);
+                Console.WriteLine("[Validate MessageType] MessageType không hợp lệ: " + typeError);
             }
 
-            // 10. Packet lỗi: Body không phải JSON hợp lệ
+            // 10. Validate JSON -> Xử lý Packet bị lỗi
             byte[] invalidJsonPacket = BuildRawPacket(rawType: (int)MessageType.Move, body: "{ khong-phai-json");
             if (!PacketParser.TryUnpack(invalidJsonPacket, out _, out string jsonError))
             {
-                Console.WriteLine("Packet lỗi JSON: " + jsonError);
+                Console.WriteLine("[Validate JSON] Packet bị lỗi: " + jsonError);
+            }
+
+            // ===== Deserialize Packet + Tạo Error Response (thông qua MessageHandler) =====
+            MessageHandler handler = new MessageHandler();
+
+            // 11. Test Packet với các Message Lobby (dùng lại createRoom ở Task 1)
+            byte[] createRoomReply = handler.HandlePacket(PacketParser.Pack(createRoom));
+            PrintReply("Test Packet Lobby - CreateRoom", createRoomReply);
+
+            // 12. Test Packet với các Message Game (dùng lại move ở Task 1)
+            byte[] moveReply = handler.HandlePacket(PacketParser.Pack(move));
+            PrintReply("Test Packet Game - Move", moveReply);
+
+            // 13. Test Packet lỗi đi qua MessageHandler -> phải nhận Error Response, không crash
+            byte[] errorReply = handler.HandlePacket(invalidJsonPacket);
+            PrintReply("Test Packet lỗi - CorruptedPacket", errorReply);
+        }
+
+        /// <summary>In ra loại message nhận được từ packet phản hồi của MessageHandler.</summary>
+        private static void PrintReply(string label, byte[] replyPacket)
+        {
+            if (replyPacket == null)
+            {
+                Console.WriteLine("[" + label + "] Không có phản hồi (theo thiết kế).");
+                return;
+            }
+
+            if (PacketParser.TryUnpack(replyPacket, out BaseMessage reply, out string error))
+            {
+                Console.WriteLine("[" + label + "] Phản hồi loại: " + reply.Type);
+            }
+            else
+            {
+                Console.WriteLine("[" + label + "] Lỗi đọc phản hồi: " + error);
             }
         }
 

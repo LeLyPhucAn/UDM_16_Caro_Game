@@ -1,5 +1,4 @@
-using CaroGame.Protocol.Messages;
-namespace CaroGame.Protocol
+namespace CaroGame.Protocol.Messages.Room
 {
     /// <summary>
     /// Client gửi lên server khi người chơi rời phòng (thoát tự nguyện,
@@ -8,12 +7,12 @@ namespace CaroGame.Protocol
     /// </summary>
     public class LeaveRoomMessage : BaseMessage
     {
-        public string RoomId { get; set; } = string.Empty;
-        public string PlayerId { get; set; } = string.Empty;
+        public string RoomId { get; set; }
+        public string PlayerId { get; set; }
 
         /// <summary>Lý do rời phòng, ví dụ: "voluntary", "disconnect", "kicked".</summary>
-        public string Reason { get; set; } = string.Empty;
-        
+        public string Reason { get; set; }
+
         public LeaveRoomMessage()
         {
             Type = MessageType.LeaveRoom;

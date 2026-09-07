@@ -1,4 +1,3 @@
-using CaroGame.Protocol.Messages;
 namespace CaroGame.Protocol.Messages.Game
 {
     /// <summary>
@@ -24,6 +23,11 @@ namespace CaroGame.Protocol.Messages.Game
 
         /// <summary>Trạng thái ván đấu: "Waiting", "Playing", "Finished".</summary>
         public string Status { get; set; }
+
+        public string PlayerXName { get; set; }
+        public string PlayerOName { get; set; }
+        public string MySymbol { get; set; }
+        public string CurrentTurnName { get; set; }
 
         public GameStateMessage()
         {

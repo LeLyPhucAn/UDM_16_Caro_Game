@@ -5,33 +5,42 @@ namespace CaroGame.Protocol.Messages
     /// Khi thêm chức năng mới, chỉ cần bổ sung thêm giá trị vào đây,
     /// đồng thời cập nhật JsonSerializer.Deserialize để ánh xạ đúng class.
     /// </summary>
-public enum MessageType
+    public enum MessageType
     {
-        Login, // Giữ nguyên các type cũ ở trên
+        Login,
+        Register,
 
+        // 👉 [TASK 1] Bổ sung Type Generic cho các Request chung (StartGame, LeaveRoom...)
+        Request,
 
-        // Chuẩn bị mở rộng cho các tuần tiếp theo, ví dụ:
-        // Move,
-        // GameState,
-        // Chat,
-        GameSync,   // Đồng bộ thông tin ván đấu (Tên người chơi, Ký hiệu X/O)
-        Move,       // Gửi/Nhận tọa độ nước đi
-        GameOver,   // Thông báo kết thúc ván (Kèm danh sách 5 ô chiến thắng)
+        // ===== Room / Lobby Messages (Cấu trúc mới của Team) =====
+        CreateRoom,
+        JoinRoom,
+        LeaveRoom,
+        Invite,
+        StartMatch,
 
-        // ===== Room / Lobby Messages (Task 1) =====
-        CreateRoom = 4,
-        JoinRoom = 5,
-        LeaveRoom = 6,
-        Invite = 7,
+        // ===== Game Messages =====
+        Move,
+        Turn,
+        GameState,
+        GameResult,
+        Timer,
 
-        // ===== Game Messages (Task 1) =====
-        Turn = 9,
-        GameState = 10,
-        GameResult = 11,
+        // 👉 [TASK 1] Bổ sung Type cho Bàn cờ (GameForm)
+        GameSync,
+        GameOver,
 
-        // ===== Response Messages (Task 1) =====
-        Response = 12,
-        Error = 13
+        // ===== History Messages =====
+        HistoryRequest,
+        HistoryResponse,
 
+        // ===== Response Messages =====
+        Response,
+        Error,
+
+        // ===== System / Network Messages =====
+        Ping,
+        Pong,
     }
 }

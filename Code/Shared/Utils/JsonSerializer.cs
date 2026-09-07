@@ -1,9 +1,10 @@
-using CaroGame.Protocol.Messages;
 using System;
 using CaroGame.Protocol.Messages;
 using CaroGame.Protocol.Messages.Room;
 using CaroGame.Protocol.Messages.Game;
+using CaroGame.Protocol.Messages.History;
 using CaroGame.Protocol.Messages.Response;
+using CaroGame.Protocol.Messages.System;
 
 namespace CaroGame.Protocol.Utils
 {
@@ -107,12 +108,22 @@ namespace CaroGame.Protocol.Utils
                 case MessageType.Login:
                     return System.Text.Json.JsonSerializer.Deserialize<LoginMessage>(json, OPTIONS);
 
+                case MessageType.Register:
+                    return System.Text.Json.JsonSerializer.Deserialize<RegisterMessage>(json, OPTIONS);
+
+                // 👉 [TASK 1] Ánh xạ cho RequestMessage
+                case MessageType.Request:
+                    return System.Text.Json.JsonSerializer.Deserialize<RequestMessage>(json, OPTIONS);
+
                 // ===== Room Messages =====
                 case MessageType.CreateRoom:
                     return System.Text.Json.JsonSerializer.Deserialize<CreateRoomMessage>(json, OPTIONS);
 
                 case MessageType.JoinRoom:
                     return System.Text.Json.JsonSerializer.Deserialize<JoinRoomMessage>(json, OPTIONS);
+
+                case MessageType.StartMatch:
+                    return System.Text.Json.JsonSerializer.Deserialize<StartMatchMessage>(json, OPTIONS);
 
                 case MessageType.LeaveRoom:
                     return System.Text.Json.JsonSerializer.Deserialize<LeaveRoomMessage>(json, OPTIONS);
@@ -133,6 +144,23 @@ namespace CaroGame.Protocol.Utils
                 case MessageType.GameResult:
                     return System.Text.Json.JsonSerializer.Deserialize<GameResultMessage>(json, OPTIONS);
 
+                case MessageType.Timer:
+                    return System.Text.Json.JsonSerializer.Deserialize<TimerMessage>(json, OPTIONS);
+
+                // Ánh xạ cho GameSync và GameOver của bàn cờ
+                case MessageType.GameSync:
+                    return System.Text.Json.JsonSerializer.Deserialize<GameSyncMessage>(json, OPTIONS);
+
+                case MessageType.GameOver:
+                    return System.Text.Json.JsonSerializer.Deserialize<GameOverMessage>(json, OPTIONS);
+
+                // ===== History Messages =====
+                case MessageType.HistoryRequest:
+                    return System.Text.Json.JsonSerializer.Deserialize<HistoryRequestMessage>(json, OPTIONS);
+
+                case MessageType.HistoryResponse:
+                    return System.Text.Json.JsonSerializer.Deserialize<HistoryResponseMessage>(json, OPTIONS);
+
                 // ===== Response Messages =====
                 case MessageType.Response:
                     return System.Text.Json.JsonSerializer.Deserialize<ResponseMessage>(json, OPTIONS);
@@ -140,6 +168,12 @@ namespace CaroGame.Protocol.Utils
                 case MessageType.Error:
                     return System.Text.Json.JsonSerializer.Deserialize<ErrorMessage>(json, OPTIONS);
 
+                // ===== System Messages =====
+                case MessageType.Ping:
+                    return System.Text.Json.JsonSerializer.Deserialize<PingMessage>(json, OPTIONS);
+
+                case MessageType.Pong:
+                    return System.Text.Json.JsonSerializer.Deserialize<PongMessage>(json, OPTIONS);
 
                 default:
                     throw new NotSupportedException("Chưa hỗ trợ deserialize cho MessageType: " + type);

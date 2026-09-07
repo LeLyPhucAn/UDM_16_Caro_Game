@@ -20,6 +20,8 @@ namespace Shared.Models
 
         public string MatchId { get; set; }
 
+        public int DbMatchId { get; set; }
+
         public string RoomId { get; set; }
 
 

@@ -150,5 +150,41 @@ namespace Server.Repository
                 }
             }
         }
+
+        // Cập nhật thống kê (Điểm, Thắng, Thua, Hòa)
+        public bool UpdateUserStats(int userId, bool isWin, bool isDraw)
+        {
+            string query = "";
+            if (isWin)
+            {
+                query = "UPDATE Users SET Score = Score + 10, Wins = Wins + 1 WHERE Id = @Id";
+            }
+            else if (isDraw)
+            {
+                query = "UPDATE Users SET Score = Score + 1, Draws = Draws + 1 WHERE Id = @Id";
+            }
+            else // isLoss
+            {
+                query = "UPDATE Users SET Score = CASE WHEN Score - 5 < 0 THEN 0 ELSE Score - 5 END, Losses = Losses + 1 WHERE Id = @Id";
+            }
+
+            using (var connection = GetConnection())
+            using (var command = new SqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@Id", userId);
+
+                try
+                {
+                    connection.Open();
+                    int rowsAffected = command.ExecuteNonQuery();
+                    return rowsAffected > 0;
+                }
+                catch (SqlException ex)
+                {
+                    Console.WriteLine($"Database Error (UpdateUserStats): {ex.Message}");
+                    throw;
+                }
+            }
+        }
     }
 }
