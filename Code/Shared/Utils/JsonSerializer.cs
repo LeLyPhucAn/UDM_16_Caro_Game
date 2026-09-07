@@ -108,6 +108,9 @@ namespace CaroGame.Protocol.Utils
                 case MessageType.Login:
                     return System.Text.Json.JsonSerializer.Deserialize<LoginMessage>(json, OPTIONS);
 
+                case MessageType.Register:
+                    return System.Text.Json.JsonSerializer.Deserialize<RegisterMessage>(json, OPTIONS);
+
                 // 👉 [TASK 1] Ánh xạ cho RequestMessage
                 case MessageType.Request:
                     return System.Text.Json.JsonSerializer.Deserialize<RequestMessage>(json, OPTIONS);
@@ -118,6 +121,9 @@ namespace CaroGame.Protocol.Utils
 
                 case MessageType.JoinRoom:
                     return System.Text.Json.JsonSerializer.Deserialize<JoinRoomMessage>(json, OPTIONS);
+
+                case MessageType.StartMatch:
+                    return System.Text.Json.JsonSerializer.Deserialize<StartMatchMessage>(json, OPTIONS);
 
                 case MessageType.LeaveRoom:
                     return System.Text.Json.JsonSerializer.Deserialize<LeaveRoomMessage>(json, OPTIONS);

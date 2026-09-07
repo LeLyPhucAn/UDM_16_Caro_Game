@@ -52,6 +52,13 @@ public class MessageHandler
                         Logger.Warn($"[Network] Gói tin không đúng định dạng LoginMessage từ {session.SessionId}");
                     break;
 
+                case MessageType.Register:
+                    if (message is RegisterMessage registerMsg)
+                        await HandleRegisterAsync(session, registerMsg);
+                    else
+                        Logger.Warn($"[Network] Gói tin không đúng định dạng RegisterMessage từ {session.SessionId}");
+                    break;
+
                 case MessageType.CreateRoom:
                     if (message is CreateRoomMessage createRoomMsg)
                         await HandleCreateRoomAsync(session, createRoomMsg);
@@ -65,6 +72,11 @@ public class MessageHandler
                 case MessageType.LeaveRoom:
                     if (message is LeaveRoomMessage leaveRoomMsg)
                         await HandleLeaveRoomAsync(session, leaveRoomMsg);
+                    break;
+
+                case MessageType.StartMatch:
+                    if (message is StartMatchMessage startMatchMsg)
+                        await HandleStartMatchAsync(session, startMatchMsg);
                     break;
 
                 case MessageType.Move:
@@ -101,9 +113,6 @@ public class MessageHandler
         }
     }
 
-    /// <summary>
-    /// Xử lý yêu cầu đăng nhập
-    /// </summary>
     private async Task HandleLoginAsync(ClientSession session, LoginMessage loginMsg)
     {
         Logger.Info($"[Login] Processing login for user '{loginMsg.Username}' (Session: {session.SessionId})");
@@ -122,6 +131,26 @@ public class MessageHandler
         };
 
         // Gửi kết quả lại cho Client
+        await session.SendAsync(response);
+    }
+
+    /// <summary>
+    /// Xử lý yêu cầu đăng ký
+    /// </summary>
+    private async Task HandleRegisterAsync(ClientSession session, RegisterMessage registerMsg)
+    {
+        Logger.Info($"[Register] Processing registration for user '{registerMsg.Username}' (Session: {session.SessionId})");
+
+        bool isValid = _userService.Register(registerMsg.Username, registerMsg.Password);
+
+        ResponseMessage response = new ResponseMessage
+        {
+            SenderId = "Server",
+            Success = isValid,
+            ErrorMessage = isValid ? string.Empty : "Tên đăng nhập đã tồn tại hoặc có lỗi xảy ra.",
+            Data = isValid ? "Register thành công" : string.Empty
+        };
+
         await session.SendAsync(response);
     }
 
@@ -153,12 +182,24 @@ public class MessageHandler
             ErrorMessage = success ? string.Empty : "Không thể tham gia phòng. Phòng đã đầy hoặc không tồn tại."
         };
         await session.SendAsync(response);
+    }
 
-        if (success && _roomManager.CanStartGame(msg.RoomId))
+    private async Task HandleStartMatchAsync(ClientSession session, StartMatchMessage msg)
+    {
+        Logger.Info($"[StartMatch] Yêu cầu từ Session: {session.SessionId} bắt đầu phòng {msg.RoomId}");
+
+        if (_roomManager.CanStartGame(msg.RoomId))
         {
             var room = _roomManager.GetRoom(msg.RoomId);
             if (room != null && room.Players.Count == 2)
             {
+                // Verify that the sender is the host (Player 1)
+                if (room.Players[0].Id != session.SessionId.ToString())
+                {
+                    Logger.Warn($"[StartMatch] Từ chối: Session {session.SessionId} không phải chủ phòng {msg.RoomId}");
+                    return;
+                }
+
                 _roomManager.SetPlaying(room.RoomId, true);
                 var match = _matchManager.CreateMatch(room.RoomId, room.Players[0], room.Players[1]);
                 if (match != null)
@@ -166,20 +207,29 @@ public class MessageHandler
                     _matchManager.StartMatch(match.MatchId);
                     Logger.Info($"[Match] Đã tạo và bắt đầu trận đấu {match.MatchId} cho phòng {room.RoomId}");
 
-                    var gameStateX = new GameSyncMessage
+                    var gameStateX = new GameStateMessage
                     {
-                        PlayerXName = room.Players[0].Id, // 👉 Đã sửa thành .Id
-                        PlayerOName = room.Players[1].Id, // 👉 Đã sửa thành .Id
-                        CurrentTurnName = match.CurrentTurn == CellState.X ? room.Players[0].Id : room.Players[1].Id, // 👉 Đã sửa thành .Id
+                        RoomId = room.RoomId,
+                        BoardState = string.Empty, // Bàn cờ trống lúc mới bắt đầu
+                        BoardSize = 15,
+                        CurrentPlayerId = match.CurrentTurn == CellState.X ? room.Players[0].Id : room.Players[1].Id,
+                        CurrentTurnName = match.CurrentTurn == CellState.X ? room.Players[0].Username : room.Players[1].Username,
+                        PlayerXName = room.Players[0].Username,
+                        PlayerOName = room.Players[1].Username,
+                        Status = "Playing",
                         MySymbol = "X"
                     };
 
-                    // Phát GameSyncMessage cho người chơi 2 (O)
-                    var gameStateO = new GameSyncMessage
+                    var gameStateO = new GameStateMessage
                     {
-                        PlayerXName = room.Players[0].Id, // 👉 Đã sửa thành .Id
-                        PlayerOName = room.Players[1].Id, // 👉 Đã sửa thành .Id
-                        CurrentTurnName = match.CurrentTurn == CellState.X ? room.Players[0].Id : room.Players[1].Id, // 👉 Đã sửa thành .Id
+                        RoomId = room.RoomId,
+                        BoardState = string.Empty,
+                        BoardSize = 15,
+                        CurrentPlayerId = match.CurrentTurn == CellState.X ? room.Players[0].Id : room.Players[1].Id,
+                        CurrentTurnName = match.CurrentTurn == CellState.X ? room.Players[0].Username : room.Players[1].Username,
+                        PlayerXName = room.Players[0].Username,
+                        PlayerOName = room.Players[1].Username,
+                        Status = "Playing",
                         MySymbol = "O"
                     };
 

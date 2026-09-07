@@ -17,6 +17,7 @@ namespace Client.Forms
             _clientConnection = new ClientConnection();
 
             btnEnterLobby.Click += btnEnterLobby_Click;
+            btnRegister.Click += btnRegister_Click;
             this.Load += LoginForm_Load;
         }
 
@@ -54,6 +55,23 @@ namespace Client.Forms
             // Server phản hồi ResponseMessage
             if (message is ResponseMessage res)
             {
+                if (res.Data == "Register thành công")
+                {
+                    if (res.Success)
+                    {
+                        MessageBox.Show("Đăng ký thành công! Bạn có thể đăng nhập ngay bây giờ.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    else
+                    {
+                        MessageBox.Show("Đăng ký thất bại: " + res.ErrorMessage, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    }
+                    
+                    btnRegister.Enabled = true;
+                    btnRegister.Text = "ĐĂNG KÝ";
+                    btnEnterLobby.Enabled = true;
+                    return;
+                }
+
                 if (res.Success)
                 {
                     string playerName = txtPlayerName.Text.Trim();
@@ -73,6 +91,7 @@ namespace Client.Forms
                     MessageBox.Show("Đăng nhập thất bại: " + res.ErrorMessage, "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     btnEnterLobby.Enabled = true;
                     btnEnterLobby.Text = "ĐĂNG NHẬP"; // Đổi lại thành Đăng nhập cho khớp ảnh
+                    btnRegister.Enabled = true;
                 }
             }
         }
@@ -80,16 +99,18 @@ namespace Client.Forms
         private async void btnEnterLobby_Click(object? sender, EventArgs e)
         {
             string playerName = txtPlayerName.Text.Trim();
+            string password = txtPassword.Text.Trim();
 
-            if (string.IsNullOrWhiteSpace(playerName))
+            if (string.IsNullOrWhiteSpace(playerName) || string.IsNullOrWhiteSpace(password))
             {
-                MessageBox.Show("Vui lòng nhập tên người chơi!", "Lỗi nhập liệu", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Vui lòng nhập tên người chơi và mật khẩu!", "Lỗi nhập liệu", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
             try
             {
                 btnEnterLobby.Enabled = false;
+                btnRegister.Enabled = false;
                 btnEnterLobby.Text = "ĐANG KẾT NỐI...";
 
                 // 1. Kết nối đến Server nếu chưa kết nối
@@ -102,7 +123,7 @@ namespace Client.Forms
                 LoginMessage loginMsg = new LoginMessage
                 {
                     Username = playerName,
-                    Password = string.Empty,
+                    Password = password,
                     SenderId = playerName
                 };
 
@@ -113,7 +134,48 @@ namespace Client.Forms
             {
                 MessageBox.Show("Lỗi kết nối Server: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 btnEnterLobby.Enabled = true;
+                btnRegister.Enabled = true;
                 btnEnterLobby.Text = "ĐĂNG NHẬP";
+            }
+        }
+
+        private async void btnRegister_Click(object? sender, EventArgs e)
+        {
+            string playerName = txtPlayerName.Text.Trim();
+            string password = txtPassword.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(playerName) || string.IsNullOrWhiteSpace(password))
+            {
+                MessageBox.Show("Vui lòng nhập tên người chơi và mật khẩu để đăng ký!", "Lỗi nhập liệu", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            try
+            {
+                btnEnterLobby.Enabled = false;
+                btnRegister.Enabled = false;
+                btnRegister.Text = "ĐANG KẾT NỐI...";
+
+                if (!_clientConnection.IsConnected)
+                {
+                    await _clientConnection.ConnectToServer("127.0.0.1", 5000);
+                }
+
+                RegisterMessage regMsg = new RegisterMessage
+                {
+                    Username = playerName,
+                    Password = password,
+                    SenderId = playerName
+                };
+
+                await _clientConnection.SendMessageAsync(regMsg);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi kết nối Server: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                btnEnterLobby.Enabled = true;
+                btnRegister.Enabled = true;
+                btnRegister.Text = "ĐĂNG KÝ";
             }
         }
 

@@ -127,28 +127,9 @@ namespace Server.Network
         {
             Logger.Debug($"Nhận Message từ {session.SessionId}: Type={message.Type}, Sender={message.SenderId}");
 
-            // 👉 [TASK 1] Cập nhật tên người chơi vào Session ngay khi nhận gói tin đầu tiên
             if (!string.IsNullOrWhiteSpace(message.SenderId))
             {
                 session.PlayerName = message.SenderId;
-            }
-
-            // 👉 [TASK 1] Chặn gói tin StartGame ở đây để xử lý vòng ngoài, không cần sửa MessageHandler của team
-            if (message is RequestMessage req && req.Action == "StartGame")
-            {
-                string targetRoomName = req.Data;
-
-                var startGameResponse = new ResponseMessage
-                {
-                    SenderId = "Server",
-                    Action = "StartGame",
-                    Success = true,
-                    Data = targetRoomName
-                };
-
-                await _connectionManager.BroadcastAsync(startGameResponse);
-                await BroadcastLobbyStateAsync();
-                return; // Dừng tại đây, không đẩy xuống MessageHandler nữa
             }
 
             // Chuyển gói tin sang Router (MessageHandler) để xử lý logic
