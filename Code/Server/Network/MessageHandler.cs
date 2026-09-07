@@ -79,6 +79,11 @@ public class MessageHandler
                         await HandleStartMatchAsync(session, startMatchMsg);
                     break;
 
+                case MessageType.Invite:
+                    if (message is InviteMessage inviteMsg)
+                        await HandleInviteAsync(session, inviteMsg);
+                    break;
+
                 case MessageType.Move:
                     if (message is MoveMessage moveMsg)
                         await _gameRequestHandler.HandlePlayMoveAsync(session, moveMsg);
@@ -280,6 +285,33 @@ public class MessageHandler
             }
         }
         await session.SendAsync(response);
+    }
+
+    private async Task HandleInviteAsync(ClientSession session, InviteMessage request)
+    {
+        Logger.Info($"[Invite] User {session.SessionId} mời {request.TargetPlayerId} vào phòng {request.RoomId}");
+
+        // Chuyển tiếp lời mời tới người nhận nếu họ đang online
+        ClientSession? targetSession = null;
+        if (Guid.TryParse(request.TargetPlayerId, out Guid targetGuid))
+        {
+            targetSession = _connectionManager.Get(targetGuid);
+        }
+
+        if (targetSession != null)
+        {
+            await targetSession.SendAsync(request);
+        }
+        else
+        {
+            var errorResponse = new ResponseMessage
+            {
+                SenderId = "Server",
+                Success = false,
+                ErrorMessage = $"Người chơi không online hoặc không tồn tại."
+            };
+            await session.SendAsync(errorResponse);
+        }
     }
 
     private void HandlePongMessage(ClientSession session)

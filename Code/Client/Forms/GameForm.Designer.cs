@@ -29,6 +29,8 @@ namespace Client.Forms
             rtbChatHistory = new RichTextBox();
             lblChatTitle = new Label();
             pnlStatus = new Panel();
+            lblTimerValue = new Label();
+            lblTimerTitle = new Label();
             lblTurnValue = new Label();
             lblTurnText = new Label();
             lblPlayerO_Status = new Label();
@@ -182,6 +184,8 @@ namespace Client.Forms
             // pnlStatus
             // 
             pnlStatus.BackColor = Color.FromArgb(42, 44, 48);
+            pnlStatus.Controls.Add(lblTimerValue);
+            pnlStatus.Controls.Add(lblTimerTitle);
             pnlStatus.Controls.Add(lblTurnValue);
             pnlStatus.Controls.Add(lblTurnText);
             pnlStatus.Controls.Add(lblPlayerO_Status);
@@ -192,8 +196,30 @@ namespace Client.Forms
             pnlStatus.Dock = DockStyle.Top;
             pnlStatus.Location = new Point(15, 15);
             pnlStatus.Name = "pnlStatus";
-            pnlStatus.Size = new Size(320, 190);
+            pnlStatus.Size = new Size(320, 230);
             pnlStatus.TabIndex = 0;
+            // 
+            // lblTimerValue
+            // 
+            lblTimerValue.AutoSize = true;
+            lblTimerValue.BackColor = Color.FromArgb(217, 83, 79);
+            lblTimerValue.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+            lblTimerValue.ForeColor = Color.White;
+            lblTimerValue.Location = new Point(150, 180);
+            lblTimerValue.Name = "lblTimerValue";
+            lblTimerValue.Padding = new Padding(5);
+            lblTimerValue.Size = new Size(54, 38);
+            lblTimerValue.TabIndex = 8;
+            lblTimerValue.Text = "30s";
+            // 
+            // lblTimerTitle
+            // 
+            lblTimerTitle.AutoSize = true;
+            lblTimerTitle.Location = new Point(15, 185);
+            lblTimerTitle.Name = "lblTimerTitle";
+            lblTimerTitle.Size = new Size(84, 23);
+            lblTimerTitle.TabIndex = 7;
+            lblTimerTitle.Text = "Thời gian:";
             // 
             // lblTurnValue
             // 
@@ -333,6 +359,8 @@ namespace Client.Forms
         private System.Windows.Forms.Label lblPlayerO;
         private System.Windows.Forms.Label lblTurnText;
         private System.Windows.Forms.Label lblTurnValue;
+        private System.Windows.Forms.Label lblTimerTitle;
+        private System.Windows.Forms.Label lblTimerValue;
         private System.Windows.Forms.Panel pnlChat;
         private System.Windows.Forms.Label lblChatTitle;
         private System.Windows.Forms.RichTextBox rtbChatHistory;

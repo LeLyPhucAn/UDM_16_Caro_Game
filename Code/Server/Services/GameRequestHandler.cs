@@ -87,6 +87,15 @@ namespace Server.Services
                         await _connectionManager.SendMessageToClientAsync(sessionX, gameOverMsg);
                     if (!string.IsNullOrEmpty(sessionO))
                         await _connectionManager.SendMessageToClientAsync(sessionO, gameOverMsg);
+
+                    // 👉 LƯU KẾT QUẢ VÀO DATABASE
+                    int? dbWinnerId = null;
+                    if (moveResult.IsWin)
+                    {
+                        dbWinnerId = (moveResult.Piece == Shared.Models.CellState.X) ? match.PlayerX?.DatabaseId : match.PlayerO?.DatabaseId;
+                    }
+                    var matchService = new Server.Services.MatchService();
+                    matchService.SaveMatchResult(match.DbMatchId, dbWinnerId, resultType);
                 }
             }
         }
