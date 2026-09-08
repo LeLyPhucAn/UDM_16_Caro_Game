@@ -171,6 +171,11 @@ public class MessageHandler
         Logger.Info($"[CreateRoom] Yêu cầu từ Session: {session.SessionId}");
         var room = _roomManager.CreateRoom(msg.RoomName);
 
+        // Tự động add chủ phòng vào phòng
+        string pName = !string.IsNullOrEmpty(session.PlayerName) ? session.PlayerName : "Player_" + session.SessionId.ToString().Substring(0, 4);
+        var hostPlayer = new Player(session.SessionId.ToString(), pName);
+        _roomManager.JoinRoom(room.RoomId, hostPlayer);
+
         var response = new ResponseMessage
         {
             SenderId = "Server",
@@ -179,13 +184,15 @@ public class MessageHandler
         };
         await session.SendAsync(response);
         await BroadcastLobbyStateAsync();
+        await BroadcastRoomStateAsync(room);
     }
 
     private async Task HandleJoinRoomAsync(ClientSession session, JoinRoomMessage msg)
     {
         Logger.Info($"[JoinRoom] Yêu cầu từ Session: {session.SessionId} vào phòng {msg.RoomId}");
 
-        var player = new Player(session.SessionId.ToString(), "Player_" + session.SessionId.ToString().Substring(0, 4));
+        string pName = !string.IsNullOrEmpty(session.PlayerName) ? session.PlayerName : "Player_" + session.SessionId.ToString().Substring(0, 4);
+        var player = new Player(session.SessionId.ToString(), pName);
         bool success = _roomManager.JoinRoom(msg.RoomId, player);
 
         var response = new ResponseMessage
@@ -198,6 +205,9 @@ public class MessageHandler
         if (success)
         {
             await BroadcastLobbyStateAsync();
+            var room = _roomManager.GetRoom(msg.RoomId);
+            if (room != null)
+                await BroadcastRoomStateAsync(room);
         }
     }
 
@@ -260,6 +270,8 @@ public class MessageHandler
     private async Task HandleLeaveRoomAsync(ClientSession session, LeaveRoomMessage msg)
     {
         Logger.Info($"[LeaveRoom] Yêu cầu từ Session: {session.SessionId} rời phòng {msg.RoomId}");
+        
+        var room = _roomManager.GetRoom(msg.RoomId);
         bool success = _roomManager.LeaveRoom(msg.RoomId, session.SessionId.ToString());
 
         var response = new ResponseMessage
@@ -272,6 +284,11 @@ public class MessageHandler
         if (success)
         {
             await BroadcastLobbyStateAsync();
+            // Nếu phòng vẫn tồn tại sau khi người này rời (nghĩa là còn người ở lại)
+            if (_roomManager.RoomExists(msg.RoomId) && room != null)
+            {
+                await BroadcastRoomStateAsync(room);
+            }
         }
     }
 
@@ -366,5 +383,31 @@ public class MessageHandler
         };
 
         await _connectionManager.BroadcastAsync(response);
+    }
+
+    private async Task BroadcastRoomStateAsync(Room room)
+    {
+        if (room == null) return;
+
+        var stateDto = new CaroGame.Protocol.Messages.RoomStateDto
+        {
+            RoomId = room.RoomId,
+            RoomName = room.RoomName,
+            PlayerX = room.Players.Count > 0 ? room.Players[0].Username : "",
+            PlayerO = room.Players.Count > 1 ? room.Players[1].Username : ""
+        };
+
+        var response = new ResponseMessage
+        {
+            SenderId = "Server",
+            Success = true,
+            Action = "RoomStateUpdate",
+            Data = System.Text.Json.JsonSerializer.Serialize(stateDto)
+        };
+
+        foreach (var player in room.Players)
+        {
+            await _connectionManager.SendMessageToClientAsync(player.Id, response);
+        }
     }
 }
