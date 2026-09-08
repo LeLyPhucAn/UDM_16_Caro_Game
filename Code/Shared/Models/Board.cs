@@ -2,7 +2,9 @@
 
 namespace Shared.Models
 {
-    // Trạng thái của một ô trên bàn cờ
+    /// <summary>
+    /// Trạng thái của một ô trên bàn cờ.
+    /// </summary>
     public enum CellState
     {
         Empty = 0,
@@ -10,29 +12,36 @@ namespace Shared.Models
         O = 2
     }
 
+    /// <summary>
+    /// Bàn cờ Caro.
+    /// </summary>
     public class Board
     {
-        // Kích thước bàn cờ
-        public int Rows { get; private set; }
-        public int Columns { get; private set; }
+        public const int DefaultRows = 15;
+        public const int DefaultColumns = 15;
+        public const int WinLength = 5;
 
-        // Ma trận bàn cờ
+        public int Rows { get; }
+        public int Columns { get; }
+
         private readonly CellState[,] cells;
 
-        // Constructor mặc định: 15x15
         public Board()
-            : this(15, 15)
+            : this(DefaultRows, DefaultColumns)
         {
         }
 
-        // Constructor tùy chỉnh
         public Board(int rows, int columns)
         {
             if (rows <= 0)
-                throw new ArgumentException("Rows must be greater than 0.");
+                throw new ArgumentOutOfRangeException(
+                    nameof(rows),
+                    "Rows must be greater than zero.");
 
             if (columns <= 0)
-                throw new ArgumentException("Columns must be greater than 0.");
+                throw new ArgumentOutOfRangeException(
+                    nameof(columns),
+                    "Columns must be greater than zero.");
 
             Rows = rows;
             Columns = columns;
@@ -42,25 +51,17 @@ namespace Shared.Models
             Reset();
         }
 
-        // =====================================================
-        // RESET BOARD
-        // =====================================================
-
+        /// <summary>
+        /// Reset toàn bộ bàn cờ.
+        /// </summary>
         public void Reset()
         {
-            for (int row = 0; row < Rows; row++)
-            {
-                for (int column = 0; column < Columns; column++)
-                {
-                    cells[row, column] = CellState.Empty;
-                }
-            }
+            Array.Clear(cells, 0, cells.Length);
         }
 
-        // =====================================================
-        // KIỂM TRA VỊ TRÍ
-        // =====================================================
-
+        /// <summary>
+        /// Kiểm tra tọa độ có nằm trong bàn cờ.
+        /// </summary>
         public bool IsValidPosition(int row, int column)
         {
             return row >= 0 &&
@@ -69,62 +70,63 @@ namespace Shared.Models
                    column < Columns;
         }
 
-        // =====================================================
-        // KIỂM TRA Ô TRỐNG
-        // =====================================================
-
+        /// <summary>
+        /// Kiểm tra ô có trống.
+        /// </summary>
         public bool IsEmpty(int row, int column)
         {
-            if (!IsValidPosition(row, column))
-                return false;
-
-            return cells[row, column] == CellState.Empty;
+            return IsValidPosition(row, column) &&
+                   cells[row, column] == CellState.Empty;
         }
 
-        // =====================================================
-        // LẤY GIÁ TRỊ Ô
-        // =====================================================
-
+        /// <summary>
+        /// Lấy trạng thái ô.
+        /// </summary>
         public CellState GetCell(int row, int column)
         {
             if (!IsValidPosition(row, column))
+            {
                 throw new ArgumentOutOfRangeException(
                     nameof(row),
                     "Position is outside the board.");
+            }
 
             return cells[row, column];
         }
 
-        // =====================================================
-        // ĐẶT QUÂN
-        // =====================================================
-
+        /// <summary>
+        /// Đặt quân.
+        ///
+        /// Không cho:
+        /// - tọa độ sai
+        /// - đặt Empty
+        /// - đặt vào ô đã có quân
+        /// </summary>
         public bool PlacePiece(
             int row,
             int column,
-            CellState player)
+            CellState piece)
         {
-            // Vị trí không hợp lệ
             if (!IsValidPosition(row, column))
                 return false;
 
-            // Không cho đặt Empty
-            if (player == CellState.Empty)
+            if (piece != CellState.X &&
+                piece != CellState.O)
+            {
                 return false;
+            }
 
-            // Ô đã có quân
             if (!IsEmpty(row, column))
                 return false;
 
-            cells[row, column] = player;
+            cells[row, column] = piece;
 
             return true;
         }
 
-        // =====================================================
-        // XÓA QUÂN
-        // =====================================================
-
+        /// <summary>
+        /// Xóa một ô.
+        /// </summary>
         public bool ClearCell(int row, int column)
         {
             if (!IsValidPosition(row, column))
@@ -135,10 +137,9 @@ namespace Shared.Models
             return true;
         }
 
-        // =====================================================
-        // KIỂM TRA BÀN CỜ ĐẦY
-        // =====================================================
-
+        /// <summary>
+        /// Kiểm tra bàn cờ đã đầy.
+        /// </summary>
         public bool IsFull()
         {
             for (int row = 0; row < Rows; row++)
@@ -153,69 +154,64 @@ namespace Shared.Models
             return true;
         }
 
-        // =====================================================
-        // KIỂM TRA THẮNG
-        // =====================================================
-
+        /// <summary>
+        /// Kiểm tra người chơi tại vị trí vừa đánh
+        /// có đạt 5 quân liên tiếp hay không.
+        ///
+        /// Kiểm tra:
+        /// - ngang
+        /// - dọc
+        /// - chéo \
+        /// - chéo /
+        /// </summary>
         public bool CheckWin(int row, int column)
         {
             if (!IsValidPosition(row, column))
                 return false;
 
-            CellState player = cells[row, column];
+            CellState piece = cells[row, column];
 
-            if (player == CellState.Empty)
+            if (piece == CellState.Empty)
                 return false;
 
-            // Ngang
-            int horizontal =
-                CountDirection(row, column, 0, 1, player) +
-                CountDirection(row, column, 0, -1, player) +
-                1;
-
-            if (horizontal >= 5)
-                return true;
-
-            // Dọc
-            int vertical =
-                CountDirection(row, column, 1, 0, player) +
-                CountDirection(row, column, -1, 0, player) +
-                1;
-
-            if (vertical >= 5)
-                return true;
-
-            // Chéo \
-            int diagonal1 =
-                CountDirection(row, column, 1, 1, player) +
-                CountDirection(row, column, -1, -1, player) +
-                1;
-
-            if (diagonal1 >= 5)
-                return true;
-
-            // Chéo /
-            int diagonal2 =
-                CountDirection(row, column, 1, -1, player) +
-                CountDirection(row, column, -1, 1, player) +
-                1;
-
-            if (diagonal2 >= 5)
-                return true;
-
-            return false;
+            return CountLine(row, column, 0, 1, piece) >= WinLength ||
+                   CountLine(row, column, 1, 0, piece) >= WinLength ||
+                   CountLine(row, column, 1, 1, piece) >= WinLength ||
+                   CountLine(row, column, 1, -1, piece) >= WinLength;
         }
 
-        // =====================================================
-        // ĐẾM QUÂN LIÊN TIẾP
-        // =====================================================
+        private int CountLine(
+            int row,
+            int column,
+            int rowDirection,
+            int columnDirection,
+            CellState piece)
+        {
+            int count = 1;
+
+            count += CountDirection(
+                row,
+                column,
+                rowDirection,
+                columnDirection,
+                piece);
+
+            count += CountDirection(
+                row,
+                column,
+                -rowDirection,
+                -columnDirection,
+                piece);
+
+            return count;
+        }
 
         private int CountDirection(
             int row,
             int column,
             int rowDirection,
             int columnDirection,
-            CellState player)
+            CellState piece)
         {
             int count = 0;
 
@@ -224,7 +220,7 @@ namespace Shared.Models
 
             while (
                 IsValidPosition(currentRow, currentColumn) &&
-                cells[currentRow, currentColumn] == player)
+                cells[currentRow, currentColumn] == piece)
             {
                 count++;
 
@@ -235,59 +231,39 @@ namespace Shared.Models
             return count;
         }
 
-        // =====================================================
-        // LẤY BÀN CỜ
-        // =====================================================
-
+        /// <summary>
+        /// Trả về bản sao bàn cờ.
+        /// </summary>
         public CellState[,] GetBoard()
         {
             CellState[,] result =
                 new CellState[Rows, Columns];
 
-            for (int row = 0; row < Rows; row++)
-            {
-                for (int column = 0; column < Columns; column++)
-                {
-                    result[row, column] =
-                        cells[row, column];
-                }
-            }
+            Array.Copy(
+                cells,
+                result,
+                cells.Length);
 
             return result;
         }
 
-        // =====================================================
-        // IN BÀN CỜ - DÙNG ĐỂ TEST
-        // =====================================================
-
-        public void PrintBoard()
+        /// <summary>
+        /// Đếm số ô đã đánh.
+        /// </summary>
+        public int GetOccupiedCount()
         {
-            Console.WriteLine();
+            int count = 0;
 
             for (int row = 0; row < Rows; row++)
             {
                 for (int column = 0; column < Columns; column++)
                 {
-                    switch (cells[row, column])
-                    {
-                        case CellState.X:
-                            Console.Write(" X ");
-                            break;
-
-                        case CellState.O:
-                            Console.Write(" O ");
-                            break;
-
-                        default:
-                            Console.Write(" . ");
-                            break;
-                    }
+                    if (cells[row, column] != CellState.Empty)
+                        count++;
                 }
-
-                Console.WriteLine();
             }
 
-            Console.WriteLine();
+            return count;
         }
     }
 }

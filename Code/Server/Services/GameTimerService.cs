@@ -1,82 +1,48 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Threading;
 
 namespace Server.Services
 {
     /// <summary>
     /// Quản lý Timer cho từng Match.
     ///
-    /// Mỗi lượt chơi có một khoảng thời gian giới hạn.
-    /// Mặc định: 30 giây.
+    /// Mặc định: 30 giây cho mỗi lượt.
     /// </summary>
     public sealed class GameTimerService : IDisposable
     {
-        /// <summary>
-        /// Thông tin Timer của một Match.
-        /// </summary>
         private sealed class TimerEntry
         {
             public Timer Timer { get; }
 
-            public DateTime ExpiresAt { get; }
+            public DateTime ExpiresAtUtc { get; }
 
             public TimerEntry(
                 Timer timer,
-                DateTime expiresAt)
+                DateTime expiresAtUtc)
             {
                 Timer = timer;
-
-                ExpiresAt = expiresAt;
+                ExpiresAtUtc = expiresAtUtc;
             }
         }
 
-        /// <summary>
-        /// Danh sách Timer đang chạy.
-        ///
-        /// Key = MatchId.
-        /// </summary>
         private readonly ConcurrentDictionary<
             string,
-            TimerEntry> timers;
+            TimerEntry> timers = new();
 
-        /// <summary>
-        /// Thời gian của mỗi lượt.
-        /// </summary>
         private readonly TimeSpan turnDuration;
 
-        /// <summary>
-        /// Callback được gọi khi hết thời gian.
-        /// </summary>
         private readonly Action<string> timeoutCallback;
 
-        private bool disposed;
+        private int disposed;
 
-        /// <summary>
-        /// Lấy thời gian của một lượt.
-        /// </summary>
-        public TimeSpan TurnDuration
-        {
-            get
-            {
-                return turnDuration;
-            }
-        }
+        public TimeSpan TurnDuration =>
+            turnDuration;
 
-        /// <summary>
-        /// Constructor.
-        ///
-        /// Nếu không truyền thời gian:
-        /// mặc định 30 giây.
-        /// </summary>
         public GameTimerService(
             TimeSpan? turnDuration = null,
             Action<string>? timeoutCallback = null)
         {
-            timers =
-                new ConcurrentDictionary<
-                    string,
-                    TimerEntry>();
-
             this.turnDuration =
                 turnDuration ??
                 TimeSpan.FromSeconds(30);
@@ -89,77 +55,65 @@ namespace Server.Services
             }
 
             this.timeoutCallback =
-                timeoutCallback ??
-                (_ => { });
+                timeoutCallback ?? (_ => { });
         }
 
         /// <summary>
-        /// Bắt đầu Timer hoặc Reset Timer của Match.
-        ///
-        /// Dùng khi:
-        /// - Match bắt đầu.
-        /// - Người chơi đánh xong.
-        /// - Chuyển sang lượt tiếp theo.
+        /// Start hoặc Reset Timer.
         /// </summary>
         public bool StartOrReset(
             string matchId)
         {
-            if (disposed)
-            {
+            if (IsDisposed())
                 return false;
-            }
 
             if (string.IsNullOrWhiteSpace(matchId))
-            {
                 return false;
-            }
 
-            // Xóa Timer cũ.
-            Stop(matchId);
+            matchId = matchId.Trim();
 
-            DateTime expiresAt =
-                DateTime.UtcNow.Add(
-                    turnDuration);
+            DateTime expiresAtUtc =
+                DateTime.UtcNow.Add(turnDuration);
 
-            Timer? timer = null;
+            Timer? newTimer = null;
 
-            timer =
+            newTimer =
                 new Timer(
                     _ =>
                         OnTimeout(
                             matchId,
-                            timer!),
+                            newTimer!),
                     null,
                     turnDuration,
                     Timeout.InfiniteTimeSpan);
 
-            TimerEntry entry =
+            TimerEntry newEntry =
                 new TimerEntry(
-                    timer,
-                    expiresAt);
+                    newTimer,
+                    expiresAtUtc);
 
-            if (!timers.TryAdd(
-                    matchId,
-                    entry))
-            {
-                timer.Dispose();
+            timers.AddOrUpdate(
+                matchId,
+                newEntry,
+                (_, oldEntry) =>
+                {
+                    oldEntry.Timer.Dispose();
 
-                return false;
-            }
+                    return newEntry;
+                });
 
             return true;
         }
 
         /// <summary>
-        /// Dừng Timer của Match.
+        /// Dừng Timer.
         /// </summary>
-        public bool Stop(
-            string matchId)
+        public bool Stop(string matchId)
         {
             if (string.IsNullOrWhiteSpace(matchId))
-            {
                 return false;
-            }
+
+            matchId = matchId.Trim();
 
             if (timers.TryRemove(
                     matchId,
@@ -174,106 +128,112 @@ namespace Server.Services
         }
 
         /// <summary>
-        /// Lấy số giây còn lại.
+        /// Lấy thời gian còn lại.
         /// </summary>
         public int GetRemainingSeconds(
             string matchId)
         {
+            if (string.IsNullOrWhiteSpace(matchId))
+                return 0;
+
             if (!timers.TryGetValue(
-                    matchId,
+                    matchId.Trim(),
                     out TimerEntry? entry))
             {
                 return 0;
             }
 
             TimeSpan remaining =
-                entry.ExpiresAt -
+                entry.ExpiresAtUtc -
                 DateTime.UtcNow;
 
             if (remaining <= TimeSpan.Zero)
-            {
                 return 0;
-            }
 
             return (int)Math.Ceiling(
                 remaining.TotalSeconds);
         }
 
-        /// <summary>
-        /// Kiểm tra Timer có đang chạy hay không.
-        /// </summary>
         public bool IsRunning(
             string matchId)
         {
-            if (string.IsNullOrWhiteSpace(
-                    matchId))
-            {
+            if (string.IsNullOrWhiteSpace(matchId))
                 return false;
-            }
 
-            return timers.ContainsKey(matchId);
+            return timers.ContainsKey(
+                matchId.Trim());
         }
 
-        /// <summary>
-        /// Xử lý khi Timer hết hạn.
-        /// </summary>
         private void OnTimeout(
             string matchId,
             Timer timer)
         {
+            if (IsDisposed())
+            {
+                timer.Dispose();
+                return;
+            }
+
             if (!timers.TryGetValue(
                     matchId,
                     out TimerEntry? current))
             {
                 timer.Dispose();
-
                 return;
             }
 
-            // Đảm bảo Timer cũ không xử lý timeout
-            // sau khi Timer mới đã được reset.
+            // Timer cũ -> bỏ qua.
             if (!ReferenceEquals(
                     current.Timer,
                     timer))
             {
                 timer.Dispose();
-
                 return;
             }
 
+            // Chỉ Timer hiện tại mới được xử lý.
             if (!timers.TryRemove(
-                    matchId,
-                    out TimerEntry? entry))
+                    new KeyValuePair<string, TimerEntry>(
+                        matchId,
+                        current)))
             {
                 timer.Dispose();
-
                 return;
             }
 
-            entry.Timer.Dispose();
+            current.Timer.Dispose();
 
-            if (!disposed)
+            if (!IsDisposed())
             {
-                timeoutCallback(matchId);
+                try
+                {
+                    timeoutCallback(matchId);
+                }
+                catch
+                {
+                    // Không để exception từ callback
+                    // làm crash Timer thread.
+                }
             }
         }
 
-        /// <summary>
-        /// Giải phóng toàn bộ Timer.
-        /// </summary>
+        private bool IsDisposed()
+        {
+            return Volatile.Read(
+                ref disposed) != 0;
+        }
+
         public void Dispose()
         {
-            if (disposed)
+            if (Interlocked.Exchange(
+                    ref disposed,
+                    1) != 0)
             {
                 return;
             }
 
-            disposed = true;
-
             foreach (
-                KeyValuePair<
-                    string,
-                    TimerEntry> item
+                KeyValuePair<string, TimerEntry> item
                 in timers)
             {
                 item.Value.Timer.Dispose();

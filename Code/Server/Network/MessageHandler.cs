@@ -79,6 +79,11 @@ public class MessageHandler
                         await HandleStartMatchAsync(session, startMatchMsg);
                     break;
 
+                case MessageType.Invite:
+                    if (message is InviteMessage inviteMsg)
+                        await HandleInviteAsync(session, inviteMsg);
+                    break;
+
                 case MessageType.Move:
                     if (message is MoveMessage moveMsg)
                         await _gameRequestHandler.HandlePlayMoveAsync(session, moveMsg);
@@ -132,6 +137,13 @@ public class MessageHandler
 
         // Gửi kết quả lại cho Client
         await session.SendAsync(response);
+
+        if (isValid)
+        {
+            // Update Session PlayerName
+            session.PlayerName = loginMsg.Username;
+            await BroadcastLobbyStateAsync();
+        }
     }
 
     /// <summary>
@@ -166,6 +178,7 @@ public class MessageHandler
             Data = room.RoomId // Trả về RoomId để Client biết
         };
         await session.SendAsync(response);
+        await BroadcastLobbyStateAsync();
     }
 
     private async Task HandleJoinRoomAsync(ClientSession session, JoinRoomMessage msg)
@@ -182,6 +195,10 @@ public class MessageHandler
             ErrorMessage = success ? string.Empty : "Không thể tham gia phòng. Phòng đã đầy hoặc không tồn tại."
         };
         await session.SendAsync(response);
+        if (success)
+        {
+            await BroadcastLobbyStateAsync();
+        }
     }
 
     private async Task HandleStartMatchAsync(ClientSession session, StartMatchMessage msg)
@@ -252,6 +269,10 @@ public class MessageHandler
             ErrorMessage = success ? string.Empty : "Không thể rời phòng."
         };
         await session.SendAsync(response);
+        if (success)
+        {
+            await BroadcastLobbyStateAsync();
+        }
     }
 
     private async Task HandleHistoryRequestAsync(ClientSession session, HistoryRequestMessage msg)
@@ -282,9 +303,68 @@ public class MessageHandler
         await session.SendAsync(response);
     }
 
+    private async Task HandleInviteAsync(ClientSession session, InviteMessage request)
+    {
+        Logger.Info($"[Invite] User {session.SessionId} mời {request.TargetPlayerId} vào phòng {request.RoomId}");
+
+        // Chuyển tiếp lời mời tới người nhận nếu họ đang online
+        ClientSession? targetSession = null;
+        if (Guid.TryParse(request.TargetPlayerId, out Guid targetGuid))
+        {
+            targetSession = _connectionManager.Get(targetGuid);
+        }
+
+        if (targetSession != null)
+        {
+            await targetSession.SendAsync(request);
+        }
+        else
+        {
+            var errorResponse = new ResponseMessage
+            {
+                SenderId = "Server",
+                Success = false,
+                ErrorMessage = $"Người chơi không online hoặc không tồn tại."
+            };
+            await session.SendAsync(errorResponse);
+        }
+    }
+
     private void HandlePongMessage(ClientSession session)
     {
         // Cập nhật thời gian nhận Pong cuối cùng
         session.LastPongTime = DateTime.Now;
+    }
+
+    public async Task BroadcastLobbyStateAsync()
+    {
+        var players = _connectionManager.GetAllPlayerNames();
+        var roomInfos = new System.Collections.Generic.List<Shared.Models.RoomInfo>();
+        foreach (var room in _roomManager.GetRooms())
+        {
+            roomInfos.Add(new Shared.Models.RoomInfo {
+                RoomId = room.RoomId,
+                RoomName = room.RoomName,
+                CurrentPlayers = room.Players.Count,
+                MaxPlayers = room.MaxPlayers,
+                IsPlaying = room.IsPlaying
+            });
+        }
+
+        var lobbyData = new Shared.Models.LobbyStateDto
+        {
+            OnlineCount = _connectionManager.Count,
+            OnlinePlayers = players,
+            Rooms = roomInfos
+        };
+
+        var response = new ResponseMessage
+        {
+            SenderId = "Server",
+            Success = true,
+            Data = System.Text.Json.JsonSerializer.Serialize(lobbyData)
+        };
+
+        await _connectionManager.BroadcastAsync(response);
     }
 }

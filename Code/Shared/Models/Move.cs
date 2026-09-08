@@ -1,7 +1,7 @@
 ﻿namespace Shared.Models
 {
     /// <summary>
-    /// Đại diện cho một nước đi.
+    /// Đại diện cho một nước đi hợp lệ.
     /// </summary>
     public class Move
     {
@@ -22,6 +22,9 @@
             PlayerId = string.Empty;
             Symbol = string.Empty;
             Piece = CellState.Empty;
+            Row = -1;
+            Column = -1;
+            MoveNumber = 0;
         }
 
         public Move(
@@ -34,7 +37,6 @@
             PlayerId = playerId ?? string.Empty;
 
             Row = row;
-
             Column = column;
 
             Piece = piece;
@@ -43,7 +45,7 @@
             {
                 CellState.X => "X",
                 CellState.O => "O",
-                _ => ""
+                _ => string.Empty
             };
 
             MoveNumber = moveNumber;

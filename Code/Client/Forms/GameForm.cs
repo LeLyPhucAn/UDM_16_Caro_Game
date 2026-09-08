@@ -24,6 +24,10 @@ namespace Client.Forms
         private string _playerName;
         private bool _isHost;
 
+        // 👉 BỔ SUNG: Timer chạy phía Client để đếm ngược 30 giây
+        private System.Windows.Forms.Timer _clientTimer = new System.Windows.Forms.Timer();
+        private int _remainingSeconds = 30;
+
         // 👉 CHỈNH SỬA: Hàm khởi tạo giờ đã nhận đủ 4 tham số
         public GameForm(ClientConnection connection, string roomName, string playerName, bool isHost)
         {
@@ -44,7 +48,23 @@ namespace Client.Forms
         private void GameForm_Load(object sender, EventArgs e)
         {
             SetupBoardControl();
-            //LoadDummyData();
+            
+            // Cài đặt Timer
+            _clientTimer.Interval = 1000; // 1 giây
+            _clientTimer.Tick += ClientTimer_Tick;
+        }
+
+        private void ClientTimer_Tick(object? sender, EventArgs e)
+        {
+            _remainingSeconds--;
+            if (_remainingSeconds <= 0)
+            {
+                _remainingSeconds = 0;
+                _clientTimer.Stop(); // Hết giờ thì dừng đếm
+            }
+            // Cập nhật UI an toàn trên form thread
+            if (lblTimerValue != null)
+                lblTimerValue.Text = _remainingSeconds + "s";
         }
 
         // ======================================================
@@ -132,6 +152,10 @@ namespace Client.Forms
 
                     // Cập nhật giao diện lượt đi ban đầu
                     lblPlayerX.Text = $"Lượt đi hiện tại: X ({syncMsg.CurrentTurnName})";
+
+                    // Bắt đầu đếm ngược thời gian
+                    _remainingSeconds = 30;
+                    _clientTimer.Start();
                 }
 
                 // ==========================================
@@ -156,6 +180,10 @@ namespace Client.Forms
                         string playerXName = lblPlayerX.Text.Replace("X: ", "");
                         lblPlayerX.Text = $"Lượt đi hiện tại: X ({playerXName})";
                     }
+
+                    // Reset đồng hồ cho lượt mới
+                    _remainingSeconds = 30;
+                    _clientTimer.Start();
                 }
 
                 // ==========================================
@@ -164,6 +192,7 @@ namespace Client.Forms
                 else if (message.Type == MessageType.GameOver && message is GameOverMessage gameOverMsg)
                 {
                     _isMyTurn = false;
+                    _clientTimer.Stop(); // Trận kết thúc thì dừng timer
 
                     lblPlayerX.Text = "Trận đấu kết thúc!";
                     lblPlayerX.ForeColor = Color.Yellow;
@@ -178,6 +207,21 @@ namespace Client.Forms
                         MessageBox.Show("Ván đấu hòa! Không còn ô trống nào trên bàn cờ.",
                                         "Kết thúc ván đấu", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
+                    else if (gameOverMsg.ResultType == "Timeout")
+                    {
+                        MessageBox.Show($"Ván đấu kết thúc do hết thời gian! [{gameOverMsg.WinnerName}] đã giành chiến thắng.",
+                                        "Kết thúc ván đấu", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
+                
+                // ==========================================
+                // 4. XỬ LÝ ĐỒNG BỘ TIMER TỪ SERVER (NẾU CÓ)
+                // ==========================================
+                else if (message.Type == MessageType.Timer && message is TimerMessage timerMsg)
+                {
+                    // Nếu server gửi TimerMessage, ta ưu tiên dùng số giây từ Server
+                    _remainingSeconds = timerMsg.RemainingSeconds;
+                    lblTimerValue.Text = _remainingSeconds + "s";
                 }
             }
             catch (Exception ex)

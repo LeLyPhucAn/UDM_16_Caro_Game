@@ -10,294 +10,200 @@ namespace Shared.Models
     }
 
     /// <summary>
-    /// Model đại diện cho một trận đấu Caro.
+    /// Model đại diện cho một trận Caro.
     /// </summary>
     public class Match
     {
         // =========================
-        // THÔNG TIN MATCH
+        // THÔNG TIN TRẬN ĐẤU
         // =========================
-
         public string MatchId { get; set; }
-
-        public int DbMatchId { get; set; }
-
         public string RoomId { get; set; }
 
+        /// <summary>
+        /// ID của trận đấu lưu trong Database
+        /// </summary>
+        public int DbMatchId { get; set; }
 
         // =========================
         // NGƯỜI CHƠI
         // =========================
-
         public Player? PlayerX { get; set; }
-
         public Player? PlayerO { get; set; }
 
-
         // =========================
-        // GAME STATE
+        // BÀN CỜ & TRẠNG THÁI
         // =========================
-
         public Board Board { get; set; }
-
         public CellState CurrentTurn { get; set; }
-
         public MatchState State { get; set; }
-
-
-        // =========================
-        // KẾT QUẢ
-        // =========================
-
         public string? WinnerId { get; set; }
-
         public int MoveCount { get; set; }
-
 
         // =========================
         // THỜI GIAN
         // =========================
-
         public DateTime CreatedAt { get; set; }
-
         public DateTime? StartedAt { get; set; }
-
         public DateTime? FinishedAt { get; set; }
-
-
-        // =========================
-        // CONSTRUCTOR MẶC ĐỊNH
-        // =========================
 
         public Match()
         {
             MatchId = string.Empty;
             RoomId = string.Empty;
+            DbMatchId = 0;
 
             PlayerX = null;
             PlayerO = null;
 
-            Board = new Board(15, 15);
-
+            Board = new Board();
             CurrentTurn = CellState.X;
-
             State = MatchState.Waiting;
-
             WinnerId = null;
-
             MoveCount = 0;
 
-            CreatedAt = DateTime.Now;
-
+            CreatedAt = DateTime.UtcNow;
             StartedAt = null;
             FinishedAt = null;
         }
 
-
-        // =========================
-        // CONSTRUCTOR
-        // =========================
-
-        public Match(
-            string matchId,
-            string roomId)
+        public Match(string matchId, string roomId) : this()
         {
             MatchId = matchId ?? string.Empty;
-
             RoomId = roomId ?? string.Empty;
-
-            PlayerX = null;
-            PlayerO = null;
-
-            Board = new Board(15, 15);
-
-            CurrentTurn = CellState.X;
-
-            State = MatchState.Waiting;
-
-            WinnerId = null;
-
-            MoveCount = 0;
-
-            CreatedAt = DateTime.Now;
-
-            StartedAt = null;
-            FinishedAt = null;
         }
 
-
         // =========================
-        // PLAYER
+        // PLAYER HELPERS
         // =========================
 
         /// <summary>
-        /// Kiểm tra Match đã có đủ 2 người chơi chưa.
+        /// Match đã đủ 2 Player chưa.
         /// </summary>
         public bool HasTwoPlayers()
         {
-            return PlayerX != null &&
-                   PlayerO != null;
+            return PlayerX != null && PlayerO != null;
         }
 
-
         /// <summary>
-        /// Lấy người chơi đang tới lượt.
+        /// Lấy Player đang tới lượt.
         /// </summary>
         public Player? GetCurrentPlayer()
         {
-            if (CurrentTurn == CellState.X)
+            return CurrentTurn switch
             {
-                return PlayerX;
-            }
-
-            if (CurrentTurn == CellState.O)
-            {
-                return PlayerO;
-            }
-
-            return null;
+                CellState.X => PlayerX,
+                CellState.O => PlayerO,
+                _ => null
+            };
         }
 
-
         /// <summary>
-        /// Lấy Id của người chơi đang tới lượt.
+        /// Lấy ID Player đang tới lượt.
         /// </summary>
         public string? GetCurrentPlayerId()
         {
-            Player? player = GetCurrentPlayer();
-
-            if (player == null)
-            {
-                return null;
-            }
-
-            return player.Id.ToString();
+            return GetCurrentPlayer()?.Id.ToString();
         }
 
-
         // =========================
-        // MATCH STATE
+        // MATCH STATE CONTROL
         // =========================
 
         /// <summary>
-        /// Bắt đầu trận đấu.
+        /// Bắt đầu Match.
         /// </summary>
         public bool Start()
         {
             if (!HasTwoPlayers())
-            {
                 return false;
-            }
 
             if (State != MatchState.Waiting)
-            {
                 return false;
-            }
 
-            State = MatchState.Playing;
-
+            Board.Reset();
             CurrentTurn = CellState.X;
-
             MoveCount = 0;
-
             WinnerId = null;
 
-            StartedAt = DateTime.Now;
-
+            State = MatchState.Playing;
+            StartedAt = DateTime.UtcNow;
             FinishedAt = null;
 
             return true;
         }
 
-
-        /// <summary>
-        /// Kiểm tra trận đấu có đang diễn ra hay không.
-        /// </summary>
         public bool IsPlaying()
         {
             return State == MatchState.Playing;
         }
 
-
-        /// <summary>
-        /// Kiểm tra trận đấu đã kết thúc hay chưa.
-        /// </summary>
         public bool IsFinished()
         {
             return State == MatchState.Finished;
         }
 
+        /// <summary>
+        /// Kiểm tra trận đấu hòa hay không.
+        /// </summary>
+        public bool IsDraw()
+        {
+            return State == MatchState.Finished && string.IsNullOrEmpty(WinnerId);
+        }
 
         /// <summary>
-        /// Kết thúc trận đấu.
+        /// Kết thúc Match.
         /// </summary>
         public void End(string? winnerId = null)
         {
             State = MatchState.Finished;
-
             WinnerId = winnerId;
-
-            FinishedAt = DateTime.Now;
+            FinishedAt = DateTime.UtcNow;
         }
 
-
-        // =========================
-        // TURN
-        // =========================
-
-        /// <summary>
-        /// Chuyển lượt chơi.
-        /// </summary>
-        public void ChangeTurn()
+        public void EndMatch(string? winnerId = null)
         {
-            if (CurrentTurn == CellState.X)
-            {
-                CurrentTurn = CellState.O;
-            }
-            else
-            {
-                CurrentTurn = CellState.X;
-            }
+            End(winnerId);
         }
 
-
         // =========================
-        // MOVE
+        // TURN & MOVE CONTROL
         // =========================
 
         /// <summary>
-        /// Tăng số lượt đánh.
+        /// Chuyển lượt.
         /// </summary>
+        public bool ChangeTurn()
+        {
+            if (State != MatchState.Playing)
+                return false;
+
+            CurrentTurn = (CurrentTurn == CellState.X) ? CellState.O : CellState.X;
+            return true;
+        }
+
         public void IncrementMoveCount()
         {
             MoveCount++;
         }
 
-
-        // =========================
-        // RESET
-        // =========================
-
         /// <summary>
-        /// Reset Match về trạng thái ban đầu.
+        /// Reset Match nhưng giữ Player.
         /// </summary>
         public void Reset()
         {
-            Board = new Board(15, 15);
-
+            Board.Reset();
             CurrentTurn = CellState.X;
-
             State = MatchState.Waiting;
-
             WinnerId = null;
-
             MoveCount = 0;
-
-            CreatedAt = DateTime.Now;
-
             StartedAt = null;
-
             FinishedAt = null;
+        }
+
+        public void ResetMatch()
+        {
+            Reset();
         }
     }
 }

@@ -5,20 +5,17 @@ namespace Server.Services
     public enum MoveValidationResult
     {
         Valid,
-
         MatchNotPlaying,
-
         GameOver,
-
         InvalidPlayer,
-
         WrongTurn,
-
         InvalidPosition,
-
         CellOccupied
     }
 
+    /// <summary>
+    /// Kết quả xử lý một nước đi.
+    /// </summary>
     public class MoveResult
     {
         public MoveValidationResult Result { get; set; }
@@ -32,28 +29,85 @@ namespace Server.Services
 
         public string? WinnerId { get; set; }
 
+        public string? LoserId { get; set; }
+
         public CellState Piece { get; set; }
+
+        public int Row { get; set; }
+
+        public int Column { get; set; }
 
         public string Message { get; set; }
 
         public MoveResult()
         {
-            Message = string.Empty;
+            Result = MoveValidationResult.Valid;
+
             Piece = CellState.Empty;
+
+            Message = string.Empty;
+
+            Row = -1;
+            Column = -1;
         }
     }
 
     /// <summary>
-    /// Xử lý toàn bộ luật của game Caro.
+    /// GameResult lưu kết quả cuối cùng của Match.
+    /// </summary>
+    public enum GameResultType
+    {
+        Win,
+        Draw,
+        Timeout,
+        Abandoned
+    }
+
+    public class GameResult
+    {
+        public string MatchId { get; }
+
+        public GameResultType ResultType { get; }
+
+        public string? WinnerId { get; }
+
+        public string? LoserId { get; }
+
+        public string Reason { get; }
+
+        public System.DateTime FinishedAt { get; }
+
+        public GameResult(
+            string matchId,
+            GameResultType resultType,
+            string? winnerId,
+            string? loserId,
+            string reason)
+        {
+            MatchId = matchId;
+
+            ResultType = resultType;
+
+            WinnerId = winnerId;
+
+            LoserId = loserId;
+
+            Reason = reason;
+
+            FinishedAt = System.DateTime.UtcNow;
+        }
+    }
+
+    /// <summary>
+    /// Xử lý luật Caro phía Server.
     /// </summary>
     public class GameRuleService
     {
         public const int WinLength = 5;
 
-        // ============================================
-        // VALIDATE MOVE
-        // ============================================
-
+        /// <summary>
+        /// Validate một nước đi.
+        /// </summary>
         public MoveValidationResult ValidateMove(
             Board board,
             string playerId,
@@ -90,16 +144,12 @@ namespace Server.Services
                 return MoveValidationResult.WrongTurn;
             }
 
-            if (!board.IsValidPosition(
-                    row,
-                    column))
+            if (!board.IsValidPosition(row, column))
             {
                 return MoveValidationResult.InvalidPosition;
             }
 
-            if (!board.IsEmpty(
-                    row,
-                    column))
+            if (!board.IsEmpty(row, column))
             {
                 return MoveValidationResult.CellOccupied;
             }
@@ -107,10 +157,9 @@ namespace Server.Services
             return MoveValidationResult.Valid;
         }
 
-        // ============================================
-        // APPLY MOVE
-        // ============================================
-
+        /// <summary>
+        /// Validate và đặt quân.
+        /// </summary>
         public MoveResult ApplyMove(
             Board board,
             string playerId,
@@ -138,6 +187,8 @@ namespace Server.Services
                 return new MoveResult
                 {
                     Result = validation,
+                    Row = row,
+                    Column = column,
                     Message = GetMessage(validation)
                 };
             }
@@ -160,6 +211,9 @@ namespace Server.Services
                 {
                     Result =
                         MoveValidationResult.CellOccupied,
+
+                    Row = row,
+                    Column = column,
 
                     Message =
                         "Cell is already occupied."
@@ -190,19 +244,22 @@ namespace Server.Services
 
                 Piece = piece,
 
+                Row = row,
+
+                Column = column,
+
                 Message =
                     win
-                    ? "Player wins."
-                    : draw
-                        ? "Match draw."
-                        : "Move accepted."
+                        ? "Player wins."
+                        : draw
+                            ? "Match draw."
+                            : "Move accepted."
             };
         }
 
-        // ============================================
-        // GET PLAYER PIECE
-        // ============================================
-
+        /// <summary>
+        /// Xác định quân X/O của Player.
+        /// </summary>
         public CellState GetPlayerPiece(
             string playerId,
             string playerXId,
@@ -217,93 +274,63 @@ namespace Server.Services
             return CellState.Empty;
         }
 
-        // ============================================
-        // CHECK WIN
-        // ============================================
-
+        /// <summary>
+        /// Kiểm tra thắng tại vị trí vừa đánh.
+        /// </summary>
         public bool CheckWin(
             Board board,
             int row,
             int column)
         {
-            if (!board.IsValidPosition(
-                    row,
-                    column))
-            {
+            if (!board.IsValidPosition(row, column))
                 return false;
-            }
 
             CellState piece =
                 board.GetCell(row, column);
 
             if (piece == CellState.Empty)
-            {
                 return false;
-            }
 
-            // Ngang
-            if (CountLine(
-                    board,
-                    row,
-                    column,
-                    0,
-                    1,
-                    piece) >= WinLength)
-            {
-                return true;
-            }
-
-            // Dọc
-            if (CountLine(
-                    board,
-                    row,
-                    column,
-                    1,
-                    0,
-                    piece) >= WinLength)
-            {
-                return true;
-            }
-
-            // Chéo \
-            if (CountLine(
-                    board,
-                    row,
-                    column,
-                    1,
-                    1,
-                    piece) >= WinLength)
-            {
-                return true;
-            }
-
-            // Chéo /
-            if (CountLine(
-                    board,
-                    row,
-                    column,
-                    1,
-                    -1,
-                    piece) >= WinLength)
-            {
-                return true;
-            }
-
-            return false;
+            return CountLine(
+                       board,
+                       row,
+                       column,
+                       0,
+                       1,
+                       piece) >= WinLength
+                   ||
+                   CountLine(
+                       board,
+                       row,
+                       column,
+                       1,
+                       0,
+                       piece) >= WinLength
+                   ||
+                   CountLine(
+                       board,
+                       row,
+                       column,
+                       1,
+                       1,
+                       piece) >= WinLength
+                   ||
+                   CountLine(
+                       board,
+                       row,
+                       column,
+                       1,
+                       -1,
+                       piece) >= WinLength;
         }
 
-        // ============================================
-        // CHECK DRAW
-        // ============================================
-
+        /// <summary>
+        /// Kiểm tra hòa.
+        /// </summary>
         public bool CheckDraw(Board board)
         {
             return board.IsFull();
         }
-
-        // ============================================
-        // COUNT LINE
-        // ============================================
 
         private int CountLine(
             Board board,
@@ -353,7 +380,8 @@ namespace Server.Services
             while (
                 board.IsValidPosition(
                     currentRow,
-                    currentColumn) &&
+                    currentColumn)
+                &&
                 board.GetCell(
                     currentRow,
                     currentColumn) == piece)
@@ -367,10 +395,6 @@ namespace Server.Services
 
             return count;
         }
-
-        // ============================================
-        // ERROR MESSAGE
-        // ============================================
 
         public string GetMessage(
             MoveValidationResult result)
