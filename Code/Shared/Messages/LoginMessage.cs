@@ -1,4 +1,4 @@
-namespace CaroGame.Protocol
+namespace CaroGame.Protocol.Messages
 {
     /// <summary>
     /// Message client gửi lên server để đăng nhập vào hệ thống.

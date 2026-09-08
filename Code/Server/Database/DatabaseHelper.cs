@@ -4,28 +4,16 @@ using Microsoft.Data.SqlClient;
 
 namespace Server.Database;
 
-public class DatabaseHelper
+public static class DatabaseHelper
 {
-    private static readonly string _defaultConnectionString = new DatabaseConfig().ConnectionString;
-    private readonly string _connectionString;
-
-    // Constructor mặc định (sử dụng cấu hình từ DatabaseConfig)
-    public DatabaseHelper() : this(new DatabaseConfig())
-    {
-    }
-
-    // Constructor nhận cấu hình từ bên ngoài
-    public DatabaseHelper(DatabaseConfig config)
-    {
-        _connectionString = config.ConnectionString;
-    }
+    private static readonly string _connectionString = new DatabaseConfig().ConnectionString;
 
     /// <summary>
     /// Tạo và trả về một SqlConnection mới
     /// </summary>
     public static SqlConnection GetConnection()
     {
-        return new SqlConnection(_defaultConnectionString);
+        return new SqlConnection(_connectionString);
     }
 
     /// <summary>
@@ -68,6 +56,54 @@ public class DatabaseHelper
                     return dt;
                 }
             }
+        }
+    }
+
+    /// <summary>
+    /// Dùng cho câu lệnh INSERT cần lấy ID vừa tạo (SCOPE_IDENTITY / OUTPUT INSERTED)
+    /// Có hỗ trợ truyền Transaction từ bên ngoài
+    /// </summary>
+    public static object? ExecuteScalar(string query, SqlParameter[]? parameters = null, SqlConnection? conn = null, SqlTransaction? trans = null)
+    {
+        bool isExternalConn = conn != null;
+        SqlConnection connection = conn ?? GetConnection();
+
+        try
+        {
+            if (connection.State != ConnectionState.Open) connection.Open();
+
+            using (var cmd = new SqlCommand(query, connection, trans))
+            {
+                if (parameters != null && parameters.Length > 0)
+                {
+                    cmd.Parameters.AddRange(parameters);
+                }
+                return cmd.ExecuteScalar();
+            }
+        }
+        finally
+        {
+            if (!isExternalConn) connection.Dispose();
+        }
+    }
+
+    /// <summary>
+    /// Kiểm tra kết nối CSDL khi khởi động Server (Chống sập Server)
+    /// </summary>
+    public static bool TestConnection()
+    {
+        try
+        {
+            using (var conn = GetConnection())
+            {
+                conn.Open();
+                return true;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[DB Error] Không thể kết nối Database: {ex.Message}");
+            return false;
         }
     }
 }

@@ -51,6 +51,36 @@
 | **Nguyễn Trọng Vân Khuyên** | Message Protocol, Packet Parser, JSON Serializer | Protocol Message Version 1, Message Format, Packet Structure, Sequence Diagram Login |
 | **Nguyễn Văn Hiếu** | Client Network Layer, Logger & Config Manager | Component Diagram/Deployment Diagram, mô tả giao tiếp Client–Server |
 
+### 2.3 Phân công chi tiết nhiệm vụ tuần 3
+| Thành viên | Module | Công việc CODE (Task 1 & Task 2) | Công việc DOCX |
+|---|---|---|---|
+| **Lê Lý Phúc An** | Server Integration | - Xử lý Request/Response cơ bản<br>- Tích hợp Room & Match trên Server | Kiến trúc Server & Sequence Diagram |
+| **Lê Thế Kiệt** | Game Logic | - Hoàn thiện Match Logic cơ bản<br>- Xây dựng luật Game & Validate nước đi | Activity Diagram & Game Flow |
+| **Lê Quốc Kim** | Client UI | - Tích hợp Login/Lobby với Server<br>- Tích hợp giao diện Game cơ bản | GUI & User Flow |
+| **Võ Thị Kim Kiều** | Database | - Xử lý Database User (Persistence)<br>- Thiết lập lưu Match/History | ERD, Data Dictionary & Database Design |
+| **Nguyễn Trọng Vân Khuyên** | Protocol | - Thiết kế Game/Lobby Messages<br>- Routing Packet & Validation sơ bộ | Protocol Design & Message Specification |
+| **Nguyễn Văn Hiếu** | Client Network | - Tích hợp Network Message Client<br>- Xử lý Connection & Event cơ bản | Mô tả giao tiếp Client–Server |
+
+### 2.4 Phân công chi tiết nhiệm vụ tuần 4
+| Thành viên | Module | Công việc CODE (Task 1 & Task 2) | Công việc DOCX |
+|---|---|---|---|
+| **Lê Lý Phúc An** | Server Integration | - Hoàn thiện Server Request Handler & Game Flow<br>- Tích hợp toàn bộ Server và đồng bộ với Client | Kiến trúc tích hợp hệ thống |
+| **Lê Thế Kiệt** | Game Logic | - Hoàn thiện Game Rule & Match State<br>- Hoàn thiện Logic Timer, Game Result & End Game | Luồng xử lý Game |
+| **Lê Quốc Kim** | Client UI | - Hoàn thiện Lobby/Room UI<br>- Hoàn thiện Game UI và luồng chơi hoàn chỉnh | Giao diện hoàn chỉnh |
+| **Võ Thị Kim Kiều** | Database | - Hoàn thiện Match Persistence<br>- Tích hợp toàn diện History vào Database | Bổ sung Database & History |
+| **Nguyễn Trọng Vân Khuyên** | Protocol | - Hoàn thiện Game Protocol<br>- Đồng bộ trạng thái Game & Error Protocol | Protocol hoàn chỉnh |
+| **Nguyễn Văn Hiếu** | Client Network | - Hoàn thiện Client Network Integration<br>- Xử lý Connection/Event chuyên sâu | Cập nhật giao tiếp Client–Server |
+
+### 2.5 Phân công chi tiết nhiệm vụ tuần 5 (Tích hợp & Kiểm thử)
+| Thành viên | Module | Công việc CODE (Final Code & Bug Fix) | Công việc DOCX |
+|---|---|---|---|
+| **Lê Lý Phúc An** | Architecture & Core Backend | - Hoàn thiện Server Integration, Network, Connection, Request/Response<br>- Test Server, Multi-Client, Disconnect & Exception Handling | Cập nhật kiến trúc và triển khai Server |
+| **Lê Thế Kiệt** | Game Logic Engine | - Hoàn thiện Board, Match, Move, Win/Lose/Draw, Timer<br>- Test toàn bộ Game Logic và sửa lỗi luật chơi | Cập nhật Game Logic, Activity & Sequence |
+| **Lê Quốc Kim** | Frontend / Client UI | - Hoàn thiện UI Login, Lobby, Room, Game, Timer, Result<br>- Test toàn bộ UI, User Flow và sửa lỗi UI/UX | Cập nhật GUI và User Flow |
+| **Võ Thị Kim Kiều** | Database & Repositories | - Hoàn thiện User, Match, History, Repository & Persistence<br>- Test CRUD, lưu Match, truy xuất History sau trận | Cập nhật Database Design và Data Dictionary |
+| **Nguyễn Trọng Vân Khuyên** | Network Message & Protocol | - Hoàn thiện toàn bộ Message, Packet, Routing, Validation<br>- Test toàn bộ Protocol, Packet lỗi, đồng bộ Message | Cập nhật Protocol Specification |
+| **Nguyễn Văn Hiếu** | Client Network | - Hoàn thiện Client Network, Connection, Reconnect, Events<br>- Test Connect/Disconnect/Reconnect và xử lý lỗi Network | Cập nhật Client-Server Communication |
+
 ### 3. Lộ trình phát triển (Timeline 6 tuần)
 
 | Tuần | Mục tiêu chính |
@@ -147,9 +177,9 @@ File cấu hình Server nằm tại `Code/Server/Config/ServerConfig.json`:
 - [x] Tạo phòng chơi và tham gia phòng
 - [x] Gửi lời mời chơi và chấp nhận/từ chối
 - [x] Chơi game Caro (vẽ bàn cờ, đánh cờ, kiểm tra luật thắng 5 nước)
-- [ ] Tính giờ đếm ngược nước đi (Timer)
+- [x] Tính giờ đếm ngược nước đi (Timer)
 - [ ] Chế độ xem người khác chơi (Spectator mode)
-- [ ] Lưu lịch sử trận đấu vào SQL Server
+- [x] Lưu lịch sử trận đấu vào SQL Server
 - [ ] Xử lý mất kết nối & Reconnect
 
 ## Kiểm thử

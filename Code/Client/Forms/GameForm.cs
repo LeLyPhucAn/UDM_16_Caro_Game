@@ -1,52 +1,111 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using Client.Network;       // Giao tiếp mạng
+using CaroGame.Protocol;    // Gói tin Protocol
+using CaroGame.Protocol.Messages;
+using Client.Controls;      // Dùng UserControl BoardControl
+using CaroGame.Protocol.Messages.Game;
+using CaroGame.Protocol.Messages.Response;
 
 namespace Client.Forms
 {
     public partial class GameForm : Form
     {
-        private const int ROWS = 10;
-        private const int COLS = 10;
-        private const int CELL_SIZE = 50;
+        // Quản lý Mạng, Bàn cờ và Trạng thái ván đấu
+        private ClientConnection _clientConnection;
+        private BoardControl _boardControl = null!;
 
-        private Button[,] board;
+        private bool _isMyTurn = false; // Mặc định khóa bàn cờ, chờ Server cấp quyền
+        private string _mySymbol = "";  // Sẽ được điền khi nhận GameSyncMessage
 
-        public GameForm()
+        // 👉 BỔ SUNG: Khai báo đủ các biến lưu trữ
+        private string _roomName;
+        private string _playerName;
+        private bool _isHost;
+
+        // 👉 BỔ SUNG: Timer chạy phía Client để đếm ngược 30 giây
+        private System.Windows.Forms.Timer _clientTimer = new System.Windows.Forms.Timer();
+        private int _remainingSeconds = 30;
+
+        // 👉 CHỈNH SỬA: Hàm khởi tạo giờ đã nhận đủ 4 tham số
+        public GameForm(ClientConnection connection, string roomName, string playerName, bool isHost)
         {
             InitializeComponent();
+
+            // Gán dữ liệu vào các biến toàn cục của Form
+            _clientConnection = connection;
+            _roomName = roomName;
+            _playerName = playerName;
+            _isHost = isHost;
+
+            this.Text = "Caro Arena - " + _roomName;
+
+            // Đăng ký nhận tin nhắn khi đang trong phòng chơi
+            _clientConnection.OnMessageReceived += HandleGameMessage;
         }
 
         private void GameForm_Load(object sender, EventArgs e)
         {
-            DrawBoard();
-            LoadDummyData();
+            SetupBoardControl();
+            
+            // Cài đặt Timer
+            _clientTimer.Interval = 1000; // 1 giây
+            _clientTimer.Tick += ClientTimer_Tick;
         }
 
-        private void DrawBoard()
+        private void ClientTimer_Tick(object? sender, EventArgs e)
         {
-            board = new Button[ROWS, COLS];
-
-            for (int i = 0; i < ROWS; i++)
+            _remainingSeconds--;
+            if (_remainingSeconds <= 0)
             {
-                for (int j = 0; j < COLS; j++)
-                {
-                    Button btn = new Button();
-                    btn.Size = new Size(CELL_SIZE, CELL_SIZE);
-                    btn.Location = new Point(j * CELL_SIZE, i * CELL_SIZE);
-
-                    btn.FlatStyle = FlatStyle.Flat;
-                    btn.BackColor = Color.FromArgb(34, 36, 40);
-                    btn.FlatAppearance.BorderColor = Color.FromArgb(60, 60, 60);
-                    btn.FlatAppearance.BorderSize = 1;
-                    btn.Font = new Font("Segoe UI", 20F, FontStyle.Bold);
-                    btn.Cursor = Cursors.Hand;
-
-                    pnlBoard.Controls.Add(btn);
-                    board[i, j] = btn;
-                }
+                _remainingSeconds = 0;
+                _clientTimer.Stop(); // Hết giờ thì dừng đếm
             }
+            // Cập nhật UI an toàn trên form thread
+            if (lblTimerValue != null)
+                lblTimerValue.Text = _remainingSeconds + "s";
         }
+
+        // ======================================================
+        // PHẦN 1: TẠO BÀN CỜ & GỬI DỮ LIỆU
+        // ======================================================
+
+        private void SetupBoardControl()
+        {
+            _boardControl = new BoardControl();
+
+            // Lắng nghe sự kiện click từ BoardControl để gửi mạng
+            _boardControl.OnCellClicked += async (row, col) =>
+            {
+                if (!_isMyTurn) return; // Chưa đến lượt
+
+                var moveMsg = new MoveMessage
+                {
+                    Row = row,
+                    Column = col,
+                    Symbol = _mySymbol
+                };
+
+                try
+                {
+                    await _clientConnection.SendMessageAsync(moveMsg);
+                    _isMyTurn = false; // Khóa bàn cờ ngay lập tức để chờ Server phản hồi
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Lỗi gửi nước đi: " + ex.Message);
+                }
+            };
+
+            // Gắn bàn cờ vào Panel hiện có trên Giao diện
+            pnlBoard.Controls.Clear();
+            pnlBoard.Controls.Add(_boardControl);
+        }
+
+        // ======================================================
+        // PHẦN 2: CẬP NHẬT GIAO DIỆN & DỮ LIỆU
+        // ======================================================
 
         private void LoadDummyData()
         {
@@ -54,27 +113,128 @@ namespace Client.Forms
             rtbChatHistory.AppendText("Nam123: Chào bạn, tí nương tay nha haha\n\n");
             rtbChatHistory.AppendText("Minh456: Góc kia nước đi hay đấy!\n\n");
 
-            SetCaroMark(3, 3, "X", Color.DeepSkyBlue);
-            SetCaroMark(4, 4, "O", Color.FromArgb(217, 83, 79));
-            SetCaroMark(5, 4, "O", Color.FromArgb(217, 83, 79));
-            SetCaroMark(5, 5, "X", Color.DeepSkyBlue);
-            SetCaroMark(6, 5, "O", Color.FromArgb(217, 83, 79));
-            SetCaroMark(6, 6, "X", Color.DeepSkyBlue);
+            _boardControl.UpdateBoardUI(3, 3, "X");
+            _boardControl.UpdateBoardUI(4, 4, "O");
+            _boardControl.UpdateBoardUI(5, 4, "O");
+            _boardControl.UpdateBoardUI(5, 5, "X");
+            _boardControl.UpdateBoardUI(6, 5, "O");
+            _boardControl.UpdateBoardUI(6, 6, "X");
         }
 
-        private void SetCaroMark(int row, int col, string mark, Color color)
+        // ======================================================
+        // PHẦN 3: GIAO TIẾP SERVER TRONG GAME & THOÁT
+        // ======================================================
+
+        private void HandleGameMessage(BaseMessage message)
         {
-            board[row, col].Text = mark;
-            board[row, col].ForeColor = color;
+            if (this.InvokeRequired)
+            {
+                this.Invoke(new Action(() => HandleGameMessage(message)));
+                return;
+            }
+
+            try
+            {
+                // ==========================================
+                // 1. XỬ LÝ LÚC VỪA VÀO PHÒNG
+                // ==========================================
+                if (message.Type == MessageType.GameState && message is GameStateMessage syncMsg)
+                {
+                    // Cập nhật giao diện Label
+                    lblPlayerX.Text = $"X: {syncMsg.PlayerXName}"; // Đã sửa tên label cho chuẩn
+                    lblPlayerO.Text = $"O: {syncMsg.PlayerOName}";
+
+                    // Lưu ký hiệu của mình (X hoặc O)
+                    _mySymbol = syncMsg.MySymbol;
+
+                    // Kiểm tra lượt: Nếu tên CurrentTurnName trùng với tên mình thì mở khóa bàn cờ
+                    if (syncMsg.CurrentTurnName == _playerName) _isMyTurn = true;
+
+                    // Cập nhật giao diện lượt đi ban đầu
+                    lblPlayerX.Text = $"Lượt đi hiện tại: X ({syncMsg.CurrentTurnName})";
+
+                    // Bắt đầu đếm ngược thời gian
+                    _remainingSeconds = 30;
+                    _clientTimer.Start();
+                }
+
+                // ==========================================
+                // 2. XỬ LÝ KHI CÓ NGƯỜI ĐÁNH CỜ
+                // ==========================================
+                else if (message.Type == MessageType.Move && message is MoveMessage moveMsg)
+                {
+                    // Vẽ quân cờ lên UI thông qua BoardControl
+                    _boardControl.UpdateBoardUI(moveMsg.Row, moveMsg.Column, moveMsg.Symbol);
+
+                    // Đảo lượt nội bộ
+                    _isMyTurn = (moveMsg.Symbol != _mySymbol);
+
+                    // Đổi thông báo lượt đi trên giao diện
+                    if (moveMsg.Symbol == "X")
+                    {
+                        string playerOName = lblPlayerO.Text.Replace("O: ", "");
+                        lblPlayerX.Text = $"Lượt đi hiện tại: O ({playerOName})";
+                    }
+                    else
+                    {
+                        string playerXName = lblPlayerX.Text.Replace("X: ", "");
+                        lblPlayerX.Text = $"Lượt đi hiện tại: X ({playerXName})";
+                    }
+
+                    // Reset đồng hồ cho lượt mới
+                    _remainingSeconds = 30;
+                    _clientTimer.Start();
+                }
+
+                // ==========================================
+                // 3. XỬ LÝ KẾT THÚC TRẬN ĐẤU
+                // ==========================================
+                else if (message.Type == MessageType.GameOver && message is GameOverMessage gameOverMsg)
+                {
+                    _isMyTurn = false;
+                    _clientTimer.Stop(); // Trận kết thúc thì dừng timer
+
+                    lblPlayerX.Text = "Trận đấu kết thúc!";
+                    lblPlayerX.ForeColor = Color.Yellow;
+
+                    if (gameOverMsg.ResultType == "Win")
+                    {
+                        MessageBox.Show($"Chúc mừng người chơi [{gameOverMsg.WinnerName}] đã giành chiến thắng!",
+                                        "Kết thúc ván đấu", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    else if (gameOverMsg.ResultType == "Draw")
+                    {
+                        MessageBox.Show("Ván đấu hòa! Không còn ô trống nào trên bàn cờ.",
+                                        "Kết thúc ván đấu", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    else if (gameOverMsg.ResultType == "Timeout")
+                    {
+                        MessageBox.Show($"Ván đấu kết thúc do hết thời gian! [{gameOverMsg.WinnerName}] đã giành chiến thắng.",
+                                        "Kết thúc ván đấu", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
+                
+                // ==========================================
+                // 4. XỬ LÝ ĐỒNG BỘ TIMER TỪ SERVER (NẾU CÓ)
+                // ==========================================
+                else if (message.Type == MessageType.Timer && message is TimerMessage timerMsg)
+                {
+                    // Nếu server gửi TimerMessage, ta ưu tiên dùng số giây từ Server
+                    _remainingSeconds = timerMsg.RemainingSeconds;
+                    lblTimerValue.Text = _remainingSeconds + "s";
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi giao diện: {ex.Message}\nData: {message.Type}", "Lỗi Client");
+            }
         }
 
-        // Người chơi rời phòng
         private void btnLeaveRoom_Click(object sender, EventArgs e)
         {
-            this.Close(); 
+            this.Close();
         }
 
-        // Xác nhận khi rời phòng 
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
             base.OnFormClosing(e);
@@ -88,9 +248,31 @@ namespace Client.Forms
 
             if (result == DialogResult.No)
             {
-                e.Cancel = true; 
+                e.Cancel = true;
+            }
+            else
+            {
+                var requestMsg = new RequestMessage
+                {
+                    Type = MessageType.Request,
+                    SenderId = "",
+                    Action = "LeaveRoom",
+                    Data = ""
+                };
+
+                _ = Task.Run(async () => {
+                    try { await _clientConnection.SendMessageAsync(requestMsg); }
+                    catch { /* Bỏ qua lỗi nếu ngắt kết nối mạng rồi */ }
+                });
+
+                // Ngắt sự kiện lắng nghe để tránh lỗi rò rỉ bộ nhớ
+                _clientConnection.OnMessageReceived -= HandleGameMessage;
             }
         }
 
+        // Giữ lại event handler gốc để file Designer.cs không bị lỗi
+        private void lblPlayerX_Click(object sender, EventArgs e)
+        {
+        }
     }
 }

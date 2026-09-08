@@ -1,9 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CaroGame.Protocol;
+using CaroGame.Protocol.Messages;
+using CaroGame.Protocol.Messages.Response;
+using Shared.Models;
 using Server.Network;
 using Server.Utils;
 
@@ -87,6 +90,21 @@ public class ConnectionManager
     }
 
     /// <summary>
+    /// Gửi thông điệp tới một Client cụ thể
+    /// </summary>
+    public async Task SendMessageToClientAsync(string sessionIdStr, BaseMessage message)
+    {
+        if (Guid.TryParse(sessionIdStr, out Guid sessionId))
+        {
+            var session = Get(sessionId);
+            if (session != null)
+            {
+                await session.SendAsync(message);
+            }
+        }
+    }
+
+    /// <summary>
     /// Ngắt và dọn dẹp toàn bộ kết nối khi dừng Server
     /// </summary>
     public void ClearAll()
@@ -97,5 +115,51 @@ public class ConnectionManager
         }
         _clients.Clear();
         Logger.Info("Đã dọn dẹp và ngắt toàn bộ kết nối Client.");
+    }
+
+    /// <summary>
+    /// Đóng gói trạng thái Sảnh và gửi cho toàn bộ Client
+    /// </summary>
+    public async Task BroadcastLobbyStateAsync()
+    {
+        // Lấy danh sách tên người chơi đang online (Giả sử ClientSession có property Username)
+        var players = _clients.Values
+            .Select(c => c.SessionId.ToString()) // Tạm lấy SessionId làm tên nếu chưa lưu Username
+            .ToList();
+
+        var lobbyData = new Shared.Models.LobbyStateDto
+        {
+            OnlineCount = _clients.Count,
+            OnlinePlayers = players,
+            Rooms = new List<Shared.Models.RoomInfo>()// Sau này quản lý phòng thì điền vào đây
+        };
+
+        var response = new ResponseMessage
+        {
+            Success = true,
+            Data = System.Text.Json.JsonSerializer.Serialize(lobbyData)
+        };
+
+        await BroadcastAsync(response);
+    }
+
+    public List<string> GetAllPlayerNames()
+    {
+        List<string> playerNames = new List<string>();
+
+        foreach (var session in _clients.Values) // Thay _clients bằng tên biến Dictionary thực tế của bạn
+        {
+            if (!string.IsNullOrWhiteSpace(session.PlayerName))
+            {
+                playerNames.Add(session.PlayerName);
+            }
+            else
+            {
+                // Dự phòng khi vừa kết nối mà chưa kịp gửi tên
+                playerNames.Add("Khách_" + session.SessionId.ToString().Substring(0, 4));
+            }
+        }
+
+        return playerNames;
     }
 }
