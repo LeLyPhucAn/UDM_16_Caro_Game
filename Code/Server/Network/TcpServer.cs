@@ -120,6 +120,7 @@ namespace Server.Network
         private void OnClientDisconnected(ClientSession session)
         {
             _connectionManager.Remove(session.SessionId);
+            _ = _messageHandler.BroadcastLobbyStateAsync();
         }
 
 

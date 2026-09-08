@@ -196,12 +196,15 @@ namespace Client.Forms
         {
             string roomName = $"Phòng của {_playerName}";
             // Báo cho Server biết để tạo phòng
-            var requestMsg = new RequestMessage
+            var requestMsg = new CaroGame.Protocol.Messages.Room.CreateRoomMessage
             {
-                Type = MessageType.Request,
                 SenderId = _playerName,
-                Action = "CreateRoom",
-                Data = roomName
+                RoomName = roomName,
+                HostId = _playerName,
+                MaxPlayers = 2,
+                BoardSize = 15,
+                IsPrivate = false,
+                Password = ""
             };
 
             _ = Task.Run(async () =>
@@ -240,12 +243,13 @@ namespace Client.Forms
             string selectedRoomName = dgvRooms.SelectedRows[0].Cells[1].Value?.ToString() ?? "Phòng ẩn";
 
             // 3. Đóng gói lệnh xin gia nhập và gửi lên Server
-            var requestMsg = new RequestMessage
+            var requestMsg = new CaroGame.Protocol.Messages.Room.JoinRoomMessage
             {
-                Type = MessageType.Request,
                 SenderId = _playerName,
-                Action = "JoinRoom",
-                Data = selectedRoomId // Gửi kèm Mã Phòng
+                RoomId = selectedRoomId,
+                PlayerId = _playerName,
+                PlayerName = _playerName,
+                Password = ""
             };
 
             _ = Task.Run(async () =>
