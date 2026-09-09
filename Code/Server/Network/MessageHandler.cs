@@ -84,6 +84,11 @@ public class MessageHandler
                         await HandleInviteAsync(session, inviteMsg);
                     break;
 
+                case MessageType.Ready:
+                    if (message is ReadyMessage readyMsg)
+                        await HandleReadyAsync(session, readyMsg);
+                    break;
+
                 case MessageType.Move:
                     if (message is MoveMessage moveMsg)
                         await _gameRequestHandler.HandlePlayMoveAsync(session, moveMsg);
@@ -224,6 +229,12 @@ public class MessageHandler
                 if (room.Players[0].Id != session.SessionId.ToString())
                 {
                     Logger.Warn($"[StartMatch] Từ chối: Session {session.SessionId} không phải chủ phòng {msg.RoomId}");
+                    return;
+                }
+
+                if (!room.Players[1].IsReady)
+                {
+                    Logger.Warn($"[StartMatch] Từ chối: Người chơi O chưa sẵn sàng.");
                     return;
                 }
 
@@ -394,7 +405,8 @@ public class MessageHandler
             RoomId = room.RoomId,
             RoomName = room.RoomName,
             PlayerX = room.Players.Count > 0 ? room.Players[0].Username : "",
-            PlayerO = room.Players.Count > 1 ? room.Players[1].Username : ""
+            PlayerO = room.Players.Count > 1 ? room.Players[1].Username : "",
+            IsPlayerOReady = room.Players.Count > 1 ? room.Players[1].IsReady : false
         };
 
         var response = new ResponseMessage
@@ -408,6 +420,21 @@ public class MessageHandler
         foreach (var player in room.Players)
         {
             await _connectionManager.SendMessageToClientAsync(player.Id, response);
+        }
+    }
+
+    private async Task HandleReadyAsync(ClientSession session, ReadyMessage msg)
+    {
+        Logger.Info($"[Ready] Yêu cầu từ Session: {session.SessionId} trong phòng {msg.RoomId}, trạng thái: {msg.IsReady}");
+        var room = _roomManager.GetRoom(msg.RoomId);
+        if (room != null)
+        {
+            var player = room.GetPlayer(session.SessionId.ToString());
+            if (player != null)
+            {
+                player.IsReady = msg.IsReady;
+                await BroadcastRoomStateAsync(room);
+            }
         }
     }
 }

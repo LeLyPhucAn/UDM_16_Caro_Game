@@ -16,6 +16,8 @@ namespace Client.Forms
         private string _roomName;
         private string _playerName;
         private bool _isHost;
+        private string _roomId = string.Empty;
+        private bool _isReady = false;
 
         public RoomForm(ClientConnection connection, string roomName, string playerName, bool isHost)
         {
@@ -51,10 +53,13 @@ namespace Client.Forms
             {
                 lblPlayerO_Name.Text = "👤 " + _playerName;
                 lblPlayerO_Name.ForeColor = Color.Tomato;
-                lblPlayerO_Status.Text = "Sẵn sàng";
-                lblPlayerO_Status.ForeColor = Color.LimeGreen;
+                lblPlayerO_Status.Text = "Đang chờ...";
+                lblPlayerO_Status.ForeColor = Color.Orange;
 
-                btnStartGame.Visible = false;
+                btnStartGame.Visible = true;
+                btnStartGame.Text = "SẴN SÀNG";
+                btnStartGame.BackColor = Color.SeaGreen;
+                btnStartGame.Enabled = true;
             }
         }
 
@@ -79,6 +84,9 @@ namespace Client.Forms
 
                     if (state != null && state.RoomName == this._roomName)
                     {
+                        // Luôn lưu lại RoomId khi nhận được trạng thái từ server
+                        this._roomId = state.RoomId;
+
                         if (!string.IsNullOrEmpty(state.PlayerX))
                         {
                             lblPlayerX_Name.Text = "👤 " + state.PlayerX;
@@ -99,16 +107,31 @@ namespace Client.Forms
                         {
                             lblPlayerO_Name.Text = "Đang trống...";
                             lblPlayerO_Name.ForeColor = System.Drawing.Color.Gray;
+                            lblPlayerO_Status.Text = "Đang trống...";
+                            lblPlayerO_Status.ForeColor = System.Drawing.Color.Gray;
                         }
 
                         if (_isHost)
                         {
                             if (!string.IsNullOrEmpty(state.PlayerX) && !string.IsNullOrEmpty(state.PlayerO))
                             {
-                                btnStartGame.Enabled = true;
-                                btnStartGame.BackColor = System.Drawing.Color.SeaGreen;
                                 lblPlayerX_Status.Text = "Đã sẵn sàng";
                                 lblPlayerX_Status.ForeColor = System.Drawing.Color.LimeGreen;
+
+                                if (state.IsPlayerOReady)
+                                {
+                                    btnStartGame.Enabled = true;
+                                    btnStartGame.BackColor = System.Drawing.Color.SeaGreen;
+                                    lblPlayerO_Status.Text = "Đã sẵn sàng";
+                                    lblPlayerO_Status.ForeColor = System.Drawing.Color.LimeGreen;
+                                }
+                                else
+                                {
+                                    btnStartGame.Enabled = false;
+                                    btnStartGame.BackColor = System.Drawing.Color.Gray;
+                                    lblPlayerO_Status.Text = "Đang chờ...";
+                                    lblPlayerO_Status.ForeColor = System.Drawing.Color.Orange;
+                                }
                             }
                             else
                             {
@@ -122,17 +145,21 @@ namespace Client.Forms
                 }
                 else if (resMsg.Action == "StartGame" || message is GameStateMessage)
                 {
-                    if (message is GameStateMessage gameState && gameState.RoomId == this._roomName)
+                    if (message is GameStateMessage gameState)
                     {
-                        _clientConnection.OnMessageReceived -= HandleRoomMessage;
+                        // Kiểm tra xem ID có trùng không
+                        if (gameState.RoomId == this._roomId || gameState.RoomId == this._roomName)
+                        {
+                            _clientConnection.OnMessageReceived -= HandleRoomMessage;
 
-                        GameForm gameForm = new GameForm(_clientConnection, _roomName, _playerName, _isHost);
-                        gameForm.FormClosed += (s, args) => this.Close();
+                            GameForm gameForm = new GameForm(_clientConnection, _roomName, _playerName, _isHost);
+                            gameForm.FormClosed += (s, args) => this.Close();
 
-                        this.Hide();
-                        gameForm.Show();
+                            this.Hide();
+                            gameForm.Show();
+                        }
                     }
-                    else if (resMsg != null && resMsg.Action == "StartGame" && resMsg.Data == this._roomName)
+                    else if (resMsg != null && resMsg.Action == "StartGame" && (resMsg.Data == this._roomId || resMsg.Data == this._roomName))
                     {
                         // Fallback for old protocol if any
                         _clientConnection.OnMessageReceived -= HandleRoomMessage;
@@ -149,20 +176,60 @@ namespace Client.Forms
 
         private void BtnStartGame_Click(object? sender, EventArgs e)
         {
-            // Bấm nút xong thì khóa lại ngay để tránh spam click nhiều lần
-            btnStartGame.Enabled = false;
-
-            // Đóng gói yêu cầu Bắt đầu game
-            var request = new CaroGame.Protocol.Messages.Room.StartMatchMessage
+            if (string.IsNullOrEmpty(_roomId))
             {
-                SenderId = _playerName,
-                RoomId = _roomName
-            };
+                MessageBox.Show("Chưa nhận được thông tin phòng từ server. Vui lòng đợi...", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
 
-            _ = Task.Run(async () => {
-                try { await _clientConnection.SendMessageAsync(request); }
-                catch { /* Bỏ qua nếu lỗi mạng */ }
-            });
+            if (_isHost)
+            {
+                // Bấm nút xong thì khóa lại ngay để tránh spam click nhiều lần
+                btnStartGame.Enabled = false;
+
+                // Đóng gói yêu cầu Bắt đầu game
+                var request = new CaroGame.Protocol.Messages.Room.StartMatchMessage
+                {
+                    SenderId = _playerName,
+                    RoomId = _roomId // Dùng RoomId đúng chuẩn
+                };
+
+                _ = Task.Run(async () => {
+                    try { await _clientConnection.SendMessageAsync(request); }
+                    catch { /* Bỏ qua nếu lỗi mạng */ }
+                });
+            }
+            else
+            {
+                // Là Khách (Guest) - Đảo trạng thái sẵn sàng
+                _isReady = !_isReady;
+                if (_isReady)
+                {
+                    btnStartGame.Text = "HỦY BỎ";
+                    btnStartGame.BackColor = Color.Orange;
+                    lblPlayerO_Status.Text = "Đã sẵn sàng";
+                    lblPlayerO_Status.ForeColor = Color.LimeGreen;
+                }
+                else
+                {
+                    btnStartGame.Text = "SẴN SÀNG";
+                    btnStartGame.BackColor = Color.SeaGreen;
+                    lblPlayerO_Status.Text = "Đang chờ...";
+                    lblPlayerO_Status.ForeColor = Color.Orange;
+                }
+
+                var request = new CaroGame.Protocol.Messages.Room.ReadyMessage
+                {
+                    SenderId = _playerName,
+                    RoomId = _roomId,
+                    IsReady = _isReady
+                };
+                
+                _ = Task.Run(async () => {
+                    try { await _clientConnection.SendMessageAsync(request); }
+                    catch { /* Bỏ qua nếu lỗi mạng */ }
+                });
+            }
         }
 
         private void BtnLeaveRoom_Click(object? sender, EventArgs e)
