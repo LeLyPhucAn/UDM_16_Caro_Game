@@ -6,12 +6,11 @@ namespace Client.Controls
 {
     public class BoardControl : UserControl
     {
-        private const int ROWS = 10;
-        private const int COLS = 10;
-        private const int CELL_SIZE = 50;
+        private int _rows = 15;
+        private int _cols = 15;
+        private int _cellSize = 30; // Giảm kích cỡ để 20x20 không bị tràn
 
-        // Khởi tạo mảng ngay lúc khai báo để tránh lỗi null
-        private readonly Button[,] _board = new Button[ROWS, COLS];
+        private Button[,] _board;
 
         // Tạo sự kiện để báo cho GameForm biết khi có người click vào 1 ô
         public event Action<int, int>? OnCellClicked;
@@ -19,25 +18,35 @@ namespace Client.Controls
         public BoardControl()
         {
             this.DoubleBuffered = true;
-            this.Size = new Size(COLS * CELL_SIZE, ROWS * CELL_SIZE);
-            InitializeBoard();
+            _board = new Button[_rows, _cols];
+            this.Size = new Size(_cols * _cellSize, _rows * _cellSize);
+            // Để trống, gọi InitializeBoard(size) từ bên ngoài
         }
 
-        private void InitializeBoard()
+        public void InitializeBoard(int boardSize)
         {
+            _rows = boardSize;
+            _cols = boardSize;
+            
+            // Tính toán cell size phù hợp để không vượt quá khoảng 600px
+            _cellSize = Math.Min(40, 600 / boardSize);
+            
+            this.Size = new Size(_cols * _cellSize, _rows * _cellSize);
+            _board = new Button[_rows, _cols];
+
             this.Controls.Clear();
 
-            for (int i = 0; i < ROWS; i++)
+            for (int i = 0; i < _rows; i++)
             {
-                for (int j = 0; j < COLS; j++)
+                for (int j = 0; j < _cols; j++)
                 {
                     Button btn = new Button
                     {
-                        Size = new Size(CELL_SIZE, CELL_SIZE),
-                        Location = new Point(j * CELL_SIZE, i * CELL_SIZE),
+                        Size = new Size(_cellSize, _cellSize),
+                        Location = new Point(j * _cellSize, i * _cellSize),
                         FlatStyle = FlatStyle.Flat,
                         BackColor = Color.FromArgb(34, 36, 40),
-                        Font = new Font("Segoe UI", 20F, FontStyle.Bold),
+                        Font = new Font("Segoe UI", _cellSize / 2.5f, FontStyle.Bold),
                         Cursor = Cursors.Hand,
                         Tag = new Point(i, j) // LƯU TỌA ĐỘ VÀO NÚT
                     };
@@ -72,7 +81,7 @@ namespace Client.Controls
                 return;
             }
 
-            if (row < 0 || row >= ROWS || col < 0 || col >= COLS) return;
+            if (row < 0 || row >= _rows || col < 0 || col >= _cols) return;
 
             _board[row, col].Text = mark;
             _board[row, col].ForeColor = (mark == "X")

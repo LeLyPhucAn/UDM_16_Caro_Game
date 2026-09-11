@@ -23,13 +23,14 @@ namespace Client.Forms
         private string _roomName;
         private string _playerName;
         private bool _isHost;
+        private int _boardSize;
 
         // 👉 BỔ SUNG: Timer chạy phía Client để đếm ngược 30 giây
         private System.Windows.Forms.Timer _clientTimer = new System.Windows.Forms.Timer();
         private int _remainingSeconds = 30;
 
-        // 👉 CHỈNH SỬA: Hàm khởi tạo giờ đã nhận đủ 4 tham số
-        public GameForm(ClientConnection connection, string roomName, string playerName, bool isHost)
+        // 👉 CHỈNH SỬA: Hàm khởi tạo giờ đã nhận 5 tham số
+        public GameForm(ClientConnection connection, string roomName, string playerName, bool isHost, int boardSize = 15)
         {
             InitializeComponent();
 
@@ -38,6 +39,7 @@ namespace Client.Forms
             _roomName = roomName;
             _playerName = playerName;
             _isHost = isHost;
+            _boardSize = boardSize;
 
             this.Text = "Caro Arena - " + _roomName;
 
@@ -63,8 +65,18 @@ namespace Client.Forms
                 _clientTimer.Stop(); // Hết giờ thì dừng đếm
             }
             // Cập nhật UI an toàn trên form thread
+            UpdateTimerUI(_remainingSeconds);
+        }
+
+        private void UpdateTimerUI(int seconds)
+        {
+            if (this.InvokeRequired)
+            {
+                this.Invoke(new Action(() => UpdateTimerUI(seconds)));
+                return;
+            }
             if (lblTimerValue != null)
-                lblTimerValue.Text = _remainingSeconds + "s";
+                lblTimerValue.Text = seconds + "s";
         }
 
         // ======================================================
@@ -74,6 +86,7 @@ namespace Client.Forms
         private void SetupBoardControl()
         {
             _boardControl = new BoardControl();
+            _boardControl.InitializeBoard(_boardSize);
 
             // Lắng nghe sự kiện click từ BoardControl để gửi mạng
             _boardControl.OnCellClicked += async (row, col) =>
@@ -151,7 +164,8 @@ namespace Client.Forms
                     if (syncMsg.CurrentTurnName == _playerName) _isMyTurn = true;
 
                     // Cập nhật giao diện lượt đi ban đầu
-                    lblPlayerX.Text = $"Lượt đi hiện tại: X ({syncMsg.CurrentTurnName})";
+                    string turnSymbol = (syncMsg.CurrentTurnName == syncMsg.PlayerXName) ? "X" : "O";
+                    lblTurnValue.Text = $"{turnSymbol} ({syncMsg.CurrentTurnName})";
 
                     // Bắt đầu đếm ngược thời gian
                     _remainingSeconds = 30;
@@ -173,12 +187,12 @@ namespace Client.Forms
                     if (moveMsg.Symbol == "X")
                     {
                         string playerOName = lblPlayerO.Text.Replace("O: ", "");
-                        lblPlayerX.Text = $"Lượt đi hiện tại: O ({playerOName})";
+                        lblTurnValue.Text = $"O ({playerOName})";
                     }
                     else
                     {
                         string playerXName = lblPlayerX.Text.Replace("X: ", "");
-                        lblPlayerX.Text = $"Lượt đi hiện tại: X ({playerXName})";
+                        lblTurnValue.Text = $"X ({playerXName})";
                     }
 
                     // Reset đồng hồ cho lượt mới
@@ -194,8 +208,8 @@ namespace Client.Forms
                     _isMyTurn = false;
                     _clientTimer.Stop(); // Trận kết thúc thì dừng timer
 
-                    lblPlayerX.Text = "Trận đấu kết thúc!";
-                    lblPlayerX.ForeColor = Color.Yellow;
+                    lblTurnValue.Text = "Trận đấu kết thúc!";
+                    lblTurnValue.ForeColor = Color.Yellow;
 
                     if (gameOverMsg.ResultType == "Win")
                     {
@@ -221,7 +235,7 @@ namespace Client.Forms
                 {
                     // Nếu server gửi TimerMessage, ta ưu tiên dùng số giây từ Server
                     _remainingSeconds = timerMsg.RemainingSeconds;
-                    lblTimerValue.Text = _remainingSeconds + "s";
+                    UpdateTimerUI(_remainingSeconds);
                 }
             }
             catch (Exception ex)

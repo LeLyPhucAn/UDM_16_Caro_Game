@@ -2,6 +2,7 @@ using CaroGame.Protocol;
 using CaroGame.Protocol.Messages;
 using Client.Controls;
 using Client.Network;
+using CaroGame.Protocol.Messages.Room; // Thêm dòng này
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -63,6 +64,53 @@ namespace Client.Forms
                     Console.WriteLine($"Lỗi gửi RefreshLobby: {ex.Message}");
                 }
             });
+
+            if (playerListControl1 != null)
+            {
+                playerListControl1.OnChallengePlayer += PlayerListControl1_OnChallengePlayer;
+            }
+        }
+
+        private void PlayerListControl1_OnChallengePlayer(string targetPlayer)
+        {
+            if (targetPlayer == _playerName)
+            {
+                MessageBox.Show("Bạn không thể tự thách đấu chính mình!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            DialogResult result = MessageBox.Show(
+                $"Bạn muốn gửi lời thách đấu tới '{targetPlayer}'?",
+                "Thách đấu",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question
+            );
+
+            if (result == DialogResult.Yes)
+            {
+                string roomName = $"Thách đấu: {_playerName} vs {targetPlayer}";
+                var requestMsg = new CaroGame.Protocol.Messages.Room.CreateRoomMessage
+                {
+                    SenderId = _playerName,
+                    RoomName = roomName,
+                    HostId = _playerName,
+                    MaxPlayers = 2,
+                    BoardSize = 15,
+                    IsPrivate = false,
+                    Password = ""
+                };
+
+                _ = Task.Run(async () =>
+                {
+                    try { await _clientConnection.SendMessageAsync(requestMsg); }
+                    catch (Exception ex) { Console.WriteLine(ex.Message); }
+                });
+
+                RoomForm roomForm = new RoomForm(_clientConnection, roomName, _playerName, true, targetPlayer);
+                roomForm.FormClosed += (s, args) => this.Show();
+                roomForm.Show();
+                this.Hide();
+            }
         }
 
         public void UpdateRoomList(List<RoomInfo> rooms)
@@ -171,6 +219,36 @@ namespace Client.Forms
                                 }
                             }
                         }
+                    }
+                }
+                else if (message.Type == MessageType.Invite && message is InviteMessage inviteMsg)
+                {
+                    DialogResult result = MessageBox.Show(
+                        $"Người chơi '{inviteMsg.SenderId}' muốn thách đấu với bạn.\nBạn có đồng ý tham gia không?",
+                        "Lời mời Thách Đấu",
+                        MessageBoxButtons.YesNo,
+                        MessageBoxIcon.Question
+                    );
+
+                    if (result == DialogResult.Yes)
+                    {
+                        var joinRequest = new RequestMessage
+                        {
+                            Type = MessageType.Request,
+                            Action = "JoinRoom",
+                            Data = inviteMsg.RoomId,
+                            SenderId = _playerName
+                        };
+                        _ = _clientConnection.SendMessageAsync(joinRequest);
+
+                        RoomForm roomForm = new RoomForm(_clientConnection, "Phòng thách đấu", _playerName, false);
+                        roomForm.FormClosed += (s, args) => this.Show();
+                        roomForm.Show();
+                        this.Hide();
+                    }
+                    else
+                    {
+                        // (Tùy chọn) Gửi tin nhắn từ chối lại cho Sender nếu muốn
                     }
                 }
             }

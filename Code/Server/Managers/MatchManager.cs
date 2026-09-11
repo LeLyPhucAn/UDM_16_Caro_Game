@@ -98,7 +98,8 @@ namespace Server.Managers
         public Match? CreateMatch(
             string roomId,
             Player playerX,
-            Player playerO)
+            Player playerO,
+            int boardSize = 15)
         {
             if (string.IsNullOrWhiteSpace(roomId))
                 throw new ArgumentException("Room ID cannot be empty.", nameof(roomId));
@@ -115,6 +116,7 @@ namespace Server.Managers
                 Match match = new Match(roomId, roomId);
                 match.PlayerX = playerX;
                 match.PlayerO = playerO;
+                match.Board = new Board(boardSize, boardSize);
 
                 matches.Add(roomId, match);
                 return match;

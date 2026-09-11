@@ -59,6 +59,11 @@ public class MessageHandler
                         Logger.Warn($"[Network] Gói tin không đúng định dạng RegisterMessage từ {session.SessionId}");
                     break;
 
+                case MessageType.Request:
+                    if (message is RequestMessage reqMsg)
+                        await HandleRequestAsync(session, reqMsg);
+                    break;
+
                 case MessageType.CreateRoom:
                     if (message is CreateRoomMessage createRoomMsg)
                         await HandleCreateRoomAsync(session, createRoomMsg);
@@ -239,7 +244,7 @@ public class MessageHandler
                 }
 
                 _roomManager.SetPlaying(room.RoomId, true);
-                var match = _matchManager.CreateMatch(room.RoomId, room.Players[0], room.Players[1]);
+                var match = _matchManager.CreateMatch(room.RoomId, room.Players[0], room.Players[1], room.BoardSize);
                 if (match != null)
                 {
                     _matchManager.StartMatch(match.MatchId);
@@ -249,7 +254,7 @@ public class MessageHandler
                     {
                         RoomId = room.RoomId,
                         BoardState = string.Empty, // Bàn cờ trống lúc mới bắt đầu
-                        BoardSize = 15,
+                        BoardSize = room.BoardSize,
                         CurrentPlayerId = match.CurrentTurn == CellState.X ? room.Players[0].Id : room.Players[1].Id,
                         CurrentTurnName = match.CurrentTurn == CellState.X ? room.Players[0].Username : room.Players[1].Username,
                         PlayerXName = room.Players[0].Username,
@@ -262,7 +267,7 @@ public class MessageHandler
                     {
                         RoomId = room.RoomId,
                         BoardState = string.Empty,
-                        BoardSize = 15,
+                        BoardSize = room.BoardSize,
                         CurrentPlayerId = match.CurrentTurn == CellState.X ? room.Players[0].Id : room.Players[1].Id,
                         CurrentTurnName = match.CurrentTurn == CellState.X ? room.Players[0].Username : room.Players[1].Username,
                         PlayerXName = room.Players[0].Username,
@@ -341,6 +346,11 @@ public class MessageHandler
         {
             targetSession = _connectionManager.Get(targetGuid);
         }
+        
+        if (targetSession == null)
+        {
+            targetSession = _connectionManager.GetAll().FirstOrDefault(s => s.PlayerName == request.TargetPlayerId);
+        }
 
         if (targetSession != null)
         {
@@ -406,7 +416,8 @@ public class MessageHandler
             RoomName = room.RoomName,
             PlayerX = room.Players.Count > 0 ? room.Players[0].Username : "",
             PlayerO = room.Players.Count > 1 ? room.Players[1].Username : "",
-            IsPlayerOReady = room.Players.Count > 1 ? room.Players[1].IsReady : false
+            IsPlayerOReady = room.Players.Count > 1 ? room.Players[1].IsReady : false,
+            BoardSize = room.BoardSize
         };
 
         var response = new ResponseMessage
@@ -434,6 +445,23 @@ public class MessageHandler
             {
                 player.IsReady = msg.IsReady;
                 await BroadcastRoomStateAsync(room);
+            }
+        }
+    }
+
+    private async Task HandleRequestAsync(ClientSession session, RequestMessage msg)
+    {
+        if (msg.Action == "UpdateBoardSize")
+        {
+            var room = _roomManager.FindPlayerRoom(session.SessionId.ToString());
+            if (room != null && room.Players.Count > 0 && room.Players[0].Id == session.SessionId.ToString())
+            {
+                if (int.TryParse(msg.Data, out int newSize))
+                {
+                    room.BoardSize = newSize;
+                    Logger.Info($"[Room] Cập nhật BoardSize={newSize} cho phòng {room.RoomId}");
+                    await BroadcastRoomStateAsync(room);
+                }
             }
         }
     }

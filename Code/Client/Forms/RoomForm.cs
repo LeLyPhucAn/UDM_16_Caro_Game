@@ -7,6 +7,7 @@ using System.Windows.Forms;
 using Client.Network;
 using CaroGame.Protocol.Messages.Game;
 using CaroGame.Protocol.Messages.Response;
+using CaroGame.Protocol.Messages.Room; // Thêm dòng này
 
 namespace Client.Forms
 {
@@ -16,10 +17,16 @@ namespace Client.Forms
         private string _roomName;
         private string _playerName;
         private bool _isHost;
-        private string _roomId = string.Empty;
+        private string _roomId = "";
         private bool _isReady = false;
+        private int _boardSize = 15; // Mặc định
+        private string? _challengeTarget;
+        
+        // UI Controls cho BoardSize
+        private ComboBox cmbBoardSize;
+        private Label lblBoardSizeTitle;
 
-        public RoomForm(ClientConnection connection, string roomName, string playerName, bool isHost)
+        public RoomForm(ClientConnection connection, string roomName, string playerName, bool isHost, string? challengeTarget = null)
         {
             InitializeComponent();
 
@@ -61,6 +68,47 @@ namespace Client.Forms
                 btnStartGame.BackColor = Color.SeaGreen;
                 btnStartGame.Enabled = true;
             }
+
+            // Thêm BoardSize Selector
+            AddBoardSizeSelector();
+        }
+
+        private void AddBoardSizeSelector()
+        {
+            lblBoardSizeTitle = new Label();
+            lblBoardSizeTitle.Text = "Kích cỡ bàn cờ:";
+            lblBoardSizeTitle.ForeColor = System.Drawing.Color.White;
+            lblBoardSizeTitle.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            lblBoardSizeTitle.Location = new System.Drawing.Point(50, 20);
+            lblBoardSizeTitle.AutoSize = true;
+
+            cmbBoardSize = new ComboBox();
+            cmbBoardSize.Items.AddRange(new object[] { "10x10", "15x15", "20x20" });
+            cmbBoardSize.SelectedIndex = 1; // Default 15x15
+            cmbBoardSize.Location = new System.Drawing.Point(180, 18);
+            cmbBoardSize.Width = 100;
+            cmbBoardSize.DropDownStyle = ComboBoxStyle.DropDownList;
+            cmbBoardSize.Enabled = _isHost; // Chỉ Host mới được chọn
+            cmbBoardSize.SelectedIndexChanged += CmbBoardSize_SelectedIndexChanged;
+
+            this.Controls.Add(lblBoardSizeTitle);
+            this.Controls.Add(cmbBoardSize);
+        }
+
+        private void CmbBoardSize_SelectedIndexChanged(object? sender, EventArgs e)
+        {
+            if (!_isHost) return;
+            if (cmbBoardSize.SelectedItem == null) return;
+            
+            int size = 15;
+            if (cmbBoardSize.SelectedItem.ToString() == "10x10") size = 10;
+            else if (cmbBoardSize.SelectedItem.ToString() == "15x15") size = 15;
+            else if (cmbBoardSize.SelectedItem.ToString() == "20x20") size = 20;
+
+            if (size == _boardSize) return;
+
+            var req = new RequestMessage { Action = "UpdateBoardSize", Data = size.ToString(), SenderId = "" };
+            _ = _clientConnection.SendMessageAsync(req);
         }
 
         // ==========================================
@@ -71,6 +119,22 @@ namespace Client.Forms
             if (this.InvokeRequired)
             {
                 this.BeginInvoke(new Action(() => HandleRoomMessage(message)));
+                return;
+            }
+
+            if (message is GameStateMessage gameState)
+            {
+                // Kiểm tra xem ID có trùng không
+                if (gameState.RoomId == this._roomId || gameState.RoomId == this._roomName)
+                {
+                    _clientConnection.OnMessageReceived -= HandleRoomMessage;
+
+                    GameForm gameForm = new GameForm(_clientConnection, _roomName, _playerName, _isHost);
+                    gameForm.FormClosed += (s, args) => this.Close();
+
+                    this.Hide();
+                    gameForm.Show();
+                }
                 return;
             }
 
@@ -86,6 +150,27 @@ namespace Client.Forms
                     {
                         // Luôn lưu lại RoomId khi nhận được trạng thái từ server
                         this._roomId = state.RoomId;
+                        this._boardSize = state.BoardSize;
+
+                        // Nếu có mục tiêu thách đấu, gửi lời mời và xóa mục tiêu để không gửi lại
+                        if (!string.IsNullOrEmpty(_challengeTarget))
+                        {
+                            var invite = new InviteMessage
+                            {
+                                SenderId = this._playerName,
+                                TargetPlayerId = _challengeTarget,
+                                RoomId = this._roomId
+                            };
+                            _ = _clientConnection.SendMessageAsync(invite);
+                            _challengeTarget = null;
+                        }
+
+                        // Tạm ngắt event để khỏi gửi lại tin nhắn khi đổi do Server gửi xuống
+                        cmbBoardSize.SelectedIndexChanged -= CmbBoardSize_SelectedIndexChanged;
+                        if (_boardSize == 10) cmbBoardSize.SelectedIndex = 0;
+                        else if (_boardSize == 15) cmbBoardSize.SelectedIndex = 1;
+                        else if (_boardSize == 20) cmbBoardSize.SelectedIndex = 2;
+                        cmbBoardSize.SelectedIndexChanged += CmbBoardSize_SelectedIndexChanged;
 
                         if (!string.IsNullOrEmpty(state.PlayerX))
                         {
@@ -143,33 +228,16 @@ namespace Client.Forms
                         }
                     }
                 }
-                else if (resMsg.Action == "StartGame" || message is GameStateMessage)
+                else if (resMsg.Action == "StartGame" && (resMsg.Data == this._roomId || resMsg.Data == this._roomName))
                 {
-                    if (message is GameStateMessage gameState)
-                    {
-                        // Kiểm tra xem ID có trùng không
-                        if (gameState.RoomId == this._roomId || gameState.RoomId == this._roomName)
-                        {
-                            _clientConnection.OnMessageReceived -= HandleRoomMessage;
+                    // Fallback for old protocol if any
+                    _clientConnection.OnMessageReceived -= HandleRoomMessage;
 
-                            GameForm gameForm = new GameForm(_clientConnection, _roomName, _playerName, _isHost);
-                            gameForm.FormClosed += (s, args) => this.Close();
+                    GameForm gameForm = new GameForm(_clientConnection, _roomName, _playerName, _isHost, _boardSize);
+                    gameForm.FormClosed += (s, args) => this.Close();
 
-                            this.Hide();
-                            gameForm.Show();
-                        }
-                    }
-                    else if (resMsg != null && resMsg.Action == "StartGame" && (resMsg.Data == this._roomId || resMsg.Data == this._roomName))
-                    {
-                        // Fallback for old protocol if any
-                        _clientConnection.OnMessageReceived -= HandleRoomMessage;
-
-                        GameForm gameForm = new GameForm(_clientConnection, _roomName, _playerName, _isHost);
-                        gameForm.FormClosed += (s, args) => this.Close();
-
-                        this.Hide();
-                        gameForm.Show();
-                    }
+                    this.Hide();
+                    gameForm.Show();
                 }
             }
         }
