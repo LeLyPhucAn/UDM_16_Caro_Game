@@ -19,14 +19,15 @@ namespace Client.Forms
         private bool _isHost;
         private string _roomId = "";
         private bool _isReady = false;
-        private int _boardSize = 15; // Mặc định
+        private int _boardSize = 20; // Co dinh 20x20
         private string? _challengeTarget;
         
-        // UI Controls cho BoardSize
-        private ComboBox cmbBoardSize;
-        private Label lblBoardSizeTitle;
+        private Button btnSwapSymbol = null!;
+        private Label lblSpectatorsCount = null!;
 
-        public RoomForm(ClientConnection connection, string roomName, string playerName, bool isHost, string? challengeTarget = null)
+        private bool _isSpectator = false;
+
+        public RoomForm(ClientConnection connection, string roomName, string playerName, bool isHost, string? challengeTarget = null, bool isSpectator = false)
         {
             InitializeComponent();
 
@@ -34,20 +35,21 @@ namespace Client.Forms
             _roomName = roomName;
             _playerName = playerName;
             _isHost = isHost;
+            _challengeTarget = challengeTarget;
+            _isSpectator = isSpectator;
 
             ApplyInitialLogic();
 
-            // 👉 ĐĂNG KÝ LẮNG NGHE THÔNG BÁO TỪ SERVER KHI VỪA MỞ FORM
+            // ĐĂNG KÝ LẮNG NGHE THÔNG BÁO TỪ SERVER KHI VỪA MỞ FORM
             _clientConnection.OnMessageReceived += HandleRoomMessage;
         }
 
         private void ApplyInitialLogic()
         {
             lblRoomName.Text = "PHÒNG: " + _roomName.ToUpper();
-            // (Đoạn này đã hiển thị tốt như trong ảnh của bạn nên không cần thay đổi)
             if (_isHost)
             {
-                lblPlayerX_Name.Text = "👤 " + _playerName;
+                lblPlayerX_Name.Text = _playerName;
                 lblPlayerX_Name.ForeColor = Color.DeepSkyBlue;
                 lblPlayerX_Status.Text = "Đang chờ khách...";
                 lblPlayerX_Status.ForeColor = Color.Orange;
@@ -58,56 +60,62 @@ namespace Client.Forms
             }
             else
             {
-                lblPlayerO_Name.Text = "👤 " + _playerName;
+                lblPlayerO_Name.Text = _playerName;
                 lblPlayerO_Name.ForeColor = Color.Tomato;
                 lblPlayerO_Status.Text = "Đang chờ...";
                 lblPlayerO_Status.ForeColor = Color.Orange;
 
-                btnStartGame.Visible = true;
-                btnStartGame.Text = "SẴN SÀNG";
-                btnStartGame.BackColor = Color.SeaGreen;
-                btnStartGame.Enabled = true;
+                if (_isSpectator)
+                {
+                    lblPlayerO_Name.Text = "Khán giả";
+                    lblPlayerX_Status.Text = "Khán giả";
+                    lblPlayerO_Status.Text = "Khán giả";
+                    btnStartGame.Visible = false;
+                }
+                else
+                {
+                    btnStartGame.Visible = true;
+                    btnStartGame.Text = "SẴN SÀNG";
+                    btnStartGame.BackColor = Color.SeaGreen;
+                    btnStartGame.Enabled = true;
+                }
             }
 
-            // Thêm BoardSize Selector
-            AddBoardSizeSelector();
+            this.Text = "Caro Arena - Đang chờ...";
+            SetupRoomControls();
         }
 
-        private void AddBoardSizeSelector()
+        private void SetupRoomControls()
         {
-            lblBoardSizeTitle = new Label();
-            lblBoardSizeTitle.Text = "Kích cỡ bàn cờ:";
-            lblBoardSizeTitle.ForeColor = System.Drawing.Color.White;
-            lblBoardSizeTitle.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
-            lblBoardSizeTitle.Location = new System.Drawing.Point(50, 20);
-            lblBoardSizeTitle.AutoSize = true;
+            btnSwapSymbol = new Button();
+            btnSwapSymbol.Text = "⇄\nĐỔI";
+            btnSwapSymbol.Size = new Size(70, 50);
+            btnSwapSymbol.Location = new Point(285, 160);
+            btnSwapSymbol.BackColor = Color.FromArgb(52, 152, 219);
+            btnSwapSymbol.ForeColor = Color.White;
+            btnSwapSymbol.FlatStyle = FlatStyle.Flat;
+            btnSwapSymbol.FlatAppearance.BorderSize = 0;
+            btnSwapSymbol.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            btnSwapSymbol.Cursor = Cursors.Hand;
+            btnSwapSymbol.Click += BtnSwapSymbol_Click;
+            btnSwapSymbol.Visible = _isHost; // Chỉ chủ phòng mới đổi quân được
 
-            cmbBoardSize = new ComboBox();
-            cmbBoardSize.Items.AddRange(new object[] { "10x10", "15x15", "20x20" });
-            cmbBoardSize.SelectedIndex = 1; // Default 15x15
-            cmbBoardSize.Location = new System.Drawing.Point(180, 18);
-            cmbBoardSize.Width = 100;
-            cmbBoardSize.DropDownStyle = ComboBoxStyle.DropDownList;
-            cmbBoardSize.Enabled = _isHost; // Chỉ Host mới được chọn
-            cmbBoardSize.SelectedIndexChanged += CmbBoardSize_SelectedIndexChanged;
+            lblSpectatorsCount = new Label();
+            lblSpectatorsCount.Text = "Khán giả đang xem: 0";
+            lblSpectatorsCount.ForeColor = Color.LightSkyBlue;
+            lblSpectatorsCount.Font = new Font("Segoe UI", 9.5F, FontStyle.Italic);
+            lblSpectatorsCount.Location = new Point(217, 65);
+            lblSpectatorsCount.Size = new Size(200, 25);
+            lblSpectatorsCount.TextAlign = ContentAlignment.MiddleCenter;
 
-            this.Controls.Add(lblBoardSizeTitle);
-            this.Controls.Add(cmbBoardSize);
+            this.Controls.Add(btnSwapSymbol);
+            this.Controls.Add(lblSpectatorsCount);
+            btnSwapSymbol.BringToFront();
         }
 
-        private void CmbBoardSize_SelectedIndexChanged(object? sender, EventArgs e)
+        private void BtnSwapSymbol_Click(object? sender, EventArgs e)
         {
-            if (!_isHost) return;
-            if (cmbBoardSize.SelectedItem == null) return;
-            
-            int size = 15;
-            if (cmbBoardSize.SelectedItem.ToString() == "10x10") size = 10;
-            else if (cmbBoardSize.SelectedItem.ToString() == "15x15") size = 15;
-            else if (cmbBoardSize.SelectedItem.ToString() == "20x20") size = 20;
-
-            if (size == _boardSize) return;
-
-            var req = new RequestMessage { Action = "UpdateBoardSize", Data = size.ToString(), SenderId = "" };
+            var req = new RequestMessage { Action = "SwapSymbol", Data = "", SenderId = "" };
             _ = _clientConnection.SendMessageAsync(req);
         }
 
@@ -129,8 +137,9 @@ namespace Client.Forms
                 {
                     _clientConnection.OnMessageReceived -= HandleRoomMessage;
 
-                    GameForm gameForm = new GameForm(_clientConnection, _roomName, _playerName, _isHost);
+                    GameForm gameForm = new GameForm(_clientConnection, this._roomId, _roomName, _playerName, _isHost, _boardSize, _isSpectator);
                     gameForm.FormClosed += (s, args) => this.Close();
+                    gameForm.InitGameState(gameState);
 
                     this.Hide();
                     gameForm.Show();
@@ -165,16 +174,9 @@ namespace Client.Forms
                             _challengeTarget = null;
                         }
 
-                        // Tạm ngắt event để khỏi gửi lại tin nhắn khi đổi do Server gửi xuống
-                        cmbBoardSize.SelectedIndexChanged -= CmbBoardSize_SelectedIndexChanged;
-                        if (_boardSize == 10) cmbBoardSize.SelectedIndex = 0;
-                        else if (_boardSize == 15) cmbBoardSize.SelectedIndex = 1;
-                        else if (_boardSize == 20) cmbBoardSize.SelectedIndex = 2;
-                        cmbBoardSize.SelectedIndexChanged += CmbBoardSize_SelectedIndexChanged;
-
                         if (!string.IsNullOrEmpty(state.PlayerX))
                         {
-                            lblPlayerX_Name.Text = "👤 " + state.PlayerX;
+                            lblPlayerX_Name.Text = state.PlayerX;
                             lblPlayerX_Name.ForeColor = System.Drawing.Color.DeepSkyBlue;
                         }
                         else
@@ -185,7 +187,7 @@ namespace Client.Forms
 
                         if (!string.IsNullOrEmpty(state.PlayerO))
                         {
-                            lblPlayerO_Name.Text = "👤 " + state.PlayerO;
+                            lblPlayerO_Name.Text = state.PlayerO;
                             lblPlayerO_Name.ForeColor = System.Drawing.Color.Tomato;
                         }
                         else
@@ -194,6 +196,11 @@ namespace Client.Forms
                             lblPlayerO_Name.ForeColor = System.Drawing.Color.Gray;
                             lblPlayerO_Status.Text = "Đang trống...";
                             lblPlayerO_Status.ForeColor = System.Drawing.Color.Gray;
+                        }
+                        
+                        if (lblSpectatorsCount != null)
+                        {
+                            lblSpectatorsCount.Text = "Khán giả đang xem: " + state.SpectatorCount;
                         }
 
                         if (_isHost)
@@ -233,7 +240,7 @@ namespace Client.Forms
                     // Fallback for old protocol if any
                     _clientConnection.OnMessageReceived -= HandleRoomMessage;
 
-                    GameForm gameForm = new GameForm(_clientConnection, _roomName, _playerName, _isHost, _boardSize);
+                    GameForm gameForm = new GameForm(_clientConnection, this._roomId, _roomName, _playerName, _isHost, _boardSize, _isSpectator);
                     gameForm.FormClosed += (s, args) => this.Close();
 
                     this.Hide();
@@ -311,7 +318,7 @@ namespace Client.Forms
 
         protected override void OnFormClosed(FormClosedEventArgs e)
         {
-            // 👉 HỦY ĐĂNG KÝ SỰ KIỆN ĐỂ TRÁNH LỖI KHI ĐÓNG FORM
+            // HỦY ĐĂNG KÝ SỰ KIỆN ĐỂ TRÁNH LỖI KHI ĐÓNG FORM
             _clientConnection.OnMessageReceived -= HandleRoomMessage;
             base.OnFormClosed(e);
         }

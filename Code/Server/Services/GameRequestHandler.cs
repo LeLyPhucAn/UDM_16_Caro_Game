@@ -14,11 +14,13 @@ namespace Server.Services
     {
         private readonly MatchManager _matchManager;
         private readonly ConnectionManager _connectionManager;
+        private readonly RoomManager _roomManager;
 
-        public GameRequestHandler(MatchManager matchManager, ConnectionManager connectionManager)
+        public GameRequestHandler(MatchManager matchManager, ConnectionManager connectionManager, RoomManager roomManager)
         {
             _matchManager = matchManager ?? throw new ArgumentNullException(nameof(matchManager));
             _connectionManager = connectionManager ?? throw new ArgumentNullException(nameof(connectionManager));
+            _roomManager = roomManager ?? throw new ArgumentNullException(nameof(roomManager));
         }
 
         public async Task HandlePlayMoveAsync(ClientSession session, MoveMessage msg)
@@ -63,32 +65,43 @@ namespace Server.Services
                     Symbol = moveResult.Piece.ToString() // "X" or "O"
                 };
 
-                string sessionX = match.PlayerX?.Id ?? string.Empty;
-                string sessionO = match.PlayerO?.Id ?? string.Empty;
-
-                if (!string.IsNullOrEmpty(sessionX))
-                    await _connectionManager.SendMessageToClientAsync(sessionX, broadcastMove);
-                if (!string.IsNullOrEmpty(sessionO))
-                    await _connectionManager.SendMessageToClientAsync(sessionO, broadcastMove);
+                var room = _roomManager.GetRoom(match.MatchId);
+                if (room != null)
+                {
+                    foreach (var p in room.Players)
+                        await _connectionManager.SendMessageToClientAsync(p.Id, broadcastMove);
+                    foreach (var p in room.Spectators)
+                        await _connectionManager.SendMessageToClientAsync(p.Id, broadcastMove);
+                }
 
                 // 2. Broadcast GameOverMessage if applicable
                 if (moveResult.IsWin || moveResult.IsDraw)
                 {
                     string resultType = moveResult.IsWin ? "Win" : "Draw";
-                    var gameOverMsg = new GameResultMessage
+                    string sessionX = match.PlayerX?.Id ?? string.Empty;
+                    string sessionO = match.PlayerO?.Id ?? string.Empty;
+
+                    string winnerId = moveResult.IsWin ? ((moveResult.Piece == Shared.Models.CellState.X) ? sessionX : sessionO) : string.Empty;
+                    string winnerName = moveResult.IsWin ? ((moveResult.Piece == Shared.Models.CellState.X) ? match.PlayerX?.Username : match.PlayerO?.Username) : string.Empty;
+
+                    var gameOverMsg = new GameOverMessage
                     {
                         RoomId = match.MatchId,
                         ResultType = resultType,
-                        WinnerId = moveResult.IsWin ? ((moveResult.Piece == Shared.Models.CellState.X) ? sessionX : sessionO) : string.Empty,
+                        WinnerId = winnerId,
+                        WinnerName = winnerName,
                         WinningLine = new string[0]
                     };
 
-                    if (!string.IsNullOrEmpty(sessionX))
-                        await _connectionManager.SendMessageToClientAsync(sessionX, gameOverMsg);
-                    if (!string.IsNullOrEmpty(sessionO))
-                        await _connectionManager.SendMessageToClientAsync(sessionO, gameOverMsg);
+                    if (room != null)
+                    {
+                        foreach (var p in room.Players)
+                            await _connectionManager.SendMessageToClientAsync(p.Id, gameOverMsg);
+                        foreach (var p in room.Spectators)
+                            await _connectionManager.SendMessageToClientAsync(p.Id, gameOverMsg);
+                    }
 
-                    // 👉 LƯU KẾT QUẢ VÀO DATABASE
+                    // LƯU KẾT QUẢ VÀO DATABASE
                     int? dbWinnerId = null;
                     if (moveResult.IsWin)
                     {

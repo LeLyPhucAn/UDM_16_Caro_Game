@@ -68,7 +68,7 @@ namespace Client.Forms
             lblSpectators.Name = "lblSpectators";
             lblSpectators.Size = new Size(95, 23);
             lblSpectators.TabIndex = 2;
-            lblSpectators.Text = "Khán giả: 4";
+            lblSpectators.Text = "Khán giả: 0";
             // 
             // lblBadge
             // 
@@ -80,7 +80,7 @@ namespace Client.Forms
             lblBadge.Padding = new Padding(5);
             lblBadge.Size = new Size(130, 30);
             lblBadge.TabIndex = 1;
-            lblBadge.Text = "Standard 10x10";
+            lblBadge.Text = "Standard 20x20";
             // 
             // lblTitle
             // 

@@ -14,6 +14,8 @@ namespace CaroGame.Protocol.Messages.Room
         /// <summary>Mật khẩu phòng, chỉ cần điền khi phòng ở chế độ riêng tư.</summary>
         public string Password { get; set; }
 
+        public bool IsSpectator { get; set; } = false;
+
         public JoinRoomMessage()
         {
             Type = MessageType.JoinRoom;

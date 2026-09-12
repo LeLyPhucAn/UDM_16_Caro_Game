@@ -127,11 +127,11 @@ public class ConnectionManager
             .Select(c => c.SessionId.ToString()) // Tạm lấy SessionId làm tên nếu chưa lưu Username
             .ToList();
 
-        var lobbyData = new Shared.Models.LobbyStateDto
+        var lobbyData = new CaroGame.Protocol.LobbyStateDto
         {
             OnlineCount = _clients.Count,
             OnlinePlayers = players,
-            Rooms = new List<Shared.Models.RoomInfo>()// Sau này quản lý phòng thì điền vào đây
+            Rooms = new List<CaroGame.Protocol.RoomInfo>()// Sau này quản lý phòng thì điền vào đây
         };
 
         var response = new ResponseMessage

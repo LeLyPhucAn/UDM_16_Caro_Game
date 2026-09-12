@@ -10,6 +10,7 @@ using System.Text.Json;
 using System.Windows.Forms;
 using CaroGame.Protocol.Messages.Game;
 using CaroGame.Protocol.Messages.Response;
+using CaroGame.Protocol.Messages.History;
 
 
 namespace Client.Forms
@@ -18,6 +19,16 @@ namespace Client.Forms
     {
         private string _playerName;
         private ClientConnection _clientConnection;
+        private Button? btnHistory;
+
+        // Profile UI Controls in TopBar
+        private Panel? pnlAvatar;
+        private Label? lblAvatarChar;
+        private Label? lblBadgeScore;
+        private Label? lblBadgeWins;
+        private Label? lblBadgeDraws;
+        private Label? lblBadgeLosses;
+        private Label? lblBadgeWinRate;
 
         public LobbyForm(string playerName, ClientConnection clientConnection)
         {
@@ -26,7 +37,7 @@ namespace Client.Forms
             _playerName = playerName;
             _clientConnection = clientConnection;
 
-            lblPlayerName.Text = _playerName;
+            SetupProfileHeaderUI();
 
             btnJoinRoom.Click += btnJoinRoom_Click;
             btnCreateRoom.Click += btnCreateRoom_Click;
@@ -40,10 +51,152 @@ namespace Client.Forms
             _clientConnection.OnError += HandleError;
         }
 
+        private void SetupProfileHeaderUI()
+        {
+            pnlTopBar.Height = 85;
+
+            // Ẩn nhãn "Người chơi:" cũ để giao diện gọn gàng, hiện đại
+            if (lblPlayerTitle != null) lblPlayerTitle.Visible = false;
+
+            // Khung Avatar hiện đại (50x50px)
+            pnlAvatar = new Panel
+            {
+                Size = new Size(50, 50),
+                Location = new Point(20, 17),
+                BackColor = Color.FromArgb(41, 128, 185)
+            };
+
+            lblAvatarChar = new Label
+            {
+                Dock = DockStyle.Fill,
+                TextAlign = ContentAlignment.MiddleCenter,
+                Font = new Font("Segoe UI", 18F, FontStyle.Bold),
+                ForeColor = Color.White,
+                Text = !string.IsNullOrEmpty(_playerName) ? _playerName.Substring(0, 1).ToUpper() : "U"
+            };
+            pnlAvatar.Controls.Add(lblAvatarChar);
+            pnlTopBar.Controls.Add(pnlAvatar);
+
+            // Đặt chấm kết nối nhỏ ở góc dưới của Avatar
+            if (lblConnection != null)
+            {
+                lblConnection.Font = new Font("Segoe UI", 10F);
+                lblConnection.Location = new Point(56, 48);
+                lblConnection.BringToFront();
+            }
+
+            // Tên người chơi
+            if (lblPlayerName != null)
+            {
+                lblPlayerName.Location = new Point(80, 16);
+                lblPlayerName.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+                lblPlayerName.ForeColor = Color.DeepSkyBlue;
+                lblPlayerName.Text = _playerName;
+            }
+
+            // Stat Badges (Điểm, Thắng, Hòa, Thua, Tỉ lệ)
+            lblBadgeScore = CreateStatBadge("🏆 Điểm: 0", Color.FromArgb(50, 52, 60), Color.FromArgb(220, 220, 220), new Point(80, 48));
+            lblBadgeWins = CreateStatBadge("🟢 Thắng: 0", Color.FromArgb(25, 60, 40), Color.FromArgb(46, 204, 113), new Point(190, 48));
+            lblBadgeDraws = CreateStatBadge("🟡 Hòa: 0", Color.FromArgb(65, 55, 25), Color.FromArgb(241, 196, 15), new Point(295, 48));
+            lblBadgeLosses = CreateStatBadge("🔴 Thua: 0", Color.FromArgb(65, 30, 30), Color.FromArgb(231, 76, 60), new Point(390, 48));
+            lblBadgeWinRate = CreateStatBadge("📊 Tỉ lệ: 0%", Color.FromArgb(30, 50, 70), Color.FromArgb(52, 152, 219), new Point(485, 48));
+
+            pnlTopBar.Controls.Add(lblBadgeScore);
+            pnlTopBar.Controls.Add(lblBadgeWins);
+            pnlTopBar.Controls.Add(lblBadgeDraws);
+            pnlTopBar.Controls.Add(lblBadgeLosses);
+            pnlTopBar.Controls.Add(lblBadgeWinRate);
+
+            // Nút LỊCH SỬ ĐẤU trên TopBar bên cạnh nút THOÁT GAME
+            btnHistory = new Button
+            {
+                Text = "📜 LỊCH SỬ ĐẤU",
+                Size = new Size(135, 38),
+                BackColor = Color.FromArgb(106, 90, 205),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 9.5F, FontStyle.Bold),
+                Anchor = AnchorStyles.Top | AnchorStyles.Right,
+                Location = new Point(pnlTopBar.Width - 300, 23),
+                Cursor = Cursors.Hand
+            };
+            btnHistory.FlatAppearance.BorderSize = 0;
+            btnHistory.Click += BtnHistory_Click;
+            pnlTopBar.Controls.Add(btnHistory);
+
+            // Căn chỉnh lại nút Thoát và ServerInfo
+            if (btnExitGame != null)
+            {
+                btnExitGame.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+                btnExitGame.Size = new Size(130, 38);
+                btnExitGame.Location = new Point(pnlTopBar.Width - 150, 23);
+                btnExitGame.Cursor = Cursors.Hand;
+            }
+
+            if (lblServerInfo != null)
+            {
+                lblServerInfo.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+                lblServerInfo.Location = new Point(pnlTopBar.Width - 410, 31);
+            }
+        }
+
+        private Label CreateStatBadge(string text, Color backColor, Color foreColor, Point location)
+        {
+            return new Label
+            {
+                Text = text,
+                Location = location,
+                AutoSize = true,
+                BackColor = backColor,
+                ForeColor = foreColor,
+                Font = new Font("Segoe UI", 9F, FontStyle.Bold),
+                Padding = new Padding(5, 3, 5, 3),
+                Margin = new Padding(0)
+            };
+        }
+
+        private void RequestProfile()
+        {
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    var reqMsg = new RequestMessage
+                    {
+                        Type = MessageType.Request,
+                        SenderId = _playerName,
+                        Action = "GetProfile",
+                        Data = _playerName
+                    };
+                    await _clientConnection.SendMessageAsync(reqMsg);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[Lobby RequestProfile Error] {ex.Message}");
+                }
+            });
+        }
+
+        private void UpdateProfileUI(UserProfileDto profile)
+        {
+            if (this.InvokeRequired)
+            {
+                this.BeginInvoke(new Action(() => UpdateProfileUI(profile)));
+                return;
+            }
+
+            if (lblBadgeScore != null) lblBadgeScore.Text = $"🏆 Điểm: {profile.Score}";
+            if (lblBadgeWins != null) lblBadgeWins.Text = $"🟢 Thắng: {profile.Wins}";
+            if (lblBadgeDraws != null) lblBadgeDraws.Text = $"🟡 Hòa: {profile.Draws}";
+            if (lblBadgeLosses != null) lblBadgeLosses.Text = $"🔴 Thua: {profile.Losses}";
+            if (lblBadgeWinRate != null) lblBadgeWinRate.Text = $"📊 Tỉ lệ: {profile.WinRate}%";
+        }
+
         private void LobbyForm_Load(object? sender, EventArgs e)
         {
             dgvRooms.Rows.Clear();
             UpdateConnectionStatus(true);
+            RequestProfile();
 
             // Gửi yêu cầu chạy ngầm, không chặn UI
             _ = Task.Run(async () =>
@@ -71,6 +224,15 @@ namespace Client.Forms
             }
         }
 
+        private void BtnHistory_Click(object? sender, EventArgs e)
+        {
+            var req = new HistoryRequestMessage
+            {
+                Username = _playerName
+            };
+            _ = _clientConnection.SendMessageAsync(req);
+        }
+
         private void PlayerListControl1_OnChallengePlayer(string targetPlayer)
         {
             if (targetPlayer == _playerName)
@@ -95,7 +257,7 @@ namespace Client.Forms
                     RoomName = roomName,
                     HostId = _playerName,
                     MaxPlayers = 2,
-                    BoardSize = 15,
+                    BoardSize = 20,
                     IsPrivate = false,
                     Password = ""
                 };
@@ -107,7 +269,7 @@ namespace Client.Forms
                 });
 
                 RoomForm roomForm = new RoomForm(_clientConnection, roomName, _playerName, true, targetPlayer);
-                roomForm.FormClosed += (s, args) => this.Show();
+                roomForm.FormClosed += (s, args) => { this.Show(); RequestProfile(); };
                 roomForm.Show();
                 this.Hide();
             }
@@ -204,7 +366,15 @@ namespace Client.Forms
                 {
                     if (response.Success && !string.IsNullOrEmpty(response.Data))
                     {
-                        if (response.Data.Contains("OnlineCount"))
+                        if (response.Action == "ProfileResponse")
+                        {
+                            var profile = System.Text.Json.JsonSerializer.Deserialize<CaroGame.Protocol.Messages.UserProfileDto>(response.Data);
+                            if (profile != null)
+                            {
+                                UpdateProfileUI(profile);
+                            }
+                        }
+                        else if (response.Data.Contains("OnlineCount"))
                         {
                             var lobbyState = System.Text.Json.JsonSerializer.Deserialize<LobbyStateDto>(response.Data);
                             if (lobbyState != null)
@@ -212,7 +382,7 @@ namespace Client.Forms
                                 UpdateOnlineCount(lobbyState.OnlineCount);
                                 UpdateRoomList(lobbyState.Rooms);
 
-                                // 👉 3. GỌI CONTROL ĐỂ HIỂN THỊ DANH SÁCH NGƯỜI CHƠI LÊN MÀN HÌNH
+                                // 3. GỌI CONTROL ĐỂ HIỂN THỊ DANH SÁCH NGƯỜI CHƠI LÊN MÀN HÌNH
                                 if (playerListControl1 != null)
                                 {
                                     playerListControl1.UpdateList(lobbyState.OnlinePlayers);
@@ -220,6 +390,11 @@ namespace Client.Forms
                             }
                         }
                     }
+                }
+                else if (message.Type == MessageType.HistoryResponse && message is HistoryResponseMessage historyRes)
+                {
+                    var historyForm = new HistoryForm(historyRes.Matches, _playerName);
+                    historyForm.ShowDialog();
                 }
                 else if (message.Type == MessageType.Invite && message is InviteMessage inviteMsg)
                 {
@@ -232,17 +407,19 @@ namespace Client.Forms
 
                     if (result == DialogResult.Yes)
                     {
-                        var joinRequest = new RequestMessage
+                        var joinMsg = new CaroGame.Protocol.Messages.Room.JoinRoomMessage
                         {
-                            Type = MessageType.Request,
-                            Action = "JoinRoom",
-                            Data = inviteMsg.RoomId,
-                            SenderId = _playerName
+                            SenderId = _playerName,
+                            RoomId = inviteMsg.RoomId,
+                            PlayerId = _playerName,
+                            PlayerName = _playerName,
+                            Password = "",
+                            IsSpectator = false
                         };
-                        _ = _clientConnection.SendMessageAsync(joinRequest);
+                        _ = _clientConnection.SendMessageAsync(joinMsg);
 
                         RoomForm roomForm = new RoomForm(_clientConnection, "Phòng thách đấu", _playerName, false);
-                        roomForm.FormClosed += (s, args) => this.Show();
+                        roomForm.FormClosed += (s, args) => { this.Show(); RequestProfile(); };
                         roomForm.Show();
                         this.Hide();
                     }
@@ -280,7 +457,7 @@ namespace Client.Forms
                 RoomName = roomName,
                 HostId = _playerName,
                 MaxPlayers = 2,
-                BoardSize = 15,
+                BoardSize = 20,
                 IsPrivate = false,
                 Password = ""
             };
@@ -293,7 +470,7 @@ namespace Client.Forms
 
             // Mở màn hình Game
             RoomForm roomForm = new RoomForm(_clientConnection, roomName, _playerName, true); // true = Chủ phòng
-            roomForm.FormClosed += (s, args) => this.Show();
+            roomForm.FormClosed += (s, args) => { this.Show(); RequestProfile(); };
             roomForm.Show();
             this.Hide();
         }
@@ -306,15 +483,22 @@ namespace Client.Forms
                 MessageBox.Show("Vui lòng click chọn một phòng trong danh sách!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
-            // 👉 1. ĐỌC TRẠNG THÁI PHÒNG TỪ CỘT SỐ 3 (Cells[3])
+            // 1. ĐỌC TRẠNG THÁI PHÒNG TỪ CỘT SỐ 3 (Cells[3])
             string roomStatus = dgvRooms.SelectedRows[0].Cells[3].Value?.ToString() ?? "";
 
-            // 👉 2. LẬP CHỐT CHẶN: NẾU PHÒNG ĐÃ KÍN CHỖ THÌ TỪ CHỐI
+            // 2. LẬP CHỐT CHẶN: NẾU PHÒNG ĐÃ KÍN CHỖ THÌ TỪ CHỐI
+            bool isSpectator = false;
             if (roomStatus.Contains("Đang chơi") || roomStatus.Contains("Đã đầy"))
             {
-                MessageBox.Show("Phòng này đã đủ người hoặc đang thi đấu. Vui lòng chọn phòng khác!", "Từ chối", MessageBoxButtons.OK, MessageBoxIcon.Stop);
-
-                return; // Lệnh return này sẽ dừng ngay lập tức, không cho phép gửi tin lên Server và KHÔNG mở GameForm!
+                var result = MessageBox.Show("Phòng này đã đủ người hoặc đang thi đấu. Bạn có muốn vào với vai trò khán giả không?", "Khán giả", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                if (result == DialogResult.Yes)
+                {
+                    isSpectator = true;
+                }
+                else
+                {
+                    return; // Lệnh return này sẽ dừng ngay lập tức, không cho phép gửi tin lên Server và KHÔNG mở GameForm!
+                }
             }
             // 2. Trích xuất "Mã Phòng" từ cột đầu tiên (Cells[0]) của dòng đang chọn
             string selectedRoomId = dgvRooms.SelectedRows[0].Cells[0].Value?.ToString() ?? "";
@@ -327,7 +511,8 @@ namespace Client.Forms
                 RoomId = selectedRoomId,
                 PlayerId = _playerName,
                 PlayerName = _playerName,
-                Password = ""
+                Password = "",
+                IsSpectator = isSpectator
             };
 
             _ = Task.Run(async () =>
@@ -337,8 +522,8 @@ namespace Client.Forms
             });
 
             // 4. Chuyển sang màn hình thi đấu
-            RoomForm roomForm = new RoomForm(_clientConnection, selectedRoomName, _playerName, false); // false = Khách
-            roomForm.FormClosed += (s, args) => this.Show();
+            RoomForm roomForm = new RoomForm(_clientConnection, selectedRoomName, _playerName, false, null, isSpectator); // false = Khách
+            roomForm.FormClosed += (s, args) => { this.Show(); RequestProfile(); };
             roomForm.Show();
             this.Hide();
         }

@@ -16,5 +16,8 @@ namespace CaroGame.Protocol.Messages // Đổi namespace cho khớp với dự �
 
         // Kích thước bàn cờ
         public int BoardSize { get; set; } = 15;
+
+        // Số lượng khán giả
+        public int SpectatorCount { get; set; } = 0;
     }
 }

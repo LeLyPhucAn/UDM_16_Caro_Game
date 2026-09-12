@@ -28,6 +28,7 @@ namespace CaroGame.Protocol.Messages.Game
         public string PlayerOName { get; set; }
         public string MySymbol { get; set; }
         public string CurrentTurnName { get; set; }
+        public int SpectatorCount { get; set; } = 0;
 
         public GameStateMessage()
         {

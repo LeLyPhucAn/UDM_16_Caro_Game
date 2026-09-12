@@ -38,7 +38,7 @@ namespace Client.Controls
         {
             if (lstPlayers.SelectedItem != null)
             {
-                string player = lstPlayers.SelectedItem.ToString()!.Replace("👤 ", "");
+                string player = lstPlayers.SelectedItem.ToString()!;
                 OnChallengePlayer?.Invoke(player);
             }
         }
@@ -57,7 +57,7 @@ namespace Client.Controls
             {
                 foreach (var p in players)
                 {
-                    lstPlayers.Items.Add("👤 " + p);
+                    lstPlayers.Items.Add(p);
                 }
             }
         }

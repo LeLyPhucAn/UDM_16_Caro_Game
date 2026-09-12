@@ -10,7 +10,7 @@ namespace CaroGame.Protocol.Messages
         Login,
         Register,
 
-        // 👉 [TASK 1] Bổ sung Type Generic cho các Request chung (StartGame, LeaveRoom...)
+        // [TASK 1] Bổ sung Type Generic cho các Request chung (StartGame, LeaveRoom...)
         Request,
 
         // ===== Room / Lobby Messages (Cấu trúc mới của Team) =====
@@ -25,10 +25,11 @@ namespace CaroGame.Protocol.Messages
         Move,
         Turn,
         GameState,
-        GameResult,
-        Timer,
 
-        // 👉 [TASK 1] Bổ sung Type cho Bàn cờ (GameForm)
+        Timer,
+        Chat,
+
+        // [TASK 1] Bổ sung Type cho Bàn cờ (GameForm)
         GameSync,
         GameOver,
 

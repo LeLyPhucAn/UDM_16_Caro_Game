@@ -55,7 +55,7 @@ namespace Client.Forms
             pnlTopBar.Dock = DockStyle.Top;
             pnlTopBar.Location = new Point(0, 0);
             pnlTopBar.Name = "pnlTopBar";
-            pnlTopBar.Size = new Size(1105, 60);
+            pnlTopBar.Size = new Size(1105, 85);
             pnlTopBar.TabIndex = 0;
             // 
             // btnExitGame

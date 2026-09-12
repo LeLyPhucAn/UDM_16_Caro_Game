@@ -16,6 +16,7 @@ public class ClientSession
     public TcpClient Client { get; }
 
     public string PlayerName { get; set; } = string.Empty;
+    public int UserId { get; set; } = 0;
 
     public NetworkStream Stream { get; }
 

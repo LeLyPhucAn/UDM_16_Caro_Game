@@ -111,7 +111,7 @@ namespace CaroGame.Protocol.Utils
                 case MessageType.Register:
                     return System.Text.Json.JsonSerializer.Deserialize<RegisterMessage>(json, OPTIONS);
 
-                // 👉 [TASK 1] Ánh xạ cho RequestMessage
+                // [TASK 1] Ánh xạ cho RequestMessage
                 case MessageType.Request:
                     return System.Text.Json.JsonSerializer.Deserialize<RequestMessage>(json, OPTIONS);
 
@@ -144,11 +144,13 @@ namespace CaroGame.Protocol.Utils
                 case MessageType.GameState:
                     return System.Text.Json.JsonSerializer.Deserialize<GameStateMessage>(json, OPTIONS);
 
-                case MessageType.GameResult:
-                    return System.Text.Json.JsonSerializer.Deserialize<GameResultMessage>(json, OPTIONS);
+
 
                 case MessageType.Timer:
                     return System.Text.Json.JsonSerializer.Deserialize<TimerMessage>(json, OPTIONS);
+
+                case MessageType.Chat:
+                    return System.Text.Json.JsonSerializer.Deserialize<ChatMessage>(json, OPTIONS);
 
                 // Ánh xạ cho GameSync và GameOver của bàn cờ
                 case MessageType.GameSync:
