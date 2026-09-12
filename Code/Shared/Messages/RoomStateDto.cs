@@ -10,5 +10,11 @@ namespace CaroGame.Protocol.Messages // Đổi namespace cho khớp với dự �
 
         // Tên của người chơi cầm quân O (Khách)
         public string PlayerO { get; set; } = string.Empty;
+
+        // Trạng thái sẵn sàng của Khách
+        public bool IsPlayerOReady { get; set; } = false;
+
+        // Kích thước bàn cờ
+        public int BoardSize { get; set; } = 15;
     }
 }

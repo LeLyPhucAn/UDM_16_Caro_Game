@@ -14,6 +14,7 @@ namespace Server.Managers
         public string RoomName { get; private set; }
 
         public int MaxPlayers { get; private set; }
+        public int BoardSize { get; set; }
 
         public List<Player> Players { get; private set; }
 
@@ -31,6 +32,7 @@ namespace Server.Managers
             Players = new List<Player>();
 
             IsPlaying = false;
+            BoardSize = 15; // Mặc định là 15
         }
 
         // ==============================

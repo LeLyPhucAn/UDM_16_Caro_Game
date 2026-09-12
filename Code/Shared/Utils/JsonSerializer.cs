@@ -131,6 +131,9 @@ namespace CaroGame.Protocol.Utils
                 case MessageType.Invite:
                     return System.Text.Json.JsonSerializer.Deserialize<InviteMessage>(json, OPTIONS);
 
+                case MessageType.Ready:
+                    return System.Text.Json.JsonSerializer.Deserialize<ReadyMessage>(json, OPTIONS);
+
                 // ===== Game Messages =====
                 case MessageType.Move:
                     return System.Text.Json.JsonSerializer.Deserialize<MoveMessage>(json, OPTIONS);

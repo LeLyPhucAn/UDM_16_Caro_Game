@@ -59,6 +59,11 @@ public class MessageHandler
                         Logger.Warn($"[Network] Gói tin không đúng định dạng RegisterMessage từ {session.SessionId}");
                     break;
 
+                case MessageType.Request:
+                    if (message is RequestMessage reqMsg)
+                        await HandleRequestAsync(session, reqMsg);
+                    break;
+
                 case MessageType.CreateRoom:
                     if (message is CreateRoomMessage createRoomMsg)
                         await HandleCreateRoomAsync(session, createRoomMsg);
@@ -82,6 +87,11 @@ public class MessageHandler
                 case MessageType.Invite:
                     if (message is InviteMessage inviteMsg)
                         await HandleInviteAsync(session, inviteMsg);
+                    break;
+
+                case MessageType.Ready:
+                    if (message is ReadyMessage readyMsg)
+                        await HandleReadyAsync(session, readyMsg);
                     break;
 
                 case MessageType.Move:
@@ -171,6 +181,11 @@ public class MessageHandler
         Logger.Info($"[CreateRoom] Yêu cầu từ Session: {session.SessionId}");
         var room = _roomManager.CreateRoom(msg.RoomName);
 
+        // Tự động add chủ phòng vào phòng
+        string pName = !string.IsNullOrEmpty(session.PlayerName) ? session.PlayerName : "Player_" + session.SessionId.ToString().Substring(0, 4);
+        var hostPlayer = new Player(session.SessionId.ToString(), pName);
+        _roomManager.JoinRoom(room.RoomId, hostPlayer);
+
         var response = new ResponseMessage
         {
             SenderId = "Server",
@@ -179,13 +194,15 @@ public class MessageHandler
         };
         await session.SendAsync(response);
         await BroadcastLobbyStateAsync();
+        await BroadcastRoomStateAsync(room);
     }
 
     private async Task HandleJoinRoomAsync(ClientSession session, JoinRoomMessage msg)
     {
         Logger.Info($"[JoinRoom] Yêu cầu từ Session: {session.SessionId} vào phòng {msg.RoomId}");
 
-        var player = new Player(session.SessionId.ToString(), "Player_" + session.SessionId.ToString().Substring(0, 4));
+        string pName = !string.IsNullOrEmpty(session.PlayerName) ? session.PlayerName : "Player_" + session.SessionId.ToString().Substring(0, 4);
+        var player = new Player(session.SessionId.ToString(), pName);
         bool success = _roomManager.JoinRoom(msg.RoomId, player);
 
         var response = new ResponseMessage
@@ -198,6 +215,9 @@ public class MessageHandler
         if (success)
         {
             await BroadcastLobbyStateAsync();
+            var room = _roomManager.GetRoom(msg.RoomId);
+            if (room != null)
+                await BroadcastRoomStateAsync(room);
         }
     }
 
@@ -217,8 +237,14 @@ public class MessageHandler
                     return;
                 }
 
+                if (!room.Players[1].IsReady)
+                {
+                    Logger.Warn($"[StartMatch] Từ chối: Người chơi O chưa sẵn sàng.");
+                    return;
+                }
+
                 _roomManager.SetPlaying(room.RoomId, true);
-                var match = _matchManager.CreateMatch(room.RoomId, room.Players[0], room.Players[1]);
+                var match = _matchManager.CreateMatch(room.RoomId, room.Players[0], room.Players[1], room.BoardSize);
                 if (match != null)
                 {
                     _matchManager.StartMatch(match.MatchId);
@@ -228,7 +254,7 @@ public class MessageHandler
                     {
                         RoomId = room.RoomId,
                         BoardState = string.Empty, // Bàn cờ trống lúc mới bắt đầu
-                        BoardSize = 15,
+                        BoardSize = room.BoardSize,
                         CurrentPlayerId = match.CurrentTurn == CellState.X ? room.Players[0].Id : room.Players[1].Id,
                         CurrentTurnName = match.CurrentTurn == CellState.X ? room.Players[0].Username : room.Players[1].Username,
                         PlayerXName = room.Players[0].Username,
@@ -241,7 +267,7 @@ public class MessageHandler
                     {
                         RoomId = room.RoomId,
                         BoardState = string.Empty,
-                        BoardSize = 15,
+                        BoardSize = room.BoardSize,
                         CurrentPlayerId = match.CurrentTurn == CellState.X ? room.Players[0].Id : room.Players[1].Id,
                         CurrentTurnName = match.CurrentTurn == CellState.X ? room.Players[0].Username : room.Players[1].Username,
                         PlayerXName = room.Players[0].Username,
@@ -260,6 +286,8 @@ public class MessageHandler
     private async Task HandleLeaveRoomAsync(ClientSession session, LeaveRoomMessage msg)
     {
         Logger.Info($"[LeaveRoom] Yêu cầu từ Session: {session.SessionId} rời phòng {msg.RoomId}");
+        
+        var room = _roomManager.GetRoom(msg.RoomId);
         bool success = _roomManager.LeaveRoom(msg.RoomId, session.SessionId.ToString());
 
         var response = new ResponseMessage
@@ -272,6 +300,11 @@ public class MessageHandler
         if (success)
         {
             await BroadcastLobbyStateAsync();
+            // Nếu phòng vẫn tồn tại sau khi người này rời (nghĩa là còn người ở lại)
+            if (_roomManager.RoomExists(msg.RoomId) && room != null)
+            {
+                await BroadcastRoomStateAsync(room);
+            }
         }
     }
 
@@ -312,6 +345,11 @@ public class MessageHandler
         if (Guid.TryParse(request.TargetPlayerId, out Guid targetGuid))
         {
             targetSession = _connectionManager.Get(targetGuid);
+        }
+        
+        if (targetSession == null)
+        {
+            targetSession = _connectionManager.GetAll().FirstOrDefault(s => s.PlayerName == request.TargetPlayerId);
         }
 
         if (targetSession != null)
@@ -366,5 +404,65 @@ public class MessageHandler
         };
 
         await _connectionManager.BroadcastAsync(response);
+    }
+
+    private async Task BroadcastRoomStateAsync(Room room)
+    {
+        if (room == null) return;
+
+        var stateDto = new CaroGame.Protocol.Messages.RoomStateDto
+        {
+            RoomId = room.RoomId,
+            RoomName = room.RoomName,
+            PlayerX = room.Players.Count > 0 ? room.Players[0].Username : "",
+            PlayerO = room.Players.Count > 1 ? room.Players[1].Username : "",
+            IsPlayerOReady = room.Players.Count > 1 ? room.Players[1].IsReady : false,
+            BoardSize = room.BoardSize
+        };
+
+        var response = new ResponseMessage
+        {
+            SenderId = "Server",
+            Success = true,
+            Action = "RoomStateUpdate",
+            Data = System.Text.Json.JsonSerializer.Serialize(stateDto)
+        };
+
+        foreach (var player in room.Players)
+        {
+            await _connectionManager.SendMessageToClientAsync(player.Id, response);
+        }
+    }
+
+    private async Task HandleReadyAsync(ClientSession session, ReadyMessage msg)
+    {
+        Logger.Info($"[Ready] Yêu cầu từ Session: {session.SessionId} trong phòng {msg.RoomId}, trạng thái: {msg.IsReady}");
+        var room = _roomManager.GetRoom(msg.RoomId);
+        if (room != null)
+        {
+            var player = room.GetPlayer(session.SessionId.ToString());
+            if (player != null)
+            {
+                player.IsReady = msg.IsReady;
+                await BroadcastRoomStateAsync(room);
+            }
+        }
+    }
+
+    private async Task HandleRequestAsync(ClientSession session, RequestMessage msg)
+    {
+        if (msg.Action == "UpdateBoardSize")
+        {
+            var room = _roomManager.FindPlayerRoom(session.SessionId.ToString());
+            if (room != null && room.Players.Count > 0 && room.Players[0].Id == session.SessionId.ToString())
+            {
+                if (int.TryParse(msg.Data, out int newSize))
+                {
+                    room.BoardSize = newSize;
+                    Logger.Info($"[Room] Cập nhật BoardSize={newSize} cho phòng {room.RoomId}");
+                    await BroadcastRoomStateAsync(room);
+                }
+            }
+        }
     }
 }
