@@ -20,6 +20,7 @@ namespace Server.Managers
         public List<Player> Spectators { get; private set; }
 
         public bool IsPlaying { get; set; }
+        public string HostSymbol { get; set; } = "X";
 
         public Room(
             string roomId,
@@ -34,7 +35,8 @@ namespace Server.Managers
             Spectators = new List<Player>();
 
             IsPlaying = false;
-            BoardSize = 20; // Mặc định là 20
+            BoardSize = 15; // Mặc định là 15
+            HostSymbol = "X";
         }
 
         // ==============================
@@ -69,16 +71,11 @@ namespace Server.Managers
         }
 
         // ==============================
-        // ĐỔI QUÂN
+        // ĐỔI QUÂN (X / O)
         // ==============================
         public void SwapPlayers()
         {
-            if (Players.Count == 2)
-            {
-                var temp = Players[0];
-                Players[0] = Players[1];
-                Players[1] = temp;
-            }
+            HostSymbol = (HostSymbol == "X") ? "O" : "X";
         }
 
         // ==============================

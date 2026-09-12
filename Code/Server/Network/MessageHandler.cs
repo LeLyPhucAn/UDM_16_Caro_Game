@@ -34,6 +34,7 @@ public class MessageHandler
         _connectionManager = connectionManager ?? throw new ArgumentNullException(nameof(connectionManager));
         _gameRequestHandler = new GameRequestHandler(_matchManager, _connectionManager, _roomManager);
         _matchService = new MatchService();
+        _matchManager.OnMatchTimeout += HandleMatchTimeout;
     }
 
     /// <summary>
@@ -188,7 +189,7 @@ public class MessageHandler
     {
         Logger.Info($"[CreateRoom] Yêu cầu từ Session: {session.SessionId}");
         var room = _roomManager.CreateRoom(msg.RoomName);
-        room.BoardSize = 20;
+        room.BoardSize = 15;
 
         // Tự động add chủ phòng vào phòng
         string pName = !string.IsNullOrEmpty(session.PlayerName) ? session.PlayerName : "Player_" + session.SessionId.ToString().Substring(0, 4);
@@ -247,15 +248,18 @@ public class MessageHandler
                             }
                         }
 
+                        Player? pX = match.PlayerX ?? (room.Players.Count > 0 ? room.Players[0] : null);
+                        Player? pO = match.PlayerO ?? (room.Players.Count > 1 ? room.Players[1] : null);
+
                         var syncMsg = new GameStateMessage
                         {
                             RoomId = room.RoomId,
                             BoardState = sb.ToString(),
                             BoardSize = room.BoardSize,
-                            CurrentPlayerId = match.CurrentTurn == Shared.Models.CellState.X ? (room.Players.Count > 0 ? room.Players[0].Id : "") : (room.Players.Count > 1 ? room.Players[1].Id : ""),
-                            CurrentTurnName = match.CurrentTurn == Shared.Models.CellState.X ? (room.Players.Count > 0 ? room.Players[0].Username : "") : (room.Players.Count > 1 ? room.Players[1].Username : ""),
-                            PlayerXName = room.Players.Count > 0 ? room.Players[0].Username : "",
-                            PlayerOName = room.Players.Count > 1 ? room.Players[1].Username : "",
+                            CurrentPlayerId = match.CurrentTurn == Shared.Models.CellState.X ? (pX?.Id ?? "") : (pO?.Id ?? ""),
+                            CurrentTurnName = match.CurrentTurn == Shared.Models.CellState.X ? (pX?.Username ?? "") : (pO?.Username ?? ""),
+                            PlayerXName = pX?.Username ?? "",
+                            PlayerOName = pO?.Username ?? "",
                             Status = "Playing",
                             MySymbol = "S",
                             SpectatorCount = room.Spectators.Count
@@ -291,20 +295,22 @@ public class MessageHandler
                 }
 
                 _roomManager.SetPlaying(room.RoomId, true);
-                var match = _matchManager.CreateMatch(room.RoomId, room.Players[0], room.Players[1], room.BoardSize);
+
+                Player playerX = (room.HostSymbol == "X") ? room.Players[0] : room.Players[1];
+                Player playerO = (room.HostSymbol == "O") ? room.Players[0] : room.Players[1];
+
+                var match = _matchManager.CreateMatch(room.RoomId, playerX, playerO, room.BoardSize);
                 if (match != null)
                 {
-                    int p1DbId = room.Players[0].DatabaseId > 0
-                        ? room.Players[0].DatabaseId
-                        : _userService.GetUserId(room.Players[0].Username);
-                    int p2DbId = room.Players[1].DatabaseId > 0
-                        ? room.Players[1].DatabaseId
-                        : _userService.GetUserId(room.Players[1].Username);
+                    int p1DbId = playerX.DatabaseId > 0
+                        ? playerX.DatabaseId
+                        : _userService.GetUserId(playerX.Username);
+                    int p2DbId = playerO.DatabaseId > 0
+                        ? playerO.DatabaseId
+                        : _userService.GetUserId(playerO.Username);
 
-                    if (room.Players[0].DatabaseId <= 0)
-                        room.Players[0].DatabaseId = p1DbId;
-                    if (room.Players[1].DatabaseId <= 0)
-                        room.Players[1].DatabaseId = p2DbId;
+                    playerX.DatabaseId = p1DbId;
+                    playerO.DatabaseId = p2DbId;
 
                     if (match.PlayerX != null) match.PlayerX.DatabaseId = p1DbId;
                     if (match.PlayerO != null) match.PlayerO.DatabaseId = p2DbId;
@@ -312,54 +318,57 @@ public class MessageHandler
                     if (p1DbId > 0 && p2DbId > 0)
                     {
                         match.DbMatchId = _matchService.StartNewMatch(p1DbId, p2DbId);
-                        Logger.Info($"[Match] Đã tạo bản ghi Match #{match.DbMatchId} trong CSDL cho {room.Players[0].Username}({p1DbId}) vs {room.Players[1].Username}({p2DbId})");
+                        Logger.Info($"[Match] Da tao ban ghi Match #{match.DbMatchId} trong CSDL cho {playerX.Username}({p1DbId}) vs {playerO.Username}({p2DbId})");
                     }
 
                     _matchManager.StartMatch(match.MatchId);
-                    Logger.Info($"[Match] Đã tạo và bắt đầu trận đấu {match.MatchId} cho phòng {room.RoomId}");
+                    Logger.Info($"[Match] Da tao va bat dau tran dau {match.MatchId} cho phong {room.RoomId}");
 
-                    var gameStateX = new GameStateMessage
-                    {
-                        RoomId = room.RoomId,
-                        BoardState = string.Empty, // Bàn cờ trống lúc mới bắt đầu
-                        BoardSize = room.BoardSize,
-                        CurrentPlayerId = match.CurrentTurn == CellState.X ? room.Players[0].Id : room.Players[1].Id,
-                        CurrentTurnName = match.CurrentTurn == CellState.X ? room.Players[0].Username : room.Players[1].Username,
-                        PlayerXName = room.Players[0].Username,
-                        PlayerOName = room.Players[1].Username,
-                        Status = "Playing",
-                        MySymbol = "X",
-                        SpectatorCount = room.Spectators.Count
-                    };
+                    string hostSymbol = room.HostSymbol;
+                    string guestSymbol = (hostSymbol == "X") ? "O" : "X";
 
-                    var gameStateO = new GameStateMessage
+                    var gameStateHost = new GameStateMessage
                     {
                         RoomId = room.RoomId,
                         BoardState = string.Empty,
                         BoardSize = room.BoardSize,
-                        CurrentPlayerId = match.CurrentTurn == CellState.X ? room.Players[0].Id : room.Players[1].Id,
-                        CurrentTurnName = match.CurrentTurn == CellState.X ? room.Players[0].Username : room.Players[1].Username,
-                        PlayerXName = room.Players[0].Username,
-                        PlayerOName = room.Players[1].Username,
+                        CurrentPlayerId = match.CurrentTurn == CellState.X ? playerX.Id : playerO.Id,
+                        CurrentTurnName = match.CurrentTurn == CellState.X ? playerX.Username : playerO.Username,
+                        PlayerXName = playerX.Username,
+                        PlayerOName = playerO.Username,
                         Status = "Playing",
-                        MySymbol = "O",
+                        MySymbol = hostSymbol,
                         SpectatorCount = room.Spectators.Count
                     };
 
-                    await _connectionManager.SendMessageToClientAsync(room.Players[0].Id, gameStateX);
-                    await _connectionManager.SendMessageToClientAsync(room.Players[1].Id, gameStateO);
+                    var gameStateGuest = new GameStateMessage
+                    {
+                        RoomId = room.RoomId,
+                        BoardState = string.Empty,
+                        BoardSize = room.BoardSize,
+                        CurrentPlayerId = match.CurrentTurn == CellState.X ? playerX.Id : playerO.Id,
+                        CurrentTurnName = match.CurrentTurn == CellState.X ? playerX.Username : playerO.Username,
+                        PlayerXName = playerX.Username,
+                        PlayerOName = playerO.Username,
+                        Status = "Playing",
+                        MySymbol = guestSymbol,
+                        SpectatorCount = room.Spectators.Count
+                    };
+
+                    await _connectionManager.SendMessageToClientAsync(room.Players[0].Id, gameStateHost);
+                    await _connectionManager.SendMessageToClientAsync(room.Players[1].Id, gameStateGuest);
                     
                     var gameStateSpectator = new GameStateMessage
                     {
                         RoomId = room.RoomId,
                         BoardState = string.Empty,
                         BoardSize = room.BoardSize,
-                        CurrentPlayerId = match.CurrentTurn == CellState.X ? room.Players[0].Id : room.Players[1].Id,
-                        CurrentTurnName = match.CurrentTurn == CellState.X ? room.Players[0].Username : room.Players[1].Username,
-                        PlayerXName = room.Players[0].Username,
-                        PlayerOName = room.Players[1].Username,
+                        CurrentPlayerId = match.CurrentTurn == CellState.X ? playerX.Id : playerO.Id,
+                        CurrentTurnName = match.CurrentTurn == CellState.X ? playerX.Username : playerO.Username,
+                        PlayerXName = playerX.Username,
+                        PlayerOName = playerO.Username,
                         Status = "Playing",
-                        MySymbol = "S", // S = Spectator
+                        MySymbol = "S",
                         SpectatorCount = room.Spectators.Count
                     };
                     foreach (var spectator in room.Spectators)
@@ -390,6 +399,23 @@ public class MessageHandler
         {
             foreach (System.Data.DataRow row in dt.Rows)
             {
+                int matchWinnerId = row["WinnerId"] != DBNull.Value ? Convert.ToInt32(row["WinnerId"]) : 0;
+                string outcome = "Chưa rõ";
+                if (row["WinnerId"] != DBNull.Value)
+                {
+                    outcome = (matchWinnerId == userId) ? "Thắng" : "Thua";
+                }
+                else
+                {
+                    string rawRes = row["Result"]?.ToString() ?? "";
+                    if (rawRes.Contains("Draw", StringComparison.OrdinalIgnoreCase))
+                        outcome = "Hòa";
+                    else if (rawRes.Contains("Cancel", StringComparison.OrdinalIgnoreCase))
+                        outcome = "Hủy";
+                    else
+                        outcome = rawRes;
+                }
+
                 response.Matches.Add(new MatchHistoryItem
                 {
                     MatchId = Convert.ToInt32(row["MatchId"]),
@@ -398,12 +424,43 @@ public class MessageHandler
                     StartTime = Convert.ToDateTime(row["StartTime"]),
                     EndTime = row["EndTime"] != DBNull.Value ? (DateTime?)Convert.ToDateTime(row["EndTime"]) : null,
                     WinnerId = row["WinnerId"] != DBNull.Value ? (int?)Convert.ToInt32(row["WinnerId"]) : null,
-                    Result = row["Result"]?.ToString() ?? "",
+                    Result = outcome,
                     Status = row["Status"]?.ToString() ?? ""
                 });
             }
         }
         await session.SendAsync(response);
+    }
+
+    private async void HandleMatchTimeout(Match match, string winnerId, string winnerName)
+    {
+        try
+        {
+            var room = _roomManager.GetRoom(match.RoomId);
+            var gameOverMsg = new GameOverMessage
+            {
+                RoomId = match.MatchId,
+                ResultType = "Timeout",
+                WinnerId = winnerId,
+                WinnerName = winnerName,
+                WinningLine = new string[0]
+            };
+
+            if (room != null)
+            {
+                foreach (var p in room.Players)
+                    await _connectionManager.SendMessageToClientAsync(p.Id, gameOverMsg);
+                foreach (var p in room.Spectators)
+                    await _connectionManager.SendMessageToClientAsync(p.Id, gameOverMsg);
+            }
+
+            int? dbWinnerId = (match.PlayerX?.Id == winnerId) ? match.PlayerX?.DatabaseId : match.PlayerO?.DatabaseId;
+            _matchService.SaveMatchResult(match.DbMatchId, dbWinnerId, "Timeout");
+        }
+        catch (Exception ex)
+        {
+            Logger.Error($"[MatchTimeout Error] {ex.Message}");
+        }
     }
 
     private async Task HandleInviteAsync(ClientSession session, InviteMessage request)
@@ -480,13 +537,24 @@ public class MessageHandler
     {
         if (room == null) return;
 
+        string hostName = room.Players.Count > 0 ? room.Players[0].Username : "";
+        string guestName = room.Players.Count > 1 ? room.Players[1].Username : "";
+        string hostSymbol = room.HostSymbol;
+        string guestSymbol = (hostSymbol == "X") ? "O" : "X";
+        bool isGuestReady = room.Players.Count > 1 && room.Players[1].IsReady;
+
         var stateDto = new CaroGame.Protocol.Messages.RoomStateDto
         {
             RoomId = room.RoomId,
             RoomName = room.RoomName,
-            PlayerX = room.Players.Count > 0 ? room.Players[0].Username : "",
-            PlayerO = room.Players.Count > 1 ? room.Players[1].Username : "",
-            IsPlayerOReady = room.Players.Count > 1 ? room.Players[1].IsReady : false,
+            HostName = hostName,
+            GuestName = guestName,
+            HostSymbol = hostSymbol,
+            GuestSymbol = guestSymbol,
+            IsGuestReady = isGuestReady,
+            PlayerX = (hostSymbol == "X") ? hostName : guestName,
+            PlayerO = (hostSymbol == "O") ? hostName : guestName,
+            IsPlayerOReady = isGuestReady,
             BoardSize = room.BoardSize,
             SpectatorCount = room.Spectators.Count
         };
@@ -590,7 +658,8 @@ public class MessageHandler
 
         if (room != null)
         {
-            if (room.IsPlaying)
+            bool isActualPlayer = room.Players.Any(p => p.Id == session.SessionId.ToString());
+            if (room.IsPlaying && isActualPlayer)
             {
                 var match = _matchManager.FindRoomMatch(room.RoomId);
                 if (match != null && match.State == MatchState.Playing)
@@ -667,7 +736,8 @@ public class MessageHandler
         var room = _roomManager.FindPlayerRoom(session.SessionId.ToString());
         if (room != null)
         {
-            if (room.IsPlaying)
+            bool isActualPlayer = room.Players.Any(p => p.Id == session.SessionId.ToString());
+            if (room.IsPlaying && isActualPlayer)
             {
                 var match = _matchManager.FindRoomMatch(room.RoomId);
                 if (match != null && match.State == MatchState.Playing)

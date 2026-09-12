@@ -8,7 +8,7 @@ namespace Client.Controls
     {
         private int _rows = 15;
         private int _cols = 15;
-        private int _cellSize = 30; // Giảm kích cỡ để 20x20 không bị tràn
+        private int _cellSize = 40; // Chuẩn 15x15 vừa vặn khung 600x600
 
         private Button[,] _board;
 
@@ -87,6 +87,28 @@ namespace Client.Controls
             _board[row, col].ForeColor = (mark == "X")
                 ? Color.DeepSkyBlue
                 : Color.FromArgb(217, 83, 79);
+        }
+
+        // Hàm làm nổi bật 5 ô chiến thắng liên tiếp với hiệu ứng màu sáng
+        public void HighlightWinningCells(System.Collections.Generic.IEnumerable<Point> winningCells)
+        {
+            if (this.InvokeRequired)
+            {
+                this.Invoke(new Action(() => HighlightWinningCells(winningCells)));
+                return;
+            }
+
+            foreach (var pt in winningCells)
+            {
+                if (pt.X >= 0 && pt.X < _rows && pt.Y >= 0 && pt.Y < _cols)
+                {
+                    var btn = _board[pt.X, pt.Y];
+                    btn.BackColor = Color.FromArgb(241, 196, 15); // Vàng sáng rực rỡ
+                    btn.ForeColor = Color.FromArgb(20, 20, 20); // Chữ đen tương phản sắc nét
+                    btn.FlatAppearance.BorderColor = Color.White;
+                    btn.FlatAppearance.BorderSize = 2;
+                }
+            }
         }
     }
 }

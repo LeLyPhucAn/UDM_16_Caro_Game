@@ -90,7 +90,7 @@ namespace Server.Services
                         ResultType = resultType,
                         WinnerId = winnerId,
                         WinnerName = winnerName,
-                        WinningLine = new string[0]
+                        WinningLine = moveResult.WinningLine != null ? moveResult.WinningLine.ToArray() : new string[0]
                     };
 
                     if (room != null)

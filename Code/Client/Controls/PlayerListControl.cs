@@ -16,7 +16,7 @@ namespace Client.Controls
             InitializeComponent();
             
             _contextMenu = new ContextMenuStrip();
-            var item = _contextMenu.Items.Add("⚔️ Thách Đấu");
+            var item = _contextMenu.Items.Add("Thách Đấu");
             item.Click += Challenge_Click;
             lstPlayers.ContextMenuStrip = _contextMenu;
             lstPlayers.MouseDown += LstPlayers_MouseDown;

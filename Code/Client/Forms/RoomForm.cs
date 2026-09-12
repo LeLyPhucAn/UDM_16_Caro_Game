@@ -19,7 +19,7 @@ namespace Client.Forms
         private bool _isHost;
         private string _roomId = "";
         private bool _isReady = false;
-        private int _boardSize = 20; // Co dinh 20x20
+        private int _boardSize = 15; // Co dinh 15x15
         private string? _challengeTarget;
         
         private Button btnSwapSymbol = null!;
@@ -27,7 +27,7 @@ namespace Client.Forms
 
         private bool _isSpectator = false;
 
-        public RoomForm(ClientConnection connection, string roomName, string playerName, bool isHost, string? challengeTarget = null, bool isSpectator = false)
+        public RoomForm(ClientConnection connection, string roomName, string playerName, bool isHost, string? challengeTarget = null, bool isSpectator = false, string roomId = "")
         {
             InitializeComponent();
 
@@ -37,22 +37,31 @@ namespace Client.Forms
             _isHost = isHost;
             _challengeTarget = challengeTarget;
             _isSpectator = isSpectator;
+            _roomId = roomId;
 
             ApplyInitialLogic();
 
-            // ĐĂNG KÝ LẮNG NGHE THÔNG BÁO TỪ SERVER KHI VỪA MỞ FORM
+            // Đăng ký lắng nghe thông báo từ Server khi vừa mở Form
             _clientConnection.OnMessageReceived += HandleRoomMessage;
         }
 
         private void ApplyInitialLogic()
         {
             lblRoomName.Text = "PHÒNG: " + _roomName.ToUpper();
+            lblTitleX.Text = "Chủ phòng (X)";
+            lblTitleO.Text = "Khách (O)";
+
             if (_isHost)
             {
                 lblPlayerX_Name.Text = _playerName;
                 lblPlayerX_Name.ForeColor = Color.DeepSkyBlue;
-                lblPlayerX_Status.Text = "Đang chờ khách...";
-                lblPlayerX_Status.ForeColor = Color.Orange;
+                lblPlayerX_Status.Text = "Chủ phòng";
+                lblPlayerX_Status.ForeColor = Color.LimeGreen;
+
+                lblPlayerO_Name.Text = "Đang trống...";
+                lblPlayerO_Name.ForeColor = Color.Gray;
+                lblPlayerO_Status.Text = "Đang chờ khách...";
+                lblPlayerO_Status.ForeColor = Color.Gray;
 
                 btnStartGame.Visible = true;
                 btnStartGame.BackColor = Color.Gray;
@@ -60,20 +69,21 @@ namespace Client.Forms
             }
             else
             {
-                lblPlayerO_Name.Text = _playerName;
-                lblPlayerO_Name.ForeColor = Color.Tomato;
-                lblPlayerO_Status.Text = "Đang chờ...";
-                lblPlayerO_Status.ForeColor = Color.Orange;
-
                 if (_isSpectator)
                 {
-                    lblPlayerO_Name.Text = "Khán giả";
+                    lblPlayerX_Name.Text = "Đang tải...";
+                    lblPlayerO_Name.Text = "Đang tải...";
                     lblPlayerX_Status.Text = "Khán giả";
                     lblPlayerO_Status.Text = "Khán giả";
                     btnStartGame.Visible = false;
                 }
                 else
                 {
+                    lblPlayerO_Name.Text = _playerName;
+                    lblPlayerO_Name.ForeColor = Color.Tomato;
+                    lblPlayerO_Status.Text = "Đang chờ...";
+                    lblPlayerO_Status.ForeColor = Color.Orange;
+
                     btnStartGame.Visible = true;
                     btnStartGame.Text = "SẴN SÀNG";
                     btnStartGame.BackColor = Color.SeaGreen;
@@ -133,7 +143,7 @@ namespace Client.Forms
             if (message is GameStateMessage gameState)
             {
                 // Kiểm tra xem ID có trùng không
-                if (gameState.RoomId == this._roomId || gameState.RoomId == this._roomName)
+                if (gameState.RoomId == this._roomId || gameState.RoomId == this._roomName || (!string.IsNullOrEmpty(this._roomId) && gameState.RoomId.Contains(this._roomId)))
                 {
                     _clientConnection.OnMessageReceived -= HandleRoomMessage;
 
@@ -147,7 +157,6 @@ namespace Client.Forms
                 return;
             }
 
-            // Dùng 'as' thay vì 'is' để tránh lỗi chưa khởi tạo biến CS0165
             var resMsg = message as ResponseMessage;
             if (resMsg != null)
             {
@@ -155,9 +164,8 @@ namespace Client.Forms
                 {
                     var state = System.Text.Json.JsonSerializer.Deserialize<RoomStateDto>(resMsg.Data);
 
-                    if (state != null && state.RoomName == this._roomName)
+                    if (state != null && (state.RoomName == this._roomName || state.RoomId == this._roomId))
                     {
-                        // Luôn lưu lại RoomId khi nhận được trạng thái từ server
                         this._roomId = state.RoomId;
                         this._boardSize = state.BoardSize;
 
@@ -174,28 +182,46 @@ namespace Client.Forms
                             _challengeTarget = null;
                         }
 
-                        if (!string.IsNullOrEmpty(state.PlayerX))
-                        {
-                            lblPlayerX_Name.Text = state.PlayerX;
-                            lblPlayerX_Name.ForeColor = System.Drawing.Color.DeepSkyBlue;
-                        }
-                        else
-                        {
-                            lblPlayerX_Name.Text = "Đang trống...";
-                            lblPlayerX_Name.ForeColor = System.Drawing.Color.Gray;
-                        }
+                        string hostSymbol = !string.IsNullOrEmpty(state.HostSymbol) ? state.HostSymbol : "X";
+                        string guestSymbol = !string.IsNullOrEmpty(state.GuestSymbol) ? state.GuestSymbol : (hostSymbol == "X" ? "O" : "X");
+                        string hostName = !string.IsNullOrEmpty(state.HostName) ? state.HostName : state.PlayerX;
+                        string guestName = !string.IsNullOrEmpty(state.GuestName) ? state.GuestName : state.PlayerO;
 
-                        if (!string.IsNullOrEmpty(state.PlayerO))
+                        // Cập nhật thẻ Chủ phòng (bên trái)
+                        lblTitleX.Text = $"Chủ phòng ({hostSymbol})";
+                        lblTitleX.ForeColor = (hostSymbol == "X") ? Color.DeepSkyBlue : Color.Tomato;
+                        lblPlayerX_Name.Text = !string.IsNullOrEmpty(hostName) ? hostName : "Chưa rõ";
+                        lblPlayerX_Name.ForeColor = (hostSymbol == "X") ? Color.DeepSkyBlue : Color.Tomato;
+                        lblPlayerX_Status.Text = "Chủ phòng";
+                        lblPlayerX_Status.ForeColor = Color.LimeGreen;
+
+                        // Cập nhật thẻ Khách (bên phải)
+                        lblTitleO.Text = $"Khách ({guestSymbol})";
+                        lblTitleO.ForeColor = (guestSymbol == "X") ? Color.DeepSkyBlue : Color.Tomato;
+
+                        if (!string.IsNullOrEmpty(guestName))
                         {
-                            lblPlayerO_Name.Text = state.PlayerO;
-                            lblPlayerO_Name.ForeColor = System.Drawing.Color.Tomato;
+                            lblPlayerO_Name.Text = guestName;
+                            lblPlayerO_Name.ForeColor = (guestSymbol == "X") ? Color.DeepSkyBlue : Color.Tomato;
+
+                            bool isGuestReady = state.IsGuestReady || state.IsPlayerOReady;
+                            if (isGuestReady)
+                            {
+                                lblPlayerO_Status.Text = "Đã sẵn sàng";
+                                lblPlayerO_Status.ForeColor = Color.LimeGreen;
+                            }
+                            else
+                            {
+                                lblPlayerO_Status.Text = "Đang chờ...";
+                                lblPlayerO_Status.ForeColor = Color.Orange;
+                            }
                         }
                         else
                         {
                             lblPlayerO_Name.Text = "Đang trống...";
-                            lblPlayerO_Name.ForeColor = System.Drawing.Color.Gray;
-                            lblPlayerO_Status.Text = "Đang trống...";
-                            lblPlayerO_Status.ForeColor = System.Drawing.Color.Gray;
+                            lblPlayerO_Name.ForeColor = Color.Gray;
+                            lblPlayerO_Status.Text = "Đang chờ khách...";
+                            lblPlayerO_Status.ForeColor = Color.Gray;
                         }
                         
                         if (lblSpectatorsCount != null)
@@ -205,39 +231,16 @@ namespace Client.Forms
 
                         if (_isHost)
                         {
-                            if (!string.IsNullOrEmpty(state.PlayerX) && !string.IsNullOrEmpty(state.PlayerO))
-                            {
-                                lblPlayerX_Status.Text = "Đã sẵn sàng";
-                                lblPlayerX_Status.ForeColor = System.Drawing.Color.LimeGreen;
+                            bool hasGuest = !string.IsNullOrEmpty(guestName);
+                            bool isGuestReady = state.IsGuestReady || state.IsPlayerOReady;
 
-                                if (state.IsPlayerOReady)
-                                {
-                                    btnStartGame.Enabled = true;
-                                    btnStartGame.BackColor = System.Drawing.Color.SeaGreen;
-                                    lblPlayerO_Status.Text = "Đã sẵn sàng";
-                                    lblPlayerO_Status.ForeColor = System.Drawing.Color.LimeGreen;
-                                }
-                                else
-                                {
-                                    btnStartGame.Enabled = false;
-                                    btnStartGame.BackColor = System.Drawing.Color.Gray;
-                                    lblPlayerO_Status.Text = "Đang chờ...";
-                                    lblPlayerO_Status.ForeColor = System.Drawing.Color.Orange;
-                                }
-                            }
-                            else
-                            {
-                                btnStartGame.Enabled = false;
-                                btnStartGame.BackColor = System.Drawing.Color.Gray;
-                                lblPlayerX_Status.Text = "Đang chờ khách...";
-                                lblPlayerX_Status.ForeColor = System.Drawing.Color.Orange;
-                            }
+                            btnStartGame.Enabled = hasGuest && isGuestReady;
+                            btnStartGame.BackColor = btnStartGame.Enabled ? Color.SeaGreen : Color.Gray;
                         }
                     }
                 }
                 else if (resMsg.Action == "StartGame" && (resMsg.Data == this._roomId || resMsg.Data == this._roomName))
                 {
-                    // Fallback for old protocol if any
                     _clientConnection.OnMessageReceived -= HandleRoomMessage;
 
                     GameForm gameForm = new GameForm(_clientConnection, this._roomId, _roomName, _playerName, _isHost, _boardSize, _isSpectator);

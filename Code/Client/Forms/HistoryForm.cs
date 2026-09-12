@@ -64,12 +64,14 @@ namespace Client.Forms
                     
                     string res = string.IsNullOrWhiteSpace(match.Result) ? "Chưa rõ" : match.Result;
                     var subRes = item.SubItems.Add(res);
-                    if (res.Contains("Win", StringComparison.OrdinalIgnoreCase))
+                    if (res.Equals("Thắng", StringComparison.OrdinalIgnoreCase) || res.Contains("Win", StringComparison.OrdinalIgnoreCase))
                         subRes.ForeColor = Color.LimeGreen;
-                    else if (res.Contains("Loss", StringComparison.OrdinalIgnoreCase))
+                    else if (res.Equals("Thua", StringComparison.OrdinalIgnoreCase) || res.Contains("Loss", StringComparison.OrdinalIgnoreCase))
                         subRes.ForeColor = Color.Salmon;
-                    else if (res.Contains("Draw", StringComparison.OrdinalIgnoreCase))
+                    else if (res.Equals("Hòa", StringComparison.OrdinalIgnoreCase) || res.Contains("Draw", StringComparison.OrdinalIgnoreCase))
                         subRes.ForeColor = Color.Gold;
+                    else
+                        subRes.ForeColor = Color.DarkGray;
 
                     item.SubItems.Add(string.IsNullOrWhiteSpace(match.Status) ? "Hoàn thành" : match.Status);
                     lstHistory.Items.Add(item);

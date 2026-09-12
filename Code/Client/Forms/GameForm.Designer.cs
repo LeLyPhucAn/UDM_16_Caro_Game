@@ -80,7 +80,7 @@ namespace Client.Forms
             lblBadge.Padding = new Padding(5);
             lblBadge.Size = new Size(130, 30);
             lblBadge.TabIndex = 1;
-            lblBadge.Text = "Standard 20x20";
+            lblBadge.Text = "Standard 15x15";
             // 
             // lblTitle
             // 

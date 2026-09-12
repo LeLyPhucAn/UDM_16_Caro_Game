@@ -95,11 +95,11 @@ namespace Client.Forms
             }
 
             // Stat Badges (Điểm, Thắng, Hòa, Thua, Tỉ lệ)
-            lblBadgeScore = CreateStatBadge("🏆 Điểm: 0", Color.FromArgb(50, 52, 60), Color.FromArgb(220, 220, 220), new Point(80, 48));
-            lblBadgeWins = CreateStatBadge("🟢 Thắng: 0", Color.FromArgb(25, 60, 40), Color.FromArgb(46, 204, 113), new Point(190, 48));
-            lblBadgeDraws = CreateStatBadge("🟡 Hòa: 0", Color.FromArgb(65, 55, 25), Color.FromArgb(241, 196, 15), new Point(295, 48));
-            lblBadgeLosses = CreateStatBadge("🔴 Thua: 0", Color.FromArgb(65, 30, 30), Color.FromArgb(231, 76, 60), new Point(390, 48));
-            lblBadgeWinRate = CreateStatBadge("📊 Tỉ lệ: 0%", Color.FromArgb(30, 50, 70), Color.FromArgb(52, 152, 219), new Point(485, 48));
+            lblBadgeScore = CreateStatBadge("Điểm: 0", Color.FromArgb(50, 52, 60), Color.FromArgb(220, 220, 220), new Point(80, 48));
+            lblBadgeWins = CreateStatBadge("Thắng: 0", Color.FromArgb(25, 60, 40), Color.FromArgb(46, 204, 113), new Point(190, 48));
+            lblBadgeDraws = CreateStatBadge("Hòa: 0", Color.FromArgb(65, 55, 25), Color.FromArgb(241, 196, 15), new Point(295, 48));
+            lblBadgeLosses = CreateStatBadge("Thua: 0", Color.FromArgb(65, 30, 30), Color.FromArgb(231, 76, 60), new Point(390, 48));
+            lblBadgeWinRate = CreateStatBadge("Tỉ lệ: 0%", Color.FromArgb(30, 50, 70), Color.FromArgb(52, 152, 219), new Point(485, 48));
 
             pnlTopBar.Controls.Add(lblBadgeScore);
             pnlTopBar.Controls.Add(lblBadgeWins);
@@ -110,7 +110,7 @@ namespace Client.Forms
             // Nút LỊCH SỬ ĐẤU trên TopBar bên cạnh nút THOÁT GAME
             btnHistory = new Button
             {
-                Text = "📜 LỊCH SỬ ĐẤU",
+                Text = "LỊCH SỬ ĐẤU",
                 Size = new Size(135, 38),
                 BackColor = Color.FromArgb(106, 90, 205),
                 ForeColor = Color.White,
@@ -185,11 +185,11 @@ namespace Client.Forms
                 return;
             }
 
-            if (lblBadgeScore != null) lblBadgeScore.Text = $"🏆 Điểm: {profile.Score}";
-            if (lblBadgeWins != null) lblBadgeWins.Text = $"🟢 Thắng: {profile.Wins}";
-            if (lblBadgeDraws != null) lblBadgeDraws.Text = $"🟡 Hòa: {profile.Draws}";
-            if (lblBadgeLosses != null) lblBadgeLosses.Text = $"🔴 Thua: {profile.Losses}";
-            if (lblBadgeWinRate != null) lblBadgeWinRate.Text = $"📊 Tỉ lệ: {profile.WinRate}%";
+            if (lblBadgeScore != null) lblBadgeScore.Text = $"Điểm: {profile.Score}";
+            if (lblBadgeWins != null) lblBadgeWins.Text = $"Thắng: {profile.Wins}";
+            if (lblBadgeDraws != null) lblBadgeDraws.Text = $"Hòa: {profile.Draws}";
+            if (lblBadgeLosses != null) lblBadgeLosses.Text = $"Thua: {profile.Losses}";
+            if (lblBadgeWinRate != null) lblBadgeWinRate.Text = $"Tỉ lệ: {profile.WinRate}%";
         }
 
         private void LobbyForm_Load(object? sender, EventArgs e)
@@ -257,7 +257,7 @@ namespace Client.Forms
                     RoomName = roomName,
                     HostId = _playerName,
                     MaxPlayers = 2,
-                    BoardSize = 20,
+                    BoardSize = 15,
                     IsPrivate = false,
                     Password = ""
                 };
@@ -418,7 +418,7 @@ namespace Client.Forms
                         };
                         _ = _clientConnection.SendMessageAsync(joinMsg);
 
-                        RoomForm roomForm = new RoomForm(_clientConnection, "Phòng thách đấu", _playerName, false);
+                        RoomForm roomForm = new RoomForm(_clientConnection, "Phòng thách đấu", _playerName, false, null, false, inviteMsg.RoomId);
                         roomForm.FormClosed += (s, args) => { this.Show(); RequestProfile(); };
                         roomForm.Show();
                         this.Hide();
@@ -457,7 +457,7 @@ namespace Client.Forms
                 RoomName = roomName,
                 HostId = _playerName,
                 MaxPlayers = 2,
-                BoardSize = 20,
+                BoardSize = 15,
                 IsPrivate = false,
                 Password = ""
             };
@@ -522,7 +522,7 @@ namespace Client.Forms
             });
 
             // 4. Chuyển sang màn hình thi đấu
-            RoomForm roomForm = new RoomForm(_clientConnection, selectedRoomName, _playerName, false, null, isSpectator); // false = Khách
+            RoomForm roomForm = new RoomForm(_clientConnection, selectedRoomName, _playerName, false, null, isSpectator, selectedRoomId); // false = Khách
             roomForm.FormClosed += (s, args) => { this.Show(); RequestProfile(); };
             roomForm.Show();
             this.Hide();
