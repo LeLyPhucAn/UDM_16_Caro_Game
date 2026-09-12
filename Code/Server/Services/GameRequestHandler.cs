@@ -13,11 +13,13 @@ namespace Server.Services
     public class GameRequestHandler
     {
         private readonly MatchManager _matchManager;
+        private readonly RoomManager _roomManager;
         private readonly ConnectionManager _connectionManager;
 
-        public GameRequestHandler(MatchManager matchManager, ConnectionManager connectionManager)
+        public GameRequestHandler(MatchManager matchManager, RoomManager roomManager, ConnectionManager connectionManager)
         {
             _matchManager = matchManager ?? throw new ArgumentNullException(nameof(matchManager));
+            _roomManager = roomManager ?? throw new ArgumentNullException(nameof(roomManager));
             _connectionManager = connectionManager ?? throw new ArgumentNullException(nameof(connectionManager));
         }
 
@@ -70,6 +72,15 @@ namespace Server.Services
                     await _connectionManager.SendMessageToClientAsync(sessionX, broadcastMove);
                 if (!string.IsNullOrEmpty(sessionO))
                     await _connectionManager.SendMessageToClientAsync(sessionO, broadcastMove);
+                var room = _roomManager.GetRoom(msg.RoomId);
+                if (room != null)
+                {
+                    foreach (var spectatorId in room.SpectatorSessionIds)
+                    {
+                        // Gửi gói tin nước đi y hệt như gửi cho người chơi
+                        _ = _connectionManager.SendMessageToClientAsync(spectatorId, broadcastMove);
+                    }
+                }
 
                 // 2. Broadcast GameOverMessage if applicable
                 if (moveResult.IsWin || moveResult.IsDraw)

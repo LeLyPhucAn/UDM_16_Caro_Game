@@ -15,6 +15,9 @@ namespace Client.Controls
         // Tạo sự kiện để báo cho GameForm biết khi có người click vào 1 ô
         public event Action<int, int>? OnCellClicked;
 
+        [System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
+        public bool IsSpectatorMode { get; set; } = false;
+
         public BoardControl()
         {
             this.DoubleBuffered = true;
@@ -65,7 +68,7 @@ namespace Client.Controls
         {
             if (sender is not Button btn || btn.Tag == null) return;
             if (!string.IsNullOrEmpty(btn.Text)) return; // Ô đã có người đánh
-
+            if (IsSpectatorMode) return;
             Point pos = (Point)btn.Tag;
 
             // Bắn tọa độ ra ngoài cho GameForm xử lý

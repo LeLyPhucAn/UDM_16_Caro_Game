@@ -18,7 +18,6 @@ namespace Client.Forms
             _roomId = roomId;
             _clientConnection = clientConnection;
 
-            // 👉 Khóa mõm BoardControl, biến nó thành màn hình tivi chỉ để xem
             boardControl1.IsSpectatorMode = true;
 
             this.Load += SpectatorForm_Load;
@@ -60,7 +59,7 @@ namespace Client.Forms
             // 3. Đổi lượt đánh
             else if (message.Type == MessageType.Turn && message is TurnMessage turnMsg)
             {
-                lblStatus.Text = $"Lượt hiện tại: {turnMsg.PlayerName}";
+                lblStatus.Text = $"Lượt hiện tại: {turnMsg.CurrentPlayerId}";
             }
             // 4. Trận đấu kết thúc
             else if (message.Type == MessageType.GameOver && message is GameOverMessage overMsg)
@@ -94,6 +93,11 @@ namespace Client.Forms
 
             // Mở lại form trước đó (LobbyForm hoặc RoomForm)
             // Code tùy thuộc vào luồng của bạn
+        }
+
+        private void SpectatorForm_Load_1(object sender, EventArgs e)
+        {
+
         }
     }
 }

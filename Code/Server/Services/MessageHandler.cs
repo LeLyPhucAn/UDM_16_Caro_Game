@@ -138,7 +138,7 @@ namespace CaroGame.Server.Services
                 // gửi ngược lại chính nó, chỉ Client mới cần đọc 2 loại này.
                 case MessageType.Response:
                 case MessageType.Error:
-                    return null;
+                    return Array.Empty<byte>();
 
                 default:
                     return CreateErrorResponse("UNSUPPORTED_TYPE",
@@ -175,14 +175,14 @@ namespace CaroGame.Server.Services
         {
             Console.WriteLine("[LeaveRoom] player=" + msg.PlayerId + " reason=" + msg.Reason);
             // TODO: xóa người chơi khỏi phòng, broadcast cho người còn lại
-            return null;
+            return Array.Empty<byte>();
         }
 
         private byte[] HandleInvite(InviteMessage msg)
         {
             Console.WriteLine("[Invite] target=" + msg.TargetPlayerId + " room=" + msg.RoomId);
             // TODO: forward InviteMessage tới đúng client đích
-            return null;
+            return Array.Empty<byte>();
         }
 
         private byte[] HandleMove(MoveMessage msg)
@@ -190,23 +190,23 @@ namespace CaroGame.Server.Services
             Console.WriteLine("[Move] player=" + msg.PlayerId + " (" + msg.Row + "," + msg.Column + ")");
             // TODO: validate nước đi, cập nhật bàn cờ, kiểm tra thắng/thua
             // rồi tạo GameStateMessage/TurnMessage/GameResultMessage để broadcast
-            return null;
+            return Array.Empty<byte>();
         }
 
         private byte[] HandleTurn(TurnMessage msg)
         {
             // Turn thường do Server tự tạo và gửi đi, ít khi Client gửi lên
-            return null;
+            return Array.Empty<byte>();
         }
 
         private byte[] HandleGameState(GameStateMessage msg)
         {
-            return null;
+            return Array.Empty<byte>();
         }
 
         private byte[] HandleGameResult(GameResultMessage msg)
         {
-            return null;
+            return Array.Empty<byte>();
         }
 
         private ResponseMessage CreateSuccessResponse(BaseMessage request, string data)

@@ -28,91 +28,87 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.lblPlayerX = new System.Windows.Forms.Label();
-            this.lblPlayerO = new System.Windows.Forms.Label();
-            this.lblStatus = new System.Windows.Forms.Label();
-            this.btnExit = new System.Windows.Forms.Button();
-            // Khởi tạo BoardControl từ namespace Client.Controls
-            this.boardControl1 = new Client.Controls.BoardControl();
-
-            this.SuspendLayout();
-
+            lblPlayerX = new Label();
+            lblPlayerO = new Label();
+            lblStatus = new Label();
+            btnExit = new Button();
+            boardControl1 = new Client.Controls.BoardControl();
+            SuspendLayout();
             // 
             // lblPlayerX
             // 
-            this.lblPlayerX.AutoSize = true;
-            this.lblPlayerX.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.lblPlayerX.ForeColor = System.Drawing.Color.Red;
-            this.lblPlayerX.Location = new System.Drawing.Point(20, 20);
-            this.lblPlayerX.Name = "lblPlayerX";
-            this.lblPlayerX.Size = new System.Drawing.Size(76, 21);
-            this.lblPlayerX.TabIndex = 0;
-            this.lblPlayerX.Text = "Quân X: -";
-
+            lblPlayerX.AutoSize = true;
+            lblPlayerX.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+            lblPlayerX.ForeColor = Color.Red;
+            lblPlayerX.Location = new Point(23, 27);
+            lblPlayerX.Name = "lblPlayerX";
+            lblPlayerX.Size = new Size(100, 28);
+            lblPlayerX.TabIndex = 0;
+            lblPlayerX.Text = "Quân X: -";
             // 
             // lblPlayerO
             // 
-            this.lblPlayerO.AutoSize = true;
-            this.lblPlayerO.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.lblPlayerO.ForeColor = System.Drawing.Color.Blue;
-            this.lblPlayerO.Location = new System.Drawing.Point(620, 20);
-            this.lblPlayerO.Name = "lblPlayerO";
-            this.lblPlayerO.Size = new System.Drawing.Size(78, 21);
-            this.lblPlayerO.TabIndex = 1;
-            this.lblPlayerO.Text = "Quân O: -";
-
+            lblPlayerO.AutoSize = true;
+            lblPlayerO.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+            lblPlayerO.ForeColor = Color.Blue;
+            lblPlayerO.Location = new Point(709, 27);
+            lblPlayerO.Name = "lblPlayerO";
+            lblPlayerO.Size = new Size(102, 28);
+            lblPlayerO.TabIndex = 1;
+            lblPlayerO.Text = "Quân O: -";
             // 
             // lblStatus
             // 
-            this.lblStatus.Font = new System.Drawing.Font("Segoe UI", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.lblStatus.Location = new System.Drawing.Point(200, 15);
-            this.lblStatus.Name = "lblStatus";
-            this.lblStatus.Size = new System.Drawing.Size(400, 30);
-            this.lblStatus.TabIndex = 2;
-            this.lblStatus.Text = "Đang kết nối để xem trận đấu...";
-            this.lblStatus.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-
+            lblStatus.Font = new Font("Segoe UI", 14F, FontStyle.Bold);
+            lblStatus.Location = new Point(229, 20);
+            lblStatus.Name = "lblStatus";
+            lblStatus.Size = new Size(457, 40);
+            lblStatus.TabIndex = 2;
+            lblStatus.Text = "Đang kết nối để xem trận đấu...";
+            lblStatus.TextAlign = ContentAlignment.MiddleCenter;
             // 
             // btnExit
             // 
-            this.btnExit.BackColor = System.Drawing.Color.IndianRed;
-            this.btnExit.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.btnExit.ForeColor = System.Drawing.Color.White;
-            this.btnExit.Location = new System.Drawing.Point(640, 520);
-            this.btnExit.Name = "btnExit";
-            this.btnExit.Size = new System.Drawing.Size(120, 40);
-            this.btnExit.TabIndex = 3;
-            this.btnExit.Text = "THOÁT";
-            this.btnExit.UseVisualStyleBackColor = false;
-            this.btnExit.Click += new System.EventHandler(this.btnExit_Click);
-
+            btnExit.BackColor = Color.IndianRed;
+            btnExit.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            btnExit.ForeColor = Color.White;
+            btnExit.Location = new Point(731, 693);
+            btnExit.Margin = new Padding(3, 4, 3, 4);
+            btnExit.Name = "btnExit";
+            btnExit.Size = new Size(137, 53);
+            btnExit.TabIndex = 3;
+            btnExit.Text = "THOÁT";
+            btnExit.UseVisualStyleBackColor = false;
+            btnExit.Click += btnExit_Click;
             // 
             // boardControl1
             // 
-            this.boardControl1.BackColor = System.Drawing.Color.White;
-            this.boardControl1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.boardControl1.Location = new System.Drawing.Point(175, 70);
-            this.boardControl1.Name = "boardControl1";
-            this.boardControl1.Size = new System.Drawing.Size(450, 450);
-            this.boardControl1.TabIndex = 4;
-
+            boardControl1.BackColor = Color.White;
+            boardControl1.BorderStyle = BorderStyle.FixedSingle;
+            boardControl1.Location = new Point(200, 93);
+            boardControl1.Margin = new Padding(3, 4, 3, 4);
+            boardControl1.Name = "boardControl1";
+            boardControl1.Size = new Size(514, 599);
+            boardControl1.TabIndex = 4;
             // 
             // SpectatorForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.Color.WhiteSmoke;
-            this.ClientSize = new System.Drawing.Size(800, 600);
-            this.Controls.Add(this.boardControl1);
-            this.Controls.Add(this.btnExit);
-            this.Controls.Add(this.lblStatus);
-            this.Controls.Add(this.lblPlayerO);
-            this.Controls.Add(this.lblPlayerX);
-            this.Name = "SpectatorForm";
-            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Khán giả - Game Caro Online";
-            this.ResumeLayout(false);
-            this.PerformLayout();
+            AutoScaleDimensions = new SizeF(8F, 20F);
+            AutoScaleMode = AutoScaleMode.Font;
+            BackColor = Color.WhiteSmoke;
+            ClientSize = new Size(914, 800);
+            Controls.Add(boardControl1);
+            Controls.Add(btnExit);
+            Controls.Add(lblStatus);
+            Controls.Add(lblPlayerO);
+            Controls.Add(lblPlayerX);
+            Margin = new Padding(3, 4, 3, 4);
+            Name = "SpectatorForm";
+            StartPosition = FormStartPosition.CenterScreen;
+            Text = "Khán giả - Game Caro Online";
+            Load += SpectatorForm_Load_1;
+            ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion

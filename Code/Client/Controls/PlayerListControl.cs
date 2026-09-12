@@ -63,8 +63,8 @@ namespace Client.Controls
         }
 
         // Đã xóa bỏ dòng ListBox bị lặp
-        private Label label2;
-        private ListBox lstPlayers;
+        private Label label2 = null!;
+        private ListBox lstPlayers = null!;
 
         private void InitializeComponent()
         {

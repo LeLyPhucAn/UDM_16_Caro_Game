@@ -18,6 +18,8 @@ namespace Server.Managers
 
         public List<Player> Players { get; private set; }
 
+        public List<string> SpectatorSessionIds { get; private set; }
+
         public bool IsPlaying { get; set; }
 
         public Room(
@@ -30,6 +32,7 @@ namespace Server.Managers
             MaxPlayers = maxPlayers;
 
             Players = new List<Player>();
+            SpectatorSessionIds = new List<string>();
 
             IsPlaying = false;
             BoardSize = 15; // Mặc định là 15

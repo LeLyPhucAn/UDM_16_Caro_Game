@@ -352,6 +352,35 @@ namespace Client.Forms
             }
         }
 
+        private void btnWatchGame_Click(object sender, EventArgs e)
+        {
+            // Giả sử hàm này lấy ra ID phòng đang được người dùng chọn trên ListView/DataGridView
+            string selectedRoomId = GetSelectedRoomId();
+
+            if (string.IsNullOrEmpty(selectedRoomId))
+            {
+                MessageBox.Show("Vui lòng chọn một phòng để xem!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            // Mở Form Khán Giả và ẩn Sảnh
+            SpectatorForm spectatorForm = new SpectatorForm(selectedRoomId, _clientConnection);
+            spectatorForm.FormClosed += (s, args) => this.Show(); // Đóng form xem thì hiện lại sảnh
+
+            spectatorForm.Show();
+            this.Hide();
+        }
+
+        private string GetSelectedRoomId()
+        {
+            if (dgvRooms.SelectedRows.Count == 0)
+            {
+                return string.Empty;
+            }
+
+            return dgvRooms.SelectedRows[0].Cells[0].Value?.ToString() ?? string.Empty;
+        }
+
         protected override void OnFormClosed(FormClosedEventArgs e)
         {
             _clientConnection.OnMessageReceived -= HandleServerMessage;

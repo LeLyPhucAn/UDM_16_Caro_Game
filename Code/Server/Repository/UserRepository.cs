@@ -19,7 +19,7 @@ namespace Server.Repository
         }
 
         // Tạo User
-        public bool CreateUser(string username, string passwordHash, string email = null)
+        public bool CreateUser(string username, string passwordHash, string? email = null)
         {
             string query = "INSERT INTO Users (Username, PasswordHash, Email, CreatedAt) VALUES (@Username, @PasswordHash, @Email, GETDATE())";
             
@@ -28,7 +28,7 @@ namespace Server.Repository
             {
                 command.Parameters.AddWithValue("@Username", username);
                 command.Parameters.AddWithValue("@PasswordHash", passwordHash);
-                command.Parameters.AddWithValue("@Email", (object)email ?? DBNull.Value);
+                command.Parameters.AddWithValue("@Email", email is null ? DBNull.Value : email);
 
                 try
                 {
@@ -70,7 +70,7 @@ namespace Server.Repository
         }
 
         //Tìm User theo Username
-        public DataRow GetUserByUsername(string username)
+        public DataRow? GetUserByUsername(string username)
         {
             string query = "SELECT * FROM Users WHERE Username = @Username";
 
@@ -98,7 +98,7 @@ namespace Server.Repository
         }
 
         //Tìm User theo ID
-        public DataRow GetUserById(int userId)
+        public DataRow? GetUserById(int userId)
         {
             string query = "SELECT * FROM Users WHERE Id = @Id";
 

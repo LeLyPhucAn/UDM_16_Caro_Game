@@ -15,6 +15,7 @@ namespace GameLogic.Models
 
         public string Status { get; set; }
 
+        public List<string> SpectatorSessionIds { get; set; } = new List<string>();
         public Room()
         {
             Name = string.Empty;

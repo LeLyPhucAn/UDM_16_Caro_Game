@@ -32,7 +32,7 @@ public class MessageHandler
         _roomManager = roomManager ?? throw new ArgumentNullException(nameof(roomManager));
         _matchManager = matchManager ?? throw new ArgumentNullException(nameof(matchManager));
         _connectionManager = connectionManager ?? throw new ArgumentNullException(nameof(connectionManager));
-        _gameRequestHandler = new GameRequestHandler(_matchManager, _connectionManager);
+        _gameRequestHandler = new GameRequestHandler(_matchManager, _roomManager, _connectionManager);
         _matchService = new MatchService();
     }
 
@@ -451,7 +451,37 @@ public class MessageHandler
 
     private async Task HandleRequestAsync(ClientSession session, RequestMessage msg)
     {
-        if (msg.Action == "UpdateBoardSize")
+        if (msg.Action == "SpectatorJoin")
+        {
+            var room = _roomManager.GetRoom(msg.Data);
+            if (room == null)
+                return;
+
+            string sessionId = session.SessionId.ToString();
+            if (!room.SpectatorSessionIds.Contains(sessionId))
+                room.SpectatorSessionIds.Add(sessionId);
+
+            var match = _matchManager.GetMatch(room.RoomId);
+            if (match != null && room.Players.Count == 2)
+            {
+                var syncMsg = new GameSyncMessage
+                {
+                    PlayerXName = room.Players[0].Username,
+                    PlayerOName = room.Players[1].Username,
+                    CurrentTurnName = match.CurrentTurn == CellState.X
+                        ? room.Players[0].Username
+                        : room.Players[1].Username,
+                    MySymbol = "Spectator"
+                };
+                await _connectionManager.SendMessageToClientAsync(sessionId, syncMsg);
+            }
+        }
+        else if (msg.Action == "SpectatorLeave")
+        {
+            var room = _roomManager.GetRoom(msg.Data);
+            room?.SpectatorSessionIds.Remove(session.SessionId.ToString());
+        }
+        else if (msg.Action == "UpdateBoardSize")
         {
             var room = _roomManager.FindPlayerRoom(session.SessionId.ToString());
             if (room != null && room.Players.Count > 0 && room.Players[0].Id == session.SessionId.ToString())
