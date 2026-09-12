@@ -52,6 +52,9 @@ namespace Server.Network
             Logger.Info($"Cổng Port  : {config.Port}");
             Logger.Info("========================================");
 
+            // Tự động kiểm tra và khởi tạo CSDL CaroDB nếu máy mới chưa có
+            Database.DatabaseHelper.EnsureDatabaseCreated();
+
             _timerTick = new System.Threading.Timer(OnTimerTick, null, 1000, 1000);
 
             _ = AcceptClientsAsync(_cts.Token);
