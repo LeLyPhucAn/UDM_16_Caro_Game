@@ -23,14 +23,8 @@ namespace CaroGame.Protocol.Messages
 
         // ===== Game Messages =====
         Move,
-        Turn,
         GameState,
-
-        Timer,
         Chat,
-
-        // [TASK 1] Bổ sung Type cho Bàn cờ (GameForm)
-        GameSync,
         GameOver,
 
         // ===== History Messages =====
@@ -39,10 +33,6 @@ namespace CaroGame.Protocol.Messages
 
         // ===== Response Messages =====
         Response,
-        Error,
-
-        // ===== System / Network Messages =====
-        Ping,
-        Pong,
+        Error
     }
 }

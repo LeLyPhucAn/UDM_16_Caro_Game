@@ -17,7 +17,7 @@ namespace Client.Forms
         private BoardControl _boardControl = null!;
 
         private bool _isMyTurn = false; // Mặc định khóa bàn cờ, chờ Server cấp quyền
-        private string _mySymbol = "";  // Sẽ được điền khi nhận GameSyncMessage
+        private string _mySymbol = "";
 
         // BỔ SUNG: Khai báo đủ các biến lưu trữ
         private string _roomId;
@@ -377,15 +377,6 @@ namespace Client.Forms
                             lblSpectators.Text = $"Khán giả: {state.SpectatorCount}";
                         }
                     }
-                }
-
-                // ==========================================
-                // 6. XỬ LÝ ĐỒNG BỘ TIMER TỪ SERVER (NẾU CÓ)
-                // ==========================================
-                else if (message.Type == MessageType.Timer && message is TimerMessage timerMsg)
-                {
-                    _remainingSeconds = timerMsg.RemainingSeconds;
-                    UpdateTimerUI(_remainingSeconds);
                 }
             }
             catch (Exception ex)

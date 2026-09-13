@@ -82,8 +82,6 @@ public class NetworkHandler
                 }
 
                 BaseMessage message = PacketParser.Unpack(fullPacket);
-                
-                NetworkEvents.RaisePacketReceived(session, fullPacket.Length);
 
                 // 4. Gọi Callback xử lý Message
                 if (onMessageReceived != null)
@@ -95,12 +93,10 @@ public class NetworkHandler
         catch (SocketException ex)
         {
             Console.WriteLine($"[Network] Client {session.RemoteEndPoint} ngắt socket: {ex.Message}");
-            NetworkEvents.RaisePacketError(session, ex);
         }
         catch (IOException ex)
         {
             Console.WriteLine($"[Network] Client {session.RemoteEndPoint} lỗi I/O: {ex.Message}");
-            NetworkEvents.RaisePacketError(session, ex);
         }
         catch (ObjectDisposedException)
         {
@@ -109,7 +105,6 @@ public class NetworkHandler
         catch (Exception ex)
         {
             Console.WriteLine($"[NetworkError] Ngoại lệ khi nhận dữ liệu từ {session.RemoteEndPoint}: {ex.Message}");
-            NetworkEvents.RaisePacketError(session, ex);
         }
         finally
         {
@@ -131,14 +126,11 @@ public class NetworkHandler
             await session.Stream.WriteAsync(packetBytes.AsMemory());
             await session.Stream.FlushAsync();
             
-            NetworkEvents.RaisePacketSent(session, packetBytes.Length);
-            
             return true;
         }
         catch (Exception ex)
         {
             Console.WriteLine($"[NetworkError] Lỗi khi gửi dữ liệu tới {session.RemoteEndPoint}: {ex.Message}");
-            NetworkEvents.RaisePacketError(session, ex);
             session.Close();
             return false;
         }

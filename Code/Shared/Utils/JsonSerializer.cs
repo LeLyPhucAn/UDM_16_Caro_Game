@@ -4,7 +4,6 @@ using CaroGame.Protocol.Messages.Room;
 using CaroGame.Protocol.Messages.Game;
 using CaroGame.Protocol.Messages.History;
 using CaroGame.Protocol.Messages.Response;
-using CaroGame.Protocol.Messages.System;
 
 namespace CaroGame.Protocol.Utils
 {
@@ -138,23 +137,11 @@ namespace CaroGame.Protocol.Utils
                 case MessageType.Move:
                     return System.Text.Json.JsonSerializer.Deserialize<MoveMessage>(json, OPTIONS);
 
-                case MessageType.Turn:
-                    return System.Text.Json.JsonSerializer.Deserialize<TurnMessage>(json, OPTIONS);
-
                 case MessageType.GameState:
                     return System.Text.Json.JsonSerializer.Deserialize<GameStateMessage>(json, OPTIONS);
 
-
-
-                case MessageType.Timer:
-                    return System.Text.Json.JsonSerializer.Deserialize<TimerMessage>(json, OPTIONS);
-
                 case MessageType.Chat:
                     return System.Text.Json.JsonSerializer.Deserialize<ChatMessage>(json, OPTIONS);
-
-                // Ánh xạ cho GameSync và GameOver của bàn cờ
-                case MessageType.GameSync:
-                    return System.Text.Json.JsonSerializer.Deserialize<GameSyncMessage>(json, OPTIONS);
 
                 case MessageType.GameOver:
                     return System.Text.Json.JsonSerializer.Deserialize<GameOverMessage>(json, OPTIONS);
@@ -172,13 +159,6 @@ namespace CaroGame.Protocol.Utils
 
                 case MessageType.Error:
                     return System.Text.Json.JsonSerializer.Deserialize<ErrorMessage>(json, OPTIONS);
-
-                // ===== System Messages =====
-                case MessageType.Ping:
-                    return System.Text.Json.JsonSerializer.Deserialize<PingMessage>(json, OPTIONS);
-
-                case MessageType.Pong:
-                    return System.Text.Json.JsonSerializer.Deserialize<PongMessage>(json, OPTIONS);
 
                 default:
                     throw new NotSupportedException("Chưa hỗ trợ deserialize cho MessageType: " + type);
