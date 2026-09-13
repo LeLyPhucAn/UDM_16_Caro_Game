@@ -141,6 +141,7 @@ public class MessageHandler
         {
             SenderId = "Server",
             Success = isValid,
+            Action = "Login",
             ErrorMessage = isValid ? string.Empty : "Sai tên đăng nhập hoặc mật khẩu.",
             Data = isValid ? "Login thành công" : string.Empty
         };
@@ -173,6 +174,7 @@ public class MessageHandler
         {
             SenderId = "Server",
             Success = isValid,
+            Action = "Register",
             ErrorMessage = isValid ? string.Empty : "Tên đăng nhập đã tồn tại hoặc có lỗi xảy ra.",
             Data = isValid ? "Register thành công" : string.Empty
         };
@@ -183,6 +185,14 @@ public class MessageHandler
     private async Task HandleCreateRoomAsync(ClientSession session, CreateRoomMessage msg)
     {
         Logger.Info($"[CreateRoom] Yêu cầu từ Session: {session.SessionId}");
+
+        // Kiểm tra nếu session đang ở trong phòng khác thì rời phòng cũ trước
+        var existingRoom = _roomManager.FindPlayerRoom(session.SessionId.ToString());
+        if (existingRoom != null)
+        {
+            await ProcessPlayerLeaveAsync(session, existingRoom.RoomId);
+        }
+
         var room = _roomManager.CreateRoom(msg.RoomName);
         room.BoardSize = 15;
 
@@ -196,6 +206,7 @@ public class MessageHandler
         {
             SenderId = "Server",
             Success = true,
+            Action = "CreateRoom",
             Data = room.RoomId // Trả về RoomId để Client biết
         };
         await session.SendAsync(response);
@@ -216,6 +227,7 @@ public class MessageHandler
         {
             SenderId = "Server",
             Success = success,
+            Action = "JoinRoom",
             ErrorMessage = success ? string.Empty : "Không thể tham gia phòng. Phòng đã đầy hoặc không tồn tại."
         };
         await session.SendAsync(response);
@@ -476,6 +488,21 @@ public class MessageHandler
 
         if (targetSession != null)
         {
+            // Kiểm tra xem đối phương có đang bận (đang trong phòng khác) không
+            var busyRoom = _roomManager.FindPlayerRoom(targetSession.SessionId.ToString());
+            if (busyRoom != null)
+            {
+                var busyResponse = new ResponseMessage
+                {
+                    SenderId = "Server",
+                    Success = false,
+                    Action = "Invite",
+                    ErrorMessage = $"Người chơi '{request.TargetPlayerId}' hiện đang trong một phòng khác."
+                };
+                await session.SendAsync(busyResponse);
+                return;
+            }
+
             await targetSession.SendAsync(request);
         }
         else
@@ -484,6 +511,7 @@ public class MessageHandler
             {
                 SenderId = "Server",
                 Success = false,
+                Action = "Invite",
                 ErrorMessage = $"Người chơi không online hoặc không tồn tại."
             };
             await session.SendAsync(errorResponse);
@@ -517,6 +545,7 @@ public class MessageHandler
         {
             SenderId = "Server",
             Success = true,
+            Action = "LobbyStateUpdate",
             Data = System.Text.Json.JsonSerializer.Serialize(lobbyData)
         };
 
@@ -694,6 +723,7 @@ public class MessageHandler
         {
             SenderId = "Server",
             Success = true,
+            Action = "LeaveRoom",
             ErrorMessage = string.Empty
         };
         await session.SendAsync(response);

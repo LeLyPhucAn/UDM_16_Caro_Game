@@ -10,6 +10,7 @@ namespace Client.Forms
     public partial class LoginForm : Form
     {
         private readonly ClientConnection _clientConnection;
+        private bool _isLoggedIn = false;
 
         public LoginForm()
         {
@@ -72,26 +73,31 @@ namespace Client.Forms
                     return;
                 }
 
-                if (res.Success)
+                // CHỈ XỬ LÝ KHI ĐÚNG LÀ GÓI TIN PHẢN HỒI ĐĂNG NHẬP
+                if (res.Data == "Login thành công" || res.Action == "Login")
                 {
-                    string playerName = txtPlayerName.Text.Trim();
+                    if (res.Success)
+                    {
+                        if (_isLoggedIn) return; // Đảm bảo chỉ mở 1 LobbyForm duy nhất
+                        _isLoggedIn = true;
 
-                    // Hủy lắng nghe tin nhắn để không tranh chấp dữ liệu với LobbyForm
-                    _clientConnection.OnMessageReceived -= XyLyKetQuaLogin;
+                        // Hủy lắng nghe tin nhắn ngay lập tức để không tranh chấp dữ liệu với LobbyForm
+                        _clientConnection.OnMessageReceived -= XyLyKetQuaLogin;
 
-                    LobbyForm formLobby = new LobbyForm(playerName, _clientConnection);
-                    formLobby.FormClosed += (s, args) => this.Close();
+                        string playerName = txtPlayerName.Text.Trim();
+                        LobbyForm formLobby = new LobbyForm(playerName, _clientConnection);
+                        formLobby.FormClosed += (s, args) => this.Close();
 
-                    formLobby.Show();
-                    this.Hide();
-                }
-                else
-                {
-                    // Lúc này gọi MessageBox hoàn toàn an toàn, Client không bị Server đá nữa
-                    MessageBox.Show("Đăng nhập thất bại: " + res.ErrorMessage, "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    btnEnterLobby.Enabled = true;
-                    btnEnterLobby.Text = "ĐĂNG NHẬP"; // Đổi lại thành Đăng nhập cho khớp ảnh
-                    btnRegister.Enabled = true;
+                        formLobby.Show();
+                        this.Hide();
+                    }
+                    else
+                    {
+                        MessageBox.Show("Đăng nhập thất bại: " + res.ErrorMessage, "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        btnEnterLobby.Enabled = true;
+                        btnEnterLobby.Text = "ĐĂNG NHẬP";
+                        btnRegister.Enabled = true;
+                    }
                 }
             }
         }

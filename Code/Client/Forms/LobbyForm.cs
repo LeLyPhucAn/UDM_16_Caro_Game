@@ -20,6 +20,8 @@ namespace Client.Forms
         private string _playerName;
         private ClientConnection _clientConnection;
         private Button? btnHistory;
+        private bool _isChallenging = false;
+        private bool _isPromptingInvite = false;
 
         // Profile UI Controls in TopBar
         private Panel? pnlAvatar;
@@ -220,6 +222,7 @@ namespace Client.Forms
 
             if (playerListControl1 != null)
             {
+                playerListControl1.OnChallengePlayer -= PlayerListControl1_OnChallengePlayer;
                 playerListControl1.OnChallengePlayer += PlayerListControl1_OnChallengePlayer;
             }
         }
@@ -235,43 +238,66 @@ namespace Client.Forms
 
         private void PlayerListControl1_OnChallengePlayer(string targetPlayer)
         {
+            if (_isChallenging) return;
+
             if (targetPlayer == _playerName)
             {
                 MessageBox.Show("Bạn không thể tự thách đấu chính mình!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
-            DialogResult result = MessageBox.Show(
-                $"Bạn muốn gửi lời thách đấu tới '{targetPlayer}'?",
-                "Thách đấu",
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Question
-            );
-
-            if (result == DialogResult.Yes)
+            _isChallenging = true;
+            try
             {
-                string roomName = $"Thách đấu: {_playerName} vs {targetPlayer}";
-                var requestMsg = new CaroGame.Protocol.Messages.Room.CreateRoomMessage
-                {
-                    SenderId = _playerName,
-                    RoomName = roomName,
-                    HostId = _playerName,
-                    MaxPlayers = 2,
-                    BoardSize = 15,
-                    IsPrivate = false,
-                    Password = ""
-                };
+                DialogResult result = MessageBox.Show(
+                    $"Bạn muốn gửi lời thách đấu tới '{targetPlayer}'?",
+                    "Thách đấu",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question
+                );
 
-                _ = Task.Run(async () =>
+                if (result == DialogResult.Yes)
                 {
-                    try { await _clientConnection.SendMessageAsync(requestMsg); }
-                    catch (Exception ex) { Console.WriteLine(ex.Message); }
-                });
+                    string roomName = $"Thách đấu: {_playerName} vs {targetPlayer}";
+                    var requestMsg = new CaroGame.Protocol.Messages.Room.CreateRoomMessage
+                    {
+                        SenderId = _playerName,
+                        RoomName = roomName,
+                        HostId = _playerName,
+                        MaxPlayers = 2,
+                        BoardSize = 15,
+                        IsPrivate = false,
+                        Password = ""
+                    };
 
-                RoomForm roomForm = new RoomForm(_clientConnection, roomName, _playerName, true, targetPlayer);
-                roomForm.FormClosed += (s, args) => { this.Show(); RequestProfile(); };
-                roomForm.Show();
-                this.Hide();
+                    _ = Task.Run(async () =>
+                    {
+                        try { await _clientConnection.SendMessageAsync(requestMsg); }
+                        catch (Exception ex) { Console.WriteLine(ex.Message); }
+                    });
+
+                    // Tạm dừng lắng nghe tin nhắn ở Lobby để không tranh chấp với RoomForm
+                    _clientConnection.OnMessageReceived -= HandleServerMessage;
+
+                    RoomForm roomForm = new RoomForm(_clientConnection, roomName, _playerName, true, targetPlayer);
+                    roomForm.FormClosed += (s, args) =>
+                    {
+                        _isChallenging = false;
+                        _clientConnection.OnMessageReceived += HandleServerMessage;
+                        this.Show();
+                        RequestProfile();
+                    };
+                    roomForm.Show();
+                    this.Hide();
+                }
+                else
+                {
+                    _isChallenging = false;
+                }
+            }
+            catch
+            {
+                _isChallenging = false;
             }
         }
 
@@ -398,12 +424,23 @@ namespace Client.Forms
                 }
                 else if (message.Type == MessageType.Invite && message is InviteMessage inviteMsg)
                 {
-                    DialogResult result = MessageBox.Show(
-                        $"Người chơi '{inviteMsg.SenderId}' muốn thách đấu với bạn.\nBạn có đồng ý tham gia không?",
-                        "Lời mời Thách Đấu",
-                        MessageBoxButtons.YesNo,
-                        MessageBoxIcon.Question
-                    );
+                    if (_isPromptingInvite) return; // Chống bật nhiều MessageBox cùng lúc
+                    _isPromptingInvite = true;
+
+                    DialogResult result;
+                    try
+                    {
+                        result = MessageBox.Show(
+                            $"Người chơi '{inviteMsg.SenderId}' muốn thách đấu với bạn.\nBạn có đồng ý tham gia không?",
+                            "Lời mời Thách Đấu",
+                            MessageBoxButtons.YesNo,
+                            MessageBoxIcon.Question
+                        );
+                    }
+                    finally
+                    {
+                        _isPromptingInvite = false;
+                    }
 
                     if (result == DialogResult.Yes)
                     {
@@ -418,8 +455,16 @@ namespace Client.Forms
                         };
                         _ = _clientConnection.SendMessageAsync(joinMsg);
 
+                        // Tạm hủy lắng nghe tin nhắn ở Lobby để không tranh chấp với RoomForm
+                        _clientConnection.OnMessageReceived -= HandleServerMessage;
+
                         RoomForm roomForm = new RoomForm(_clientConnection, "Phòng thách đấu", _playerName, false, null, false, inviteMsg.RoomId);
-                        roomForm.FormClosed += (s, args) => { this.Show(); RequestProfile(); };
+                        roomForm.FormClosed += (s, args) =>
+                        {
+                            _clientConnection.OnMessageReceived += HandleServerMessage;
+                            this.Show();
+                            RequestProfile();
+                        };
                         roomForm.Show();
                         this.Hide();
                     }
@@ -468,9 +513,17 @@ namespace Client.Forms
                 catch (Exception ex) { Console.WriteLine(ex.Message); }
             });
 
+            // Tạm dừng lắng nghe tin nhắn ở Lobby để không tranh chấp với RoomForm
+            _clientConnection.OnMessageReceived -= HandleServerMessage;
+
             // Mở màn hình Game
             RoomForm roomForm = new RoomForm(_clientConnection, roomName, _playerName, true); // true = Chủ phòng
-            roomForm.FormClosed += (s, args) => { this.Show(); RequestProfile(); };
+            roomForm.FormClosed += (s, args) =>
+            {
+                _clientConnection.OnMessageReceived += HandleServerMessage;
+                this.Show();
+                RequestProfile();
+            };
             roomForm.Show();
             this.Hide();
         }
@@ -521,9 +574,17 @@ namespace Client.Forms
                 catch (Exception ex) { Console.WriteLine(ex.Message); }
             });
 
+            // Tạm dừng lắng nghe tin nhắn ở Lobby để không tranh chấp với RoomForm
+            _clientConnection.OnMessageReceived -= HandleServerMessage;
+
             // 4. Chuyển sang màn hình thi đấu
             RoomForm roomForm = new RoomForm(_clientConnection, selectedRoomName, _playerName, false, null, isSpectator, selectedRoomId); // false = Khách
-            roomForm.FormClosed += (s, args) => { this.Show(); RequestProfile(); };
+            roomForm.FormClosed += (s, args) =>
+            {
+                _clientConnection.OnMessageReceived += HandleServerMessage;
+                this.Show();
+                RequestProfile();
+            };
             roomForm.Show();
             this.Hide();
         }

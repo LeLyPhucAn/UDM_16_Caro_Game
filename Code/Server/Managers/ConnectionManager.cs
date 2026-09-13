@@ -147,7 +147,7 @@ public class ConnectionManager
     {
         List<string> playerNames = new List<string>();
 
-        foreach (var session in _clients.Values) // Thay _clients bằng tên biến Dictionary thực tế của bạn
+        foreach (var session in _clients.Values) 
         {
             if (!string.IsNullOrWhiteSpace(session.PlayerName))
             {
