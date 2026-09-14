@@ -24,11 +24,12 @@ namespace Server.Network
     private readonly UserService _userService = new();
     private readonly RoomManager _roomManager = new();
     private readonly MatchManager _matchManager = new();
+    private readonly ReconnectManager _reconnectManager = new();
     private readonly MessageHandler _messageHandler;
 
     public TcpServer()
     {
-        _messageHandler = new MessageHandler(_userService, _roomManager, _matchManager, _connectionManager);
+        _messageHandler = new MessageHandler(_userService, _roomManager, _matchManager, _connectionManager, _reconnectManager);
     }
 
         public ConnectionManager ConnectionManager => _connectionManager;

@@ -113,6 +113,8 @@ namespace Client.Forms
                 return;
             }
 
+            string serverIp = GetServerIp();
+
             try
             {
                 btnEnterLobby.Enabled = false;
@@ -122,7 +124,7 @@ namespace Client.Forms
                 // 1. Kết nối đến Server nếu chưa kết nối
                 if (!_clientConnection.IsConnected)
                 {
-                    await _clientConnection.ConnectToServer("127.0.0.1", 5000);
+                    await _clientConnection.ConnectToServer(serverIp, 5000);
                 }
 
                 // 2. Tạo đối tượng LoginMessage
@@ -138,7 +140,7 @@ namespace Client.Forms
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Lỗi kết nối Server: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Lỗi kết nối Server ({serverIp}:5000): " + ex.Message, "Lỗi kết nối", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 btnEnterLobby.Enabled = true;
                 btnRegister.Enabled = true;
                 btnEnterLobby.Text = "ĐĂNG NHẬP";
@@ -156,6 +158,8 @@ namespace Client.Forms
                 return;
             }
 
+            string serverIp = GetServerIp();
+
             try
             {
                 btnEnterLobby.Enabled = false;
@@ -164,7 +168,7 @@ namespace Client.Forms
 
                 if (!_clientConnection.IsConnected)
                 {
-                    await _clientConnection.ConnectToServer("127.0.0.1", 5000);
+                    await _clientConnection.ConnectToServer(serverIp, 5000);
                 }
 
                 RegisterMessage regMsg = new RegisterMessage
@@ -178,11 +182,17 @@ namespace Client.Forms
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Lỗi kết nối Server: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Lỗi kết nối Server ({serverIp}:5000): " + ex.Message, "Lỗi kết nối", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 btnEnterLobby.Enabled = true;
                 btnRegister.Enabled = true;
                 btnRegister.Text = "ĐĂNG KÝ";
             }
+        }
+
+        private string GetServerIp()
+        {
+            string ip = txtServerIp.Text.Trim();
+            return string.IsNullOrWhiteSpace(ip) ? "127.0.0.1" : ip;
         }
 
         private void btnExit_Click(object? sender, EventArgs e)

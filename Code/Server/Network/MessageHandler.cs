@@ -24,16 +24,19 @@ public class MessageHandler
     private readonly ConnectionManager _connectionManager;
     private readonly GameRequestHandler _gameRequestHandler;
     private readonly MatchService _matchService;
+    private readonly ReconnectManager _reconnectManager;
 
-    public MessageHandler(UserService userService, RoomManager roomManager, MatchManager matchManager, ConnectionManager connectionManager)
+    public MessageHandler(UserService userService, RoomManager roomManager, MatchManager matchManager, ConnectionManager connectionManager, ReconnectManager reconnectManager)
     {
         _userService = userService ?? throw new ArgumentNullException(nameof(userService));
         _roomManager = roomManager ?? throw new ArgumentNullException(nameof(roomManager));
         _matchManager = matchManager ?? throw new ArgumentNullException(nameof(matchManager));
         _connectionManager = connectionManager ?? throw new ArgumentNullException(nameof(connectionManager));
+        _reconnectManager = reconnectManager ?? throw new ArgumentNullException(nameof(reconnectManager));
         _gameRequestHandler = new GameRequestHandler(_matchManager, _connectionManager, _roomManager);
         _matchService = new MatchService();
         _matchManager.OnMatchTimeout += HandleMatchTimeout;
+        _reconnectManager.OnGraceExpired += HandleGraceExpiredAsync;
     }
 
     /// <summary>
@@ -157,7 +160,14 @@ public class MessageHandler
             {
                 session.UserId = Convert.ToInt32(userRow["Id"]);
             }
-            await BroadcastLobbyStateAsync();
+
+            // Kiểm tra xem người dùng có đang trong grace period (chờ reconnect) không
+            bool reconnected = await TryReconnectAsync(session);
+            if (!reconnected)
+            {
+                // Không phải reconnect → lobby state bình thường
+                await BroadcastLobbyStateAsync();
+            }
         }
     }
 
@@ -762,31 +772,47 @@ public class MessageHandler
                 var match = _matchManager.FindRoomMatch(room.RoomId);
                 if (match != null && match.State == MatchState.Playing)
                 {
+                    // ✅ Tạm dừng Match, bắt đầu đếm ngược grace period thay vì kết thúc ngay
+                    _matchManager.StopTimer(match.MatchId); // Dừng timer lượt đi
+                    match.Suspend(session.SessionId.ToString());
+
+                    // Thông báo cho đối thủ biết đối phương bị mất kết nối
                     var opponent = room.Players.FirstOrDefault(p => p.Id != session.SessionId.ToString());
                     if (opponent != null)
                     {
-                        var gameOverMsg = new GameOverMessage
+                        var suspendMsg = new ResponseMessage
                         {
-                            RoomId = room.RoomId,
-                            ResultType = "Disconnect",
-                            WinnerId = opponent.Id,
-                            WinnerName = opponent.Username,
-                            WinningLine = new string[0]
+                            SenderId = "Server",
+                            Success = true,
+                            Action = "OpponentDisconnected",
+                            Data = ReconnectManager.GracePeriodSeconds.ToString() // Thông báo có bao nhiêu giây chờ
                         };
-
-                        await _connectionManager.SendMessageToClientAsync(opponent.Id, gameOverMsg);
-                        foreach (var spec in room.Spectators)
-                        {
-                            await _connectionManager.SendMessageToClientAsync(spec.Id, gameOverMsg);
-                        }
-
-                        int? dbWinnerId = opponent.DatabaseId;
-                        _matchService.SaveMatchResult(match.DbMatchId, dbWinnerId, "Win");
+                        await _connectionManager.SendMessageToClientAsync(opponent.Id, suspendMsg);
                     }
-                    _matchManager.EndMatch(match.MatchId, null);
+
+                    // Thông báo cho khán giả
+                    foreach (var spec in room.Spectators)
+                    {
+                        var specNotify = new ResponseMessage
+                        {
+                            SenderId = "Server",
+                            Success = true,
+                            Action = "OpponentDisconnected",
+                            Data = ReconnectManager.GracePeriodSeconds.ToString()
+                        };
+                        await _connectionManager.SendMessageToClientAsync(spec.Id, specNotify);
+                    }
+
+                    // Bắt đầu đếm ngược grace period
+                    _reconnectManager.StartGrace(session.SessionId.ToString());
+                    Logger.Info($"[Reconnect] Match {match.MatchId} suspended. Grace period: {ReconnectManager.GracePeriodSeconds}s");
+
+                    // QUAN TRỌNG: Không xóa người chơi khỏi phòng, không gọi BroadcastLobbyStateAsync
+                    return;
                 }
             }
 
+            // Chỉ xử lý rời phòng nếu không đang trong trận (ở lobby/waiting room)
             _roomManager.LeaveRoom(room.RoomId, session.SessionId.ToString());
 
             if (_roomManager.RoomExists(room.RoomId))
@@ -796,5 +822,177 @@ public class MessageHandler
         }
 
         await BroadcastLobbyStateAsync();
+    }
+
+    /// <summary>
+    /// Xử lý khi grace period 90 giây hết hạn — Player không reconnect kịp.
+    /// Kết thúc trận và xác nhận đối thủ còn lại thắng cuộc.
+    /// </summary>
+    private async void HandleGraceExpiredAsync(string disconnectedPlayerId)
+    {
+        try
+        {
+            Logger.Warn($"[Reconnect] Grace expired cho {disconnectedPlayerId}. Ket thuc tran.");
+
+            var room = _roomManager.FindPlayerRoom(disconnectedPlayerId);
+            if (room == null) return;
+
+            var match = _matchManager.FindRoomMatch(room.RoomId);
+            if (match == null || !match.IsSuspended()) return;
+
+            // Xác định người thắng là đối thủ còn lại
+            var opponent = room.Players.FirstOrDefault(p => p.Id != disconnectedPlayerId);
+
+            var gameOverMsg = new GameOverMessage
+            {
+                RoomId = room.RoomId,
+                ResultType = "Disconnect",
+                WinnerId = opponent?.Id ?? string.Empty,
+                WinnerName = opponent?.Username ?? string.Empty,
+                WinningLine = Array.Empty<string>()
+            };
+
+            if (opponent != null)
+                await _connectionManager.SendMessageToClientAsync(opponent.Id, gameOverMsg);
+
+            foreach (var spec in room.Spectators)
+                await _connectionManager.SendMessageToClientAsync(spec.Id, gameOverMsg);
+
+            // Lưu kết quả vào Database
+            int? dbWinnerId = opponent?.DatabaseId > 0 ? opponent?.DatabaseId : (int?)null;
+            _matchService.SaveMatchResult(match.DbMatchId, dbWinnerId, "Win");
+
+            _matchManager.EndMatch(match.MatchId, null);
+            _roomManager.LeaveRoom(room.RoomId, disconnectedPlayerId);
+
+            if (_roomManager.RoomExists(room.RoomId))
+                await BroadcastRoomStateAsync(room);
+
+            await BroadcastLobbyStateAsync();
+        }
+        catch (Exception ex)
+        {
+            Logger.Error($"[Reconnect] Loi khi xu ly grace expired: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Kiểm tra và thực hiện reconnect sau khi Player login lại.
+    /// Tìm Match đang Suspended có cùng Username → hủy grace period → resume match.
+    /// </summary>
+    /// <returns>true nếu reconnect thành công, false nếu không có match nào để reconnect.</returns>
+    private async Task<bool> TryReconnectAsync(ClientSession newSession)
+    {
+        // Tìm tất cả player IDs đang trong grace period
+        var pendingPlayers = _reconnectManager.GetAllPendingPlayers();
+        if (pendingPlayers.Count == 0) return false;
+
+        // Tìm Match đang Suspended có Username trùng với người vừa login
+        Match? match = null;
+        string? oldPlayerId = null;
+
+        foreach (var pid in pendingPlayers)
+        {
+            var m = _matchManager.GetAllMatches()
+                .FirstOrDefault(x => x.IsSuspended() && x.DisconnectedPlayerId == pid &&
+                    (x.PlayerX?.Username == newSession.PlayerName ||
+                     x.PlayerO?.Username == newSession.PlayerName));
+
+            if (m != null)
+            {
+                match = m;
+                oldPlayerId = pid;
+                break;
+            }
+        }
+
+        if (match == null || string.IsNullOrEmpty(oldPlayerId)) return false;
+
+        // Hủy grace period — Player đã reconnect kịp thời
+        bool cancelled = _reconnectManager.CancelGrace(oldPlayerId);
+        if (!cancelled)
+        {
+            Logger.Warn($"[Reconnect] Grace period da het han cho {oldPlayerId} truoc khi xu ly reconnect.");
+            return false;
+        }
+
+        // Tìm phòng và cập nhật Player ID từ old sang new session
+        var room = _roomManager.FindPlayerRoom(oldPlayerId);
+        if (room == null) return false;
+
+        var player = room.Players.FirstOrDefault(p => p.Id == oldPlayerId);
+        if (player != null)
+        {
+            player.Id = newSession.SessionId.ToString(); // Cập nhật sang Session ID mới
+        }
+
+        // Cập nhật mapping trong ConnectionManager
+        _connectionManager.UpdateSessionId(oldPlayerId, newSession);
+
+        // Cập nhật Player ID trong Match
+        if (match.PlayerX?.Id == oldPlayerId) match.PlayerX.Id = newSession.SessionId.ToString();
+        if (match.PlayerO?.Id == oldPlayerId) match.PlayerO.Id = newSession.SessionId.ToString();
+
+        // Resume match và khởi động lại timer lượt đi
+        match.Resume();
+        _matchManager.ResetTimer(match.MatchId);
+
+        // Xây dựng chuỗi BoardState để gửi cho Client
+        var sb = new System.Text.StringBuilder(match.Board.Rows * match.Board.Columns);
+        for (int r = 0; r < match.Board.Rows; r++)
+            for (int c = 0; c < match.Board.Columns; c++)
+            {
+                var cell = match.Board.GetCell(r, c);
+                sb.Append(cell == CellState.X ? 'X' : (cell == CellState.O ? 'O' : '-'));
+            }
+
+        string mySymbol = (match.PlayerX?.Id == newSession.SessionId.ToString()) ? "X" : "O";
+
+        // Gửi GameStateMessage để Client đồng bộ lại bàn cờ
+        var syncMsg = new GameStateMessage
+        {
+            RoomId = room.RoomId,
+            BoardState = sb.ToString(),
+            BoardSize = room.BoardSize,
+            CurrentPlayerId = match.GetCurrentPlayerId() ?? string.Empty,
+            CurrentTurnName = match.GetCurrentPlayer()?.Username ?? string.Empty,
+            PlayerXName = match.PlayerX?.Username ?? string.Empty,
+            PlayerOName = match.PlayerO?.Username ?? string.Empty,
+            Status = "Playing",
+            MySymbol = mySymbol,
+            SpectatorCount = room.Spectators.Count
+        };
+        await newSession.SendAsync(syncMsg);
+
+        // Thông báo cho đối thủ biết Player đã reconnect
+        var opponentPlayer = room.Players.FirstOrDefault(p => p.Id != newSession.SessionId.ToString());
+        if (opponentPlayer != null)
+        {
+            var reconnectedMsg = new ResponseMessage
+            {
+                SenderId = "Server",
+                Success = true,
+                Action = "OpponentReconnected",
+                Data = newSession.PlayerName
+            };
+            await _connectionManager.SendMessageToClientAsync(opponentPlayer.Id, reconnectedMsg);
+        }
+
+        // Thông báo khán giả
+        foreach (var spec in room.Spectators)
+        {
+            var specMsg = new ResponseMessage
+            {
+                SenderId = "Server",
+                Success = true,
+                Action = "OpponentReconnected",
+                Data = newSession.PlayerName
+            };
+            await _connectionManager.SendMessageToClientAsync(spec.Id, specMsg);
+        }
+
+        Logger.Info($"[Reconnect] {newSession.PlayerName} da reconnect thanh cong vao Match {match.MatchId}.");
+        await BroadcastLobbyStateAsync();
+        return true;
     }
 }

@@ -30,6 +30,11 @@ namespace Client.Forms
         private System.Windows.Forms.Timer _clientTimer = new System.Windows.Forms.Timer();
         private int _remainingSeconds = 30;
 
+        // Reconnect: Timer đếm ngược grace period trên UI
+        private System.Windows.Forms.Timer _reconnectCountdownTimer = new System.Windows.Forms.Timer();
+        private int _reconnectSecondsLeft = 0;
+        private Label? _lblReconnectStatus = null;
+
         public GameForm(ClientConnection connection, string roomId, string roomName, string playerName, bool isHost, int boardSize = 15, bool isSpectator = false)
         {
             InitializeComponent();
@@ -354,14 +359,23 @@ namespace Client.Forms
                     }
                     else if (gameOverMsg.ResultType == "Disconnect")
                     {
-                        MessageBox.Show($"Đối thủ đã mất kết nối! [{gameOverMsg.WinnerName}] được xử thắng.",
-                                        "Mất kết nối", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        // Grace period đã hết, đối thủ không reconnect kịp
+                        bool isWinner = gameOverMsg.WinnerName == _playerName;
+                        if (isWinner)
+                            MessageBox.Show($"Đối thủ không kết nối lại kịp trong {Managers_GracePeriodSeconds} giây!\nBạn được xử thắng.",
+                                            "Thắng do đối thủ mất kết nối", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        else
+                            MessageBox.Show($"Bạn không kết nối lại kịp thời gian cho phép!\n[{gameOverMsg.WinnerName}] được xử thắng.",
+                                            "Hết thời gian chờ kết nối lại", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     }
                     else if (gameOverMsg.ResultType == "Surrender")
                     {
                         MessageBox.Show($"Đối thủ đã rời phòng / đầu hàng! Chúc mừng [{gameOverMsg.WinnerName}] giành chiến thắng.",
                                         "Đối thủ đầu hàng", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
+
+                    // Ẩn panel reconnect nếu đang hiện
+                    HideReconnectPanel();
                 }
                 
                 // ==========================================
@@ -377,6 +391,33 @@ namespace Client.Forms
                             lblSpectators.Text = $"Khán giả: {state.SpectatorCount}";
                         }
                     }
+                }
+
+                // ==========================================
+                // 6. XỬ LÝ ĐỐI THỦ MẤT KẾT NỐI (CHỜ RECONNECT)
+                // ==========================================
+                else if (message is ResponseMessage disconnMsg && disconnMsg.Action == "OpponentDisconnected")
+                {
+                    _isMyTurn = false; // Khóa bàn cờ trong lúc chờ
+                    _clientTimer.Stop();
+
+                    if (int.TryParse(disconnMsg.Data, out int graceSeconds))
+                        _reconnectSecondsLeft = graceSeconds;
+                    else
+                        _reconnectSecondsLeft = 90;
+
+                    ShowReconnectPanel(_reconnectSecondsLeft);
+                }
+
+                // ==========================================
+                // 7. XỬ LÝ ĐỐI THỦ ĐÃ RECONNECT
+                // ==========================================
+                else if (message is ResponseMessage reconnMsg && reconnMsg.Action == "OpponentReconnected")
+                {
+                    HideReconnectPanel();
+                    MessageBox.Show($"Đối thủ [{reconnMsg.Data}] đã kết nối lại thành công!",
+                                    "Kết nối lại", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    // Timer sẽ được khởi động lại khi nhận MoveMessage tiếp theo
                 }
             }
             catch (Exception ex)
@@ -475,5 +516,76 @@ namespace Client.Forms
                 lblTurnValue.BackColor = Color.FromArgb(75, 25, 25);
             }
         }
+
+        // ==========================================
+        // RECONNECT UI HELPERS
+        // ==========================================
+
+        /// <summary>Thời gian grace period (phải trùng với ReconnectManager.GracePeriodSeconds)</summary>
+        private const int GRACE_PERIOD_SECONDS = 60;
+        /// <summary>Dùng trong message Disconnect GameOver thay vì tham chiếu trực tiếp Server assembly</summary>
+        private const int Managers_GracePeriodSeconds = GRACE_PERIOD_SECONDS;
+
+        /// <summary>
+        /// Hiện overlay đếm ngược khi đối thủ mất kết nối.
+        /// Tạo Label màu đỏ cam phủ lên bàn cờ, tự cập nhật mỗi giây.
+        /// </summary>
+        private void ShowReconnectPanel(int secondsLeft)
+        {
+            if (_lblReconnectStatus == null)
+            {
+                _lblReconnectStatus = new Label
+                {
+                    Font = new Font("Segoe UI", 14, FontStyle.Bold),
+                    ForeColor = Color.White,
+                    BackColor = Color.FromArgb(200, 180, 60, 0), // Cam đỏ bán trong suốt
+                    TextAlign = ContentAlignment.MiddleCenter,
+                    Dock = DockStyle.None,
+                    AutoSize = false
+                };
+                this.Controls.Add(_lblReconnectStatus);
+                _lblReconnectStatus.BringToFront();
+            }
+
+            // Căn giữa form
+            _lblReconnectStatus.Size = new Size(this.ClientSize.Width - 40, 80);
+            _lblReconnectStatus.Location = new Point(20, (this.ClientSize.Height - 80) / 2);
+            _lblReconnectStatus.Visible = true;
+
+            _reconnectSecondsLeft = secondsLeft;
+            UpdateReconnectLabel();
+
+            _reconnectCountdownTimer.Interval = 1000;
+            _reconnectCountdownTimer.Tick -= ReconnectTimer_Tick; // Tránh đăng ký trùng
+            _reconnectCountdownTimer.Tick += ReconnectTimer_Tick;
+            _reconnectCountdownTimer.Start();
+        }
+
+        private void ReconnectTimer_Tick(object? sender, EventArgs e)
+        {
+            _reconnectSecondsLeft--;
+            if (_reconnectSecondsLeft <= 0)
+            {
+                _reconnectCountdownTimer.Stop();
+                return;
+            }
+            UpdateReconnectLabel();
+        }
+
+        private void UpdateReconnectLabel()
+        {
+            if (_lblReconnectStatus == null) return;
+            _lblReconnectStatus.Text = $"⚠ Đối thủ mất kết nối!\nChờ kết nối lại... {_reconnectSecondsLeft}s";
+        }
+
+        /// <summary>
+        /// Ẩn overlay đếm ngược (khi đối thủ reconnect hoặc khi kết thúc trận).
+        /// </summary>
+        private void HideReconnectPanel()
+        {
+            _reconnectCountdownTimer.Stop();
+            if (_lblReconnectStatus != null)
+                _lblReconnectStatus.Visible = false;
+        }
     }
-}
+}

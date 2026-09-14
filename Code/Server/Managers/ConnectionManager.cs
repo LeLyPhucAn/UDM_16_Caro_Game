@@ -162,4 +162,20 @@ public class ConnectionManager
 
         return playerNames;
     }
+
+    /// <summary>
+    /// Cập nhật mapping khi một Player reconnect với Session ID mới.
+    /// Xóa entry cũ (oldSessionId) và thêm entry mới (newSession).
+    /// Dùng trong luồng Reconnect sau khi Player login lại thành công.
+    /// </summary>
+    public void UpdateSessionId(string oldSessionId, ClientSession newSession)
+    {
+        if (Guid.TryParse(oldSessionId, out Guid oldGuid))
+        {
+            _clients.TryRemove(oldGuid, out _);
+        }
+        _clients.TryAdd(newSession.SessionId, newSession);
+        Logger.Info($"[Reconnect] Mapping cap nhat: {oldSessionId} -> {newSession.SessionId}");
+    }
 }
+

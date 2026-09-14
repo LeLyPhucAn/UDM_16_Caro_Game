@@ -29,6 +29,8 @@ namespace Client.Forms
             lblPasswordPrompt = new Label();
             txtPassword = new TextBox();
             btnRegister = new Button();
+            lblServerIpPrompt = new Label();
+            txtServerIp = new TextBox();
             SuspendLayout();
             // 
             // lblTitle
@@ -36,11 +38,48 @@ namespace Client.Forms
             lblTitle.AutoSize = true;
             lblTitle.Font = new Font("Segoe UI", 24F, FontStyle.Bold);
             lblTitle.ForeColor = Color.FromArgb(52, 152, 219);
-            lblTitle.Location = new Point(109, 60);
+            lblTitle.Location = new Point(109, 45);
             lblTitle.Name = "lblTitle";
             lblTitle.Size = new Size(417, 54);
             lblTitle.TabIndex = 0;
             lblTitle.Text = "GAME CARO ONLINE";
+            // 
+            // lblServerIpPrompt
+            // 
+            lblServerIpPrompt.AutoSize = true;
+            lblServerIpPrompt.Font = new Font("Segoe UI", 9.75F);
+            lblServerIpPrompt.ForeColor = Color.LightGray;
+            lblServerIpPrompt.Location = new Point(122, 125);
+            lblServerIpPrompt.Name = "lblServerIpPrompt";
+            lblServerIpPrompt.Size = new Size(130, 23);
+            lblServerIpPrompt.TabIndex = 12;
+            lblServerIpPrompt.Text = "Địa chỉ IP Server:";
+            // 
+            // txtServerIp
+            // 
+            txtServerIp.BackColor = Color.FromArgb(64, 64, 64);
+            txtServerIp.BorderStyle = BorderStyle.FixedSingle;
+            txtServerIp.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+            txtServerIp.ForeColor = Color.White;
+            txtServerIp.Location = new Point(126, 150);
+            txtServerIp.Margin = new Padding(3, 4, 3, 4);
+            txtServerIp.Name = "txtServerIp";
+            txtServerIp.PlaceholderText = "127.0.0.1 hoặc IP LAN / VPN";
+            txtServerIp.Size = new Size(343, 34);
+            txtServerIp.TabIndex = 0;
+            txtServerIp.Text = "127.0.0.1";
+            txtServerIp.TextAlign = HorizontalAlignment.Center;
+            // 
+            // lblNamePrompt
+            // 
+            lblNamePrompt.AutoSize = true;
+            lblNamePrompt.Font = new Font("Segoe UI", 9.75F);
+            lblNamePrompt.ForeColor = Color.LightGray;
+            lblNamePrompt.Location = new Point(122, 195);
+            lblNamePrompt.Name = "lblNamePrompt";
+            lblNamePrompt.Size = new Size(149, 23);
+            lblNamePrompt.TabIndex = 8;
+            lblNamePrompt.Text = "Nhập tên hiển thị:";
             // 
             // txtPlayerName
             // 
@@ -48,7 +87,7 @@ namespace Client.Forms
             txtPlayerName.BorderStyle = BorderStyle.FixedSingle;
             txtPlayerName.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
             txtPlayerName.ForeColor = Color.White;
-            txtPlayerName.Location = new Point(126, 213);
+            txtPlayerName.Location = new Point(126, 220);
             txtPlayerName.Margin = new Padding(3, 4, 3, 4);
             txtPlayerName.Name = "txtPlayerName";
             txtPlayerName.PlaceholderText = "Tên (3-15 ký tự, không dấu cách)";
@@ -56,113 +95,12 @@ namespace Client.Forms
             txtPlayerName.TabIndex = 1;
             txtPlayerName.TextAlign = HorizontalAlignment.Center;
             // 
-            // btnEnterLobby
-            // 
-            btnEnterLobby.BackColor = Color.FromArgb(52, 152, 219);
-            btnEnterLobby.FlatAppearance.BorderSize = 0;
-            btnEnterLobby.FlatStyle = FlatStyle.Flat;
-            btnEnterLobby.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
-            btnEnterLobby.ForeColor = Color.White;
-            btnEnterLobby.Location = new Point(126, 350);
-            btnEnterLobby.Margin = new Padding(3, 4, 3, 4);
-            btnEnterLobby.Name = "btnEnterLobby";
-            btnEnterLobby.Size = new Size(165, 50);
-            btnEnterLobby.TabIndex = 2;
-            btnEnterLobby.Text = "ĐĂNG NHẬP";
-            btnEnterLobby.UseVisualStyleBackColor = false;
-            // 
-            // btnRegister
-            // 
-            btnRegister.BackColor = Color.FromArgb(46, 204, 113);
-            btnRegister.FlatAppearance.BorderSize = 0;
-            btnRegister.FlatStyle = FlatStyle.Flat;
-            btnRegister.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
-            btnRegister.ForeColor = Color.White;
-            btnRegister.Location = new Point(304, 350);
-            btnRegister.Margin = new Padding(3, 4, 3, 4);
-            btnRegister.Name = "btnRegister";
-            btnRegister.Size = new Size(165, 50);
-            btnRegister.TabIndex = 9;
-            btnRegister.Text = "ĐĂNG KÝ";
-            btnRegister.UseVisualStyleBackColor = false;
-            // 
-            // btnExit
-            // 
-            btnExit.BackColor = Color.FromArgb(217, 83, 79);
-            btnExit.FlatAppearance.BorderSize = 0;
-            btnExit.FlatStyle = FlatStyle.Flat;
-            btnExit.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
-            btnExit.ForeColor = Color.White;
-            btnExit.Location = new Point(126, 415);
-            btnExit.Margin = new Padding(3, 4, 3, 4);
-            btnExit.Name = "btnExit";
-            btnExit.Size = new Size(343, 50);
-            btnExit.TabIndex = 3;
-            btnExit.Text = "THOÁT";
-            btnExit.UseVisualStyleBackColor = false;
-            btnExit.Click += btnExit_Click;
-            // 
-            // lblDecoX1
-            // 
-            lblDecoX1.AutoSize = true;
-            lblDecoX1.Font = new Font("Comic Sans MS", 24F, FontStyle.Bold);
-            lblDecoX1.ForeColor = Color.FromArgb(52, 152, 219);
-            lblDecoX1.Location = new Point(34, 40);
-            lblDecoX1.Name = "lblDecoX1";
-            lblDecoX1.Size = new Size(53, 55);
-            lblDecoX1.TabIndex = 4;
-            lblDecoX1.Text = "X";
-            // 
-            // lblDecoO1
-            // 
-            lblDecoO1.AutoSize = true;
-            lblDecoO1.Font = new Font("Comic Sans MS", 24F, FontStyle.Bold);
-            lblDecoO1.ForeColor = Color.FromArgb(217, 83, 79);
-            lblDecoO1.Location = new Point(503, 40);
-            lblDecoO1.Name = "lblDecoO1";
-            lblDecoO1.Size = new Size(56, 55);
-            lblDecoO1.TabIndex = 5;
-            lblDecoO1.Text = "O";
-            // 
-            // lblDecoX2
-            // 
-            lblDecoX2.AutoSize = true;
-            lblDecoX2.Font = new Font("Comic Sans MS", 24F, FontStyle.Bold);
-            lblDecoX2.ForeColor = Color.FromArgb(52, 152, 219);
-            lblDecoX2.Location = new Point(503, 427);
-            lblDecoX2.Name = "lblDecoX2";
-            lblDecoX2.Size = new Size(53, 55);
-            lblDecoX2.TabIndex = 6;
-            lblDecoX2.Text = "X";
-            // 
-            // lblDecoO2
-            // 
-            lblDecoO2.AutoSize = true;
-            lblDecoO2.Font = new Font("Comic Sans MS", 24F, FontStyle.Bold);
-            lblDecoO2.ForeColor = Color.FromArgb(217, 83, 79);
-            lblDecoO2.Location = new Point(34, 427);
-            lblDecoO2.Name = "lblDecoO2";
-            lblDecoO2.Size = new Size(56, 55);
-            lblDecoO2.TabIndex = 7;
-            lblDecoO2.Text = "O";
-            // 
-            // lblNamePrompt
-            // 
-            lblNamePrompt.AutoSize = true;
-            lblNamePrompt.Font = new Font("Segoe UI", 9.75F);
-            lblNamePrompt.ForeColor = Color.LightGray;
-            lblNamePrompt.Location = new Point(122, 175);
-            lblNamePrompt.Name = "lblNamePrompt";
-            lblNamePrompt.Size = new Size(149, 23);
-            lblNamePrompt.TabIndex = 8;
-            lblNamePrompt.Text = "Nhập tên hiển thị:";
-            // 
             // lblPasswordPrompt
             // 
             lblPasswordPrompt.AutoSize = true;
             lblPasswordPrompt.Font = new Font("Segoe UI", 9.75F);
             lblPasswordPrompt.ForeColor = Color.LightGray;
-            lblPasswordPrompt.Location = new Point(122, 260);
+            lblPasswordPrompt.Location = new Point(122, 265);
             lblPasswordPrompt.Name = "lblPasswordPrompt";
             lblPasswordPrompt.Size = new Size(133, 23);
             lblPasswordPrompt.TabIndex = 10;
@@ -179,8 +117,98 @@ namespace Client.Forms
             txtPassword.Name = "txtPassword";
             txtPassword.UseSystemPasswordChar = true;
             txtPassword.Size = new Size(343, 34);
-            txtPassword.TabIndex = 11;
+            txtPassword.TabIndex = 2;
             txtPassword.TextAlign = HorizontalAlignment.Center;
+            // 
+            // btnEnterLobby
+            // 
+            btnEnterLobby.BackColor = Color.FromArgb(52, 152, 219);
+            btnEnterLobby.FlatAppearance.BorderSize = 0;
+            btnEnterLobby.FlatStyle = FlatStyle.Flat;
+            btnEnterLobby.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+            btnEnterLobby.ForeColor = Color.White;
+            btnEnterLobby.Location = new Point(126, 350);
+            btnEnterLobby.Margin = new Padding(3, 4, 3, 4);
+            btnEnterLobby.Name = "btnEnterLobby";
+            btnEnterLobby.Size = new Size(165, 50);
+            btnEnterLobby.TabIndex = 3;
+            btnEnterLobby.Text = "ĐĂNG NHẬP";
+            btnEnterLobby.UseVisualStyleBackColor = false;
+            // 
+            // btnRegister
+            // 
+            btnRegister.BackColor = Color.FromArgb(46, 204, 113);
+            btnRegister.FlatAppearance.BorderSize = 0;
+            btnRegister.FlatStyle = FlatStyle.Flat;
+            btnRegister.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+            btnRegister.ForeColor = Color.White;
+            btnRegister.Location = new Point(304, 350);
+            btnRegister.Margin = new Padding(3, 4, 3, 4);
+            btnRegister.Name = "btnRegister";
+            btnRegister.Size = new Size(165, 50);
+            btnRegister.TabIndex = 4;
+            btnRegister.Text = "ĐĂNG KÝ";
+            btnRegister.UseVisualStyleBackColor = false;
+            // 
+            // btnExit
+            // 
+            btnExit.BackColor = Color.FromArgb(217, 83, 79);
+            btnExit.FlatAppearance.BorderSize = 0;
+            btnExit.FlatStyle = FlatStyle.Flat;
+            btnExit.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+            btnExit.ForeColor = Color.White;
+            btnExit.Location = new Point(126, 415);
+            btnExit.Margin = new Padding(3, 4, 3, 4);
+            btnExit.Name = "btnExit";
+            btnExit.Size = new Size(343, 50);
+            btnExit.TabIndex = 5;
+            btnExit.Text = "THOÁT";
+            btnExit.UseVisualStyleBackColor = false;
+            btnExit.Click += btnExit_Click;
+            // 
+            // lblDecoX1
+            // 
+            lblDecoX1.AutoSize = true;
+            lblDecoX1.Font = new Font("Comic Sans MS", 24F, FontStyle.Bold);
+            lblDecoX1.ForeColor = Color.FromArgb(52, 152, 219);
+            lblDecoX1.Location = new Point(34, 40);
+            lblDecoX1.Name = "lblDecoX1";
+            lblDecoX1.Size = new Size(53, 55);
+            lblDecoX1.TabIndex = 6;
+            lblDecoX1.Text = "X";
+            // 
+            // lblDecoO1
+            // 
+            lblDecoO1.AutoSize = true;
+            lblDecoO1.Font = new Font("Comic Sans MS", 24F, FontStyle.Bold);
+            lblDecoO1.ForeColor = Color.FromArgb(217, 83, 79);
+            lblDecoO1.Location = new Point(503, 40);
+            lblDecoO1.Name = "lblDecoO1";
+            lblDecoO1.Size = new Size(56, 55);
+            lblDecoO1.TabIndex = 7;
+            lblDecoO1.Text = "O";
+            // 
+            // lblDecoX2
+            // 
+            lblDecoX2.AutoSize = true;
+            lblDecoX2.Font = new Font("Comic Sans MS", 24F, FontStyle.Bold);
+            lblDecoX2.ForeColor = Color.FromArgb(52, 152, 219);
+            lblDecoX2.Location = new Point(503, 427);
+            lblDecoX2.Name = "lblDecoX2";
+            lblDecoX2.Size = new Size(53, 55);
+            lblDecoX2.TabIndex = 8;
+            lblDecoX2.Text = "X";
+            // 
+            // lblDecoO2
+            // 
+            lblDecoO2.AutoSize = true;
+            lblDecoO2.Font = new Font("Comic Sans MS", 24F, FontStyle.Bold);
+            lblDecoO2.ForeColor = Color.FromArgb(217, 83, 79);
+            lblDecoO2.Location = new Point(34, 427);
+            lblDecoO2.Name = "lblDecoO2";
+            lblDecoO2.Size = new Size(56, 55);
+            lblDecoO2.TabIndex = 9;
+            lblDecoO2.Text = "O";
             // 
             // LoginForm
             // 
@@ -188,6 +216,8 @@ namespace Client.Forms
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(33, 37, 41);
             ClientSize = new Size(594, 533);
+            Controls.Add(txtServerIp);
+            Controls.Add(lblServerIpPrompt);
             Controls.Add(txtPassword);
             Controls.Add(lblPasswordPrompt);
             Controls.Add(btnRegister);
@@ -214,6 +244,8 @@ namespace Client.Forms
         #endregion
 
         private System.Windows.Forms.Label lblTitle;
+        private System.Windows.Forms.Label lblServerIpPrompt;
+        private System.Windows.Forms.TextBox txtServerIp;
         private System.Windows.Forms.TextBox txtPlayerName;
         private System.Windows.Forms.Button btnEnterLobby;
         private System.Windows.Forms.Button btnExit;
