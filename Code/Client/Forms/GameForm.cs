@@ -242,7 +242,7 @@ namespace Client.Forms
                                     char ch = syncMsg.BoardState[idx];
                                     if (ch == 'X' || ch == 'O')
                                     {
-                                        _boardControl.UpdateBoardUI(r, c, ch.ToString());
+                                        _boardControl?.UpdateBoardUI(r, c, ch.ToString());
                                     }
                                 }
                             }
@@ -260,7 +260,7 @@ namespace Client.Forms
                 else if (message.Type == MessageType.Move && message is MoveMessage moveMsg)
                 {
                     // Vẽ quân cờ lên UI thông qua BoardControl
-                    _boardControl.UpdateBoardUI(moveMsg.Row, moveMsg.Column, moveMsg.Symbol);
+                    _boardControl?.UpdateBoardUI(moveMsg.Row, moveMsg.Column, moveMsg.Symbol);
 
                     // Đảo lượt nội bộ (nếu là khán giả thì không có lượt)
                     if (_isSpectator)
@@ -310,8 +310,8 @@ namespace Client.Forms
                     lblTurnValue.ForeColor = Color.Gold;
                     lblTurnValue.BackColor = Color.FromArgb(50, 50, 20);
 
-                    // Làm nổi bật 5 ô chiến thắng liên tiếp trên bàn cờ
-                    if (gameOverMsg.WinningLine != null && gameOverMsg.WinningLine.Length > 0)
+                    // Chỉ làm nổi bật 5 ô chiến thắng khi thắng bằng cờ (ResultType == Win)
+                    if (gameOverMsg.ResultType == "Win" && gameOverMsg.WinningLine != null && gameOverMsg.WinningLine.Length >= 5)
                     {
                         var winningPts = new List<Point>();
                         foreach (var coord in gameOverMsg.WinningLine)
@@ -322,7 +322,7 @@ namespace Client.Forms
                                 winningPts.Add(new Point(r, c));
                             }
                         }
-                        _boardControl.HighlightWinningCells(winningPts);
+                        _boardControl?.HighlightWinningCells(winningPts);
                     }
 
                     if (gameOverMsg.ResultType == "Win")
@@ -355,7 +355,8 @@ namespace Client.Forms
                         bool isMe = !string.IsNullOrEmpty(gameOverMsg.WinnerName) && gameOverMsg.WinnerName == _playerName;
                         if (isMe)
                         {
-                            MessageBox.Show($"BẠN ĐÃ THẮNG!\n\nĐối thủ đã hết thời gian suy nghĩ 30s.",
+                            ShowVictoryEffect();
+                            MessageBox.Show($"CHIẾN THẮNG!\n\nĐối thủ đã hết thời gian suy nghĩ 30s.",
                                             "Chiến thắng do hết giờ", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         }
                         else

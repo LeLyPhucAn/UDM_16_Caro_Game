@@ -447,13 +447,13 @@ public class MessageHandler
             {
                 int matchWinnerId = row["WinnerId"] != DBNull.Value ? Convert.ToInt32(row["WinnerId"]) : 0;
                 string outcome = "Chưa rõ";
+                string rawRes = row["Result"]?.ToString() ?? "";
                 if (row["WinnerId"] != DBNull.Value)
                 {
                     outcome = (matchWinnerId == userId) ? "Thắng" : "Thua";
                 }
                 else
                 {
-                    string rawRes = row["Result"]?.ToString() ?? "";
                     if (rawRes.Contains("Draw", StringComparison.OrdinalIgnoreCase))
                         outcome = "Hòa";
                     else if (rawRes.Contains("Cancel", StringComparison.OrdinalIgnoreCase))
@@ -461,6 +461,21 @@ public class MessageHandler
                     else
                         outcome = rawRes;
                 }
+
+                // Map mã kết quả sang ghi chú tiếng Việt thân thiện
+                string note;
+                if (rawRes.Equals("Timeout", StringComparison.OrdinalIgnoreCase))
+                    note = "Hết giờ";
+                else if (rawRes.Equals("Surrender", StringComparison.OrdinalIgnoreCase))
+                    note = "Đầu hàng";
+                else if (rawRes.Equals("Disconnect", StringComparison.OrdinalIgnoreCase))
+                    note = "Mất kết nối";
+                else if (rawRes.Equals("Win", StringComparison.OrdinalIgnoreCase))
+                    note = "5 quân thẳng hàng";
+                else if (rawRes.Equals("Draw", StringComparison.OrdinalIgnoreCase))
+                    note = "Hòa cờ";
+                else
+                    note = string.IsNullOrWhiteSpace(rawRes) ? (row["Status"]?.ToString() ?? "Hoàn thành") : rawRes;
 
                 response.Matches.Add(new MatchHistoryItem
                 {
@@ -471,7 +486,7 @@ public class MessageHandler
                     EndTime = row["EndTime"] != DBNull.Value ? (DateTime?)Convert.ToDateTime(row["EndTime"]) : null,
                     WinnerId = row["WinnerId"] != DBNull.Value ? (int?)Convert.ToInt32(row["WinnerId"]) : null,
                     Result = outcome,
-                    Status = row["Status"]?.ToString() ?? ""
+                    Status = note
                 });
             }
         }
@@ -770,19 +785,32 @@ public class MessageHandler
                 var match = _matchManager.FindRoomMatch(room.RoomId);
                 if (match != null && match.State == MatchState.Playing)
                 {
-                    // Thay vì xử thua ngay lập tức, kích hoạt quy trình chờ (Grace Period)
-                    await HandleClientDisconnectedAsync(session);
+                    // Người chơi chủ động rời phòng khi đang đấu -> xử thua (Đầu hàng/Surrender)
+                    Logger.Info($"[LeaveRoom] Player {session.SessionId} chu dong roi phong khi dang dau -> Xu thua (Surrender)");
+                    var opponent = room.Players.FirstOrDefault(p => p.Id != session.SessionId.ToString());
 
-                    // Vẫn trả về response cho Client để client thoát ra Lobby
-                    var resLeave = new ResponseMessage
+                    _matchManager.StopTimer(match.MatchId);
+
+                    var gameOverMsg = new GameOverMessage
                     {
-                        SenderId = "Server",
-                        Success = true,
-                        Action = "LeaveRoom",
-                        ErrorMessage = string.Empty
+                        RoomId = room.RoomId,
+                        ResultType = "Surrender",
+                        WinnerId = opponent?.Id ?? string.Empty,
+                        WinnerName = opponent?.Username ?? string.Empty,
+                        WinningLine = Array.Empty<string>()
                     };
-                    await session.SendAsync(resLeave);
-                    return; // Kết thúc sớm, không xóa người chơi khỏi room.Players
+
+                    if (opponent != null)
+                        await _connectionManager.SendMessageToClientAsync(opponent.Id, gameOverMsg);
+
+                    foreach (var spec in room.Spectators)
+                        await _connectionManager.SendMessageToClientAsync(spec.Id, gameOverMsg);
+
+                    int? dbWinnerId = opponent?.DatabaseId > 0 ? opponent.DatabaseId : (int?)null;
+                    _matchService.SaveMatchResult(match.DbMatchId, dbWinnerId, "Surrender");
+
+                    _matchManager.EndMatch(match.MatchId, null);
+                    _roomManager.SetPlaying(room.RoomId, false);
                 }
             }
 

@@ -18,8 +18,11 @@ namespace Client.Controls
             _contextMenu = new ContextMenuStrip();
             var item = _contextMenu.Items.Add("Thách Đấu");
             item.Click += Challenge_Click;
-            lstPlayers.ContextMenuStrip = _contextMenu;
-            lstPlayers.MouseDown += LstPlayers_MouseDown;
+            if (lstPlayers != null)
+            {
+                lstPlayers.ContextMenuStrip = _contextMenu;
+                lstPlayers.MouseDown += LstPlayers_MouseDown;
+            }
         }
 
         private void LstPlayers_MouseDown(object? sender, MouseEventArgs e)
@@ -62,7 +65,7 @@ namespace Client.Controls
             }
         }
 
-        private ListBox lstPlayers;
+        private ListBox lstPlayers = null!;
 
         private void InitializeComponent()
         {

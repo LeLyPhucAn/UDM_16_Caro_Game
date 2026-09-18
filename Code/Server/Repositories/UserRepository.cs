@@ -51,20 +51,23 @@ public class UserRepository
         return DatabaseHelper.ExecuteNonQuery(query, parameters);
     }
 
-    // Cập nhật số trận thắng, thua hoặc hòa của người chơi
+    // Cập nhật số trận thắng, thua, hòa và điểm số của người chơi
     public bool UpdateUserStats(int userId, bool isWinner, bool isDraw = false)
     {
         string query;
         if (isDraw)
         {
-            query = "UPDATE Users SET Draws = ISNULL(Draws, 0) + 1 WHERE Id = @Id";
+            // Hòa: cộng 1 điểm
+            query = "UPDATE Users SET Draws = ISNULL(Draws, 0) + 1, Score = ISNULL(Score, 0) + 1 WHERE Id = @Id";
         }
         else if (isWinner)
         {
-            query = "UPDATE Users SET Wins = ISNULL(Wins, 0) + 1 WHERE Id = @Id";
+            // Thắng: cộng 3 điểm
+            query = "UPDATE Users SET Wins = ISNULL(Wins, 0) + 1, Score = ISNULL(Score, 0) + 3 WHERE Id = @Id";
         }
         else
         {
+            // Thua: giữ nguyên điểm số, tăng số trận thua
             query = "UPDATE Users SET Losses = ISNULL(Losses, 0) + 1 WHERE Id = @Id";
         }
 

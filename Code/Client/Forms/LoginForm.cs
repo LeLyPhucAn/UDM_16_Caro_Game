@@ -86,7 +86,20 @@ namespace Client.Forms
 
                         string playerName = txtPlayerName.Text.Trim();
                         LobbyForm formLobby = new LobbyForm(playerName, _clientConnection);
-                        formLobby.FormClosed += (s, args) => this.Close();
+                        formLobby.FormClosed += (s, args) =>
+                        {
+                            if (formLobby.IsLoggedOut)
+                            {
+                                // Người dùng chọn Đăng xuất: phục hồi trạng thái và hiện lại màn hình Đăng nhập
+                                this.ResetLoginForm();
+                                this.Show();
+                            }
+                            else
+                            {
+                                // Người dùng chọn Thoát game hoặc bấm dấu X: đóng hẳn ứng dụng
+                                this.Close();
+                            }
+                        };
 
                         formLobby.Show();
                         this.Hide();
@@ -100,6 +113,18 @@ namespace Client.Forms
                     }
                 }
             }
+        }
+
+        public void ResetLoginForm()
+        {
+            _isLoggedIn = false;
+            _clientConnection.OnMessageReceived -= XyLyKetQuaLogin;
+            _clientConnection.OnMessageReceived += XyLyKetQuaLogin;
+            txtPassword.Text = string.Empty;
+            btnEnterLobby.Enabled = true;
+            btnEnterLobby.Text = "ĐĂNG NHẬP";
+            btnRegister.Enabled = true;
+            btnRegister.Text = "ĐĂNG KÝ";
         }
 
         private async void btnEnterLobby_Click(object? sender, EventArgs e)

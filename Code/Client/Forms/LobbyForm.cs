@@ -23,6 +23,7 @@ namespace Client.Forms
         private Button? btnLogout;
         private bool _isChallenging = false;
         private bool _isPromptingInvite = false;
+        public bool IsLoggedOut { get; private set; } = false;
 
         // Profile UI Controls in TopBar
         private Panel? pnlAvatar;
@@ -257,7 +258,7 @@ namespace Client.Forms
             _ = _clientConnection.SendMessageAsync(req);
         }
 
-        // Đăng xuất: ngắt kết nối socket, quay về LoginForm
+        // Đăng xuất: ngắt kết nối socket, đặt cờ IsLoggedOut và đóng LobbyForm
         private void BtnLogout_Click(object? sender, EventArgs e)
         {
             var confirm = MessageBox.Show(
@@ -268,17 +269,13 @@ namespace Client.Forms
             );
             if (confirm != DialogResult.Yes) return;
 
+            IsLoggedOut = true;
+
             // Ngắt hủy lắng nghe để tránh xử lý tin nhắn sau khi logout
             _clientConnection.OnMessageReceived -= HandleServerMessage;
             _clientConnection.OnConnectionLost -= HandleConnectionLost;
             _clientConnection.Disconnect();
 
-            // Mở lại màn hình đăng nhập
-            var loginForm = new LoginForm();
-            loginForm.Show();
-
-            // Đóng Lobby mà không kéo theo sự kiện FormClosed gọi this.Close() của LoginForm cũ
-            this.FormClosed -= (s, args) => { }; // Tháo handler cũ nếu có
             this.Close();
         }
 
@@ -286,8 +283,9 @@ namespace Client.Forms
         // XỬ LÝ CHUỘT PHẢI TRÊN BẢNG PHÒNG
         // ======================================================
 
-        // Khi người dùng click chuột phải vào một phòng đang chơi,
-        // hỏi xem họ có muốn vào xem với tư cách khán giả không.
+        // Khi người dùng click chuột phải vào một phòng:
+        // - Nếu phòng đang chơi hoặc đầy: hỏi vào xem với tư cách khán giả
+        // - Nếu phòng đang chờ: hỏi vào tham gia thi đấu
         private void dgvRooms_MouseClick(object? sender, MouseEventArgs e)
         {
             if (e.Button != MouseButtons.Right) return;
@@ -301,21 +299,35 @@ namespace Client.Forms
             dgvRooms.Rows[hitInfo.RowIndex].Selected = true;
 
             string roomStatus = dgvRooms.Rows[hitInfo.RowIndex].Cells[3].Value?.ToString() ?? "";
-
-            // Chỉ hiện hỏi khán giả khi phòng đang chơi hoặc đã đầy
-            if (!roomStatus.Contains("Đang chơi") && !roomStatus.Contains("Đã đầy")) return;
-
             string roomName = dgvRooms.Rows[hitInfo.RowIndex].Cells[1].Value?.ToString() ?? "Phòng";
-            var result = MessageBox.Show(
-                $"Phòng '{roomName}' đang thi đấu.\nBạn có muốn vào xem với tư cách khán giả không?",
-                "Vào xem",
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Question
-            );
-            if (result != DialogResult.Yes) return;
-
-            // Lấy ID phòng và gửi yêu cầu tham gia với IsSpectator = true
             string selectedRoomId = dgvRooms.Rows[hitInfo.RowIndex].Cells[0].Value?.ToString() ?? "";
+
+            bool isSpectator = false;
+
+            if (roomStatus.Contains("Đang chơi") || roomStatus.Contains("Đã đầy"))
+            {
+                var result = MessageBox.Show(
+                    $"Phòng '{roomName}' đang thi đấu hoặc đã đủ người.\nBạn có muốn vào xem với tư cách khán giả không?",
+                    "Vào xem khán giả",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question
+                );
+                if (result != DialogResult.Yes) return;
+                isSpectator = true;
+            }
+            else
+            {
+                var result = MessageBox.Show(
+                    $"Phòng '{roomName}' đang chờ đối thủ.\nBạn có muốn vào phòng để tham gia thi đấu không?",
+                    "Tham gia thi đấu",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question
+                );
+                if (result != DialogResult.Yes) return;
+                isSpectator = false;
+            }
+
+            // Gửi yêu cầu gia nhập phòng lên Server
             var joinMsg = new CaroGame.Protocol.Messages.Room.JoinRoomMessage
             {
                 SenderId = _playerName,
@@ -323,7 +335,7 @@ namespace Client.Forms
                 PlayerId = _playerName,
                 PlayerName = _playerName,
                 Password = "",
-                IsSpectator = true
+                IsSpectator = isSpectator
             };
 
             _ = Task.Run(async () =>
@@ -334,7 +346,7 @@ namespace Client.Forms
 
             _clientConnection.OnMessageReceived -= HandleServerMessage;
 
-            RoomForm roomForm = new RoomForm(_clientConnection, roomName, _playerName, false, null, true, selectedRoomId);
+            RoomForm roomForm = new RoomForm(_clientConnection, roomName, _playerName, false, null, isSpectator, selectedRoomId);
             roomForm.FormClosed += (s, args) =>
             {
                 _clientConnection.OnMessageReceived += HandleServerMessage;
