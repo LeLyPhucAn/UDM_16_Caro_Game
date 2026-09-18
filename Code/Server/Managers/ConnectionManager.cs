@@ -14,7 +14,7 @@ namespace Server.Managers;
 
 public class ConnectionManager
 {
-    // Sử dụng ConcurrentDictionary để đảm bảo an toàn đa luồng (Thread-Safety)
+    // Quản lý danh sách các session client đang kết nối
     private readonly ConcurrentDictionary<Guid, ClientSession> _clients = new();
 
     /// <summary>
@@ -122,9 +122,9 @@ public class ConnectionManager
     /// </summary>
     public async Task BroadcastLobbyStateAsync()
     {
-        // Lấy danh sách tên người chơi đang online (Giả sử ClientSession có property Username)
+        // Lấy danh sách tên người chơi đang online
         var players = _clients.Values
-            .Select(c => c.SessionId.ToString()) // Tạm lấy SessionId làm tên nếu chưa lưu Username
+            .Select(c => c.SessionId.ToString())
             .ToList();
 
         var lobbyData = new CaroGame.Protocol.LobbyStateDto

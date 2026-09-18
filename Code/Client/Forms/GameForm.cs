@@ -35,6 +35,12 @@ namespace Client.Forms
         private int _reconnectSecondsLeft = 0;
         private Label? _lblReconnectStatus = null;
 
+        // Victory effect
+        private Label? _lblVictory;
+        private System.Windows.Forms.Timer? _confettiTimer;
+        private List<PointF> _confettiParticles = new List<PointF>();
+        private List<float> _confettiSpeeds = new List<float>();
+
         public GameForm(ClientConnection connection, string roomId, string roomName, string playerName, bool isHost, int boardSize = 15, bool isSpectator = false)
         {
             InitializeComponent();
@@ -324,6 +330,7 @@ namespace Client.Forms
                         bool isMe = !string.IsNullOrEmpty(gameOverMsg.WinnerName) && gameOverMsg.WinnerName == _playerName;
                         if (isMe)
                         {
+                            ShowVictoryEffect();
                             MessageBox.Show($"CHIẾN THẮNG TUYỆT VỜI!\n\nChúc mừng bạn [{gameOverMsg.WinnerName}] đã tạo thành chuỗi 5 ô cờ liên tiếp và giành chiến thắng vẻ vang!",
                                             "Chúc mừng chiến thắng", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         }
@@ -362,14 +369,22 @@ namespace Client.Forms
                         // Grace period đã hết, đối thủ không reconnect kịp
                         bool isWinner = gameOverMsg.WinnerName == _playerName;
                         if (isWinner)
+                        {
+                            ShowVictoryEffect();
                             MessageBox.Show($"Đối thủ không kết nối lại kịp trong {Managers_GracePeriodSeconds} giây!\nBạn được xử thắng.",
                                             "Thắng do đối thủ mất kết nối", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
                         else
+                        {
                             MessageBox.Show($"Bạn không kết nối lại kịp thời gian cho phép!\n[{gameOverMsg.WinnerName}] được xử thắng.",
                                             "Hết thời gian chờ kết nối lại", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        }
                     }
                     else if (gameOverMsg.ResultType == "Surrender")
                     {
+                        bool isWinner = gameOverMsg.WinnerName == _playerName;
+                        if (isWinner) ShowVictoryEffect();
+                        
                         MessageBox.Show($"Đối thủ đã rời phòng / đầu hàng! Chúc mừng [{gameOverMsg.WinnerName}] giành chiến thắng.",
                                         "Đối thủ đầu hàng", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
@@ -418,6 +433,28 @@ namespace Client.Forms
                     MessageBox.Show($"Đối thủ [{reconnMsg.Data}] đã kết nối lại thành công!",
                                     "Kết nối lại", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     // Timer sẽ được khởi động lại khi nhận MoveMessage tiếp theo
+                }
+
+                // ==========================================
+                // 8. HỎI Ý KIẾN CHỜ THÊM (NẾU ĐỐI THỦ KHÔNG RECONNECT KỊP 60S)
+                // ==========================================
+                else if (message is ResponseMessage askMsg && askMsg.Action == "AskWaitOpponent")
+                {
+                    HideReconnectPanel();
+
+                    DialogResult result = MessageBox.Show(
+                        "Thời gian chờ 60s đã hết nhưng đối thủ chưa kết nối lại.\nBạn có muốn chờ thêm 120s không?",
+                        "Chờ đối thủ",
+                        MessageBoxButtons.YesNo,
+                        MessageBoxIcon.Question
+                    );
+
+                    var requestMsg = new RequestMessage
+                    {
+                        Action = "AnswerWaitOpponent",
+                        Data = result == DialogResult.Yes ? "Yes" : "No"
+                    };
+                    _ = _clientConnection.SendMessageAsync(requestMsg);
                 }
             }
             catch (Exception ex)
@@ -575,7 +612,7 @@ namespace Client.Forms
         private void UpdateReconnectLabel()
         {
             if (_lblReconnectStatus == null) return;
-            _lblReconnectStatus.Text = $"⚠ Đối thủ mất kết nối!\nChờ kết nối lại... {_reconnectSecondsLeft}s";
+            _lblReconnectStatus.Text = $"[!] Đối thủ mất kết nối!\nChờ kết nối lại... {_reconnectSecondsLeft}s";
         }
 
         /// <summary>
@@ -587,5 +624,97 @@ namespace Client.Forms
             if (_lblReconnectStatus != null)
                 _lblReconnectStatus.Visible = false;
         }
+
+        // ==========================================
+        // HIỆU ỨNG CHIẾN THẮNG (CONFETTI)
+        // ==========================================
+        private void ShowVictoryEffect()
+        {
+            if (this.InvokeRequired)
+            {
+                this.Invoke(new Action(() => ShowVictoryEffect()));
+                return;
+            }
+
+            if (_lblVictory == null)
+            {
+                _lblVictory = new Label
+                {
+                    AutoSize = false,
+                    Size = new Size(pnlMain.Width, 100),
+                    Text = "VICTORY",
+                    Font = new Font("Segoe UI", 48, FontStyle.Bold),
+                    ForeColor = Color.Gold,
+                    BackColor = Color.Transparent,
+                    TextAlign = ContentAlignment.MiddleCenter,
+                    Cursor = Cursors.Hand,
+                    Anchor = AnchorStyles.Left | AnchorStyles.Right
+                };
+                
+                _lblVictory.Click += (s, e) => HideVictoryEffect();
+
+                _lblVictory.Location = new Point(0, (pnlMain.Height - 100) / 2 - 50);
+                pnlMain.Controls.Add(_lblVictory);
+                _lblVictory.BringToFront();
+            }
+            _lblVictory.Visible = true;
+            _lblVictory.BringToFront();
+
+            _confettiParticles.Clear();
+            _confettiSpeeds.Clear();
+            Random rand = new Random();
+            for (int i = 0; i < 150; i++)
+            {
+                _confettiParticles.Add(new PointF(rand.Next(pnlMain.Width), rand.Next(-800, 0)));
+                _confettiSpeeds.Add((float)(rand.NextDouble() * 6 + 4));
+            }
+
+            if (_confettiTimer == null)
+            {
+                _confettiTimer = new System.Windows.Forms.Timer { Interval = 20 };
+                _confettiTimer.Tick += ConfettiTimer_Tick;
+                pnlMain.Paint += PnlMain_Paint; 
+            }
+            _confettiTimer.Start();
+        }
+
+        private void ConfettiTimer_Tick(object? sender, EventArgs e)
+        {
+            for (int i = 0; i < _confettiParticles.Count; i++)
+            {
+                var p = _confettiParticles[i];
+                p.Y += _confettiSpeeds[i];
+                if (p.Y > pnlMain.Height)
+                {
+                    Random rand = new Random();
+                    p.Y = rand.Next(-50, -10);
+                    p.X = rand.Next(pnlMain.Width);
+                }
+                _confettiParticles[i] = p;
+            }
+            pnlMain.Invalidate();
+        }
+
+        private void PnlMain_Paint(object? sender, PaintEventArgs e)
+        {
+            if (_confettiTimer != null && _confettiTimer.Enabled)
+            {
+                e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                using (var brush = new SolidBrush(Color.DeepSkyBlue)) 
+                {
+                    foreach (var pt in _confettiParticles)
+                    {
+                        e.Graphics.FillRectangle(brush, pt.X, pt.Y, 12, 12);
+                    }
+                }
+            }
+        }
+
+        private void HideVictoryEffect()
+        {
+            if (_lblVictory != null) _lblVictory.Visible = false;
+            if (_confettiTimer != null) _confettiTimer.Stop();
+            pnlMain.Invalidate();
+        }
     }
-}
+}

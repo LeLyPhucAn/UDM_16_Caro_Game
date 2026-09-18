@@ -18,23 +18,22 @@ namespace Server.Network
         private TcpListener? _listener;
         private bool _isRunning;
         private CancellationTokenSource? _cts;
-        private System.Threading.Timer? _timerTick;
 
-    private readonly ConnectionManager _connectionManager = new();
-    private readonly UserService _userService = new();
-    private readonly RoomManager _roomManager = new();
-    private readonly MatchManager _matchManager = new();
-    private readonly ReconnectManager _reconnectManager = new();
-    private readonly MessageHandler _messageHandler;
+        private readonly ConnectionManager _connectionManager = new();
+        private readonly UserService _userService = new();
+        private readonly RoomManager _roomManager = new();
+        private readonly MatchManager _matchManager = new();
+        private readonly ReconnectManager _reconnectManager = new();
+        private readonly MessageHandler _messageHandler;
 
-    public TcpServer()
-    {
-        _messageHandler = new MessageHandler(_userService, _roomManager, _matchManager, _connectionManager, _reconnectManager);
-    }
+        public TcpServer()
+        {
+            _messageHandler = new MessageHandler(_userService, _roomManager, _matchManager, _connectionManager, _reconnectManager);
+        }
 
         public ConnectionManager ConnectionManager => _connectionManager;
 
-        // [THÊM MỚI] Getter cho MatchManager (sau này dùng cho RoomManager móc nối qua)
+        // Lấy đối tượng MatchManager
         public MatchManager MatchManager => _matchManager;
 
         public void Start(ServerConfig config)
@@ -53,30 +52,10 @@ namespace Server.Network
             Logger.Info($"Cổng Port  : {config.Port}");
             Logger.Info("========================================");
 
-            // Tự động kiểm tra và khởi tạo CSDL CaroDB nếu máy mới chưa có
+            // Khởi tạo CSDL CaroDB nếu chưa có
             Database.DatabaseHelper.EnsureDatabaseCreated();
 
-            _timerTick = new System.Threading.Timer(OnTimerTick, null, 1000, 1000);
-
             _ = AcceptClientsAsync(_cts.Token);
-        }
-
-        private void OnTimerTick(object? state)
-        {
-            if (!_isRunning) return;
-
-            // TimerTick xử lý gửi thông báo đếm ngược cho tất cả các Match đang Playing
-            var matchManager = _matchManager; // MatchManager này là private field đã có sẵn
-            if (matchManager != null)
-            {
-                // Truy cập TimerService của MatchManager hơi khó vì nó private,
-                // Nhưng ta có thể tự đếm ngược phía Client. 
-                // Tuy nhiên, để đúng bài, ta có thể dùng TimerService.
-                // Để đơn giản nhất: Gửi một gói tin Broadcast tới các client để họ biết Server vẫn đang đếm thời gian.
-                // Do thiết kế hiện tại của GameTimerService khó truy xuất từ ngoài,
-                // tạm thời ta chỉ gửi một thông điệp trống hoặc bỏ qua việc đếm từ TcpServer mà dựa vào Client tự đếm.
-                // Để thỏa mãn Task 2: "Đồng bộ Timer với Client", ta có thể broadcast TimerMessage.
-            }
         }
 
         private async Task AcceptClientsAsync(CancellationToken cancellationToken)
@@ -133,7 +112,6 @@ namespace Server.Network
         {
             _isRunning = false;
             _cts?.Cancel();
-            _timerTick?.Dispose();
 
             _connectionManager.ClearAll();
             _listener?.Stop();

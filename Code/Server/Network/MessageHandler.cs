@@ -14,7 +14,7 @@ using Server.Utils;
 namespace Server.Network;
 
 /// <summary>
-/// Chịu trách nhiệm định tuyến (Routing) các gói tin từ Client đến đúng Service xử lý.
+/// Xử lý và phân loại các gói tin nhận từ Client.
 /// </summary>
 public class MessageHandler
 {
@@ -22,7 +22,6 @@ public class MessageHandler
     private readonly RoomManager _roomManager;
     private readonly MatchManager _matchManager;
     private readonly ConnectionManager _connectionManager;
-    private readonly GameRequestHandler _gameRequestHandler;
     private readonly MatchService _matchService;
     private readonly ReconnectManager _reconnectManager;
 
@@ -33,7 +32,6 @@ public class MessageHandler
         _matchManager = matchManager ?? throw new ArgumentNullException(nameof(matchManager));
         _connectionManager = connectionManager ?? throw new ArgumentNullException(nameof(connectionManager));
         _reconnectManager = reconnectManager ?? throw new ArgumentNullException(nameof(reconnectManager));
-        _gameRequestHandler = new GameRequestHandler(_matchManager, _connectionManager, _roomManager);
         _matchService = new MatchService();
         _matchManager.OnMatchTimeout += HandleMatchTimeout;
         _reconnectManager.OnGraceExpired += HandleGraceExpiredAsync;
@@ -99,7 +97,7 @@ public class MessageHandler
 
                 case MessageType.Move:
                     if (message is MoveMessage moveMsg)
-                        await _gameRequestHandler.HandlePlayMoveAsync(session, moveMsg);
+                        await HandlePlayMoveAsync(session, moveMsg);
                     break;
 
                 case MessageType.Chat:
@@ -231,7 +229,19 @@ public class MessageHandler
         string pName = !string.IsNullOrEmpty(session.PlayerName) ? session.PlayerName : "Player_" + session.SessionId.ToString().Substring(0, 4);
         var player = new Player(session.SessionId.ToString(), pName);
         player.DatabaseId = session.UserId;
-        bool success = _roomManager.JoinRoom(msg.RoomId, player, msg.IsSpectator);
+        
+        bool success = false;
+        var targetRoom = _roomManager.GetRoom(msg.RoomId);
+        bool isAlreadyInRoom = targetRoom != null && targetRoom.Players.Any(p => p.Id == player.Id);
+        
+        if (isAlreadyInRoom && !msg.IsSpectator)
+        {
+            success = true; // Người chơi đang ở trong phòng (có thể đã LeaveRoom về Lobby lúc đang đấu)
+        }
+        else
+        {
+            success = _roomManager.JoinRoom(msg.RoomId, player, msg.IsSpectator);
+        }
 
         var response = new ResponseMessage
         {
@@ -249,40 +259,59 @@ public class MessageHandler
             {
                 await BroadcastRoomStateAsync(room);
 
-                // Neu phong dang choi va nguoi nay la khan gia, gui GameStateMessage ngay lap tuc de vao xem
-                if (room.IsPlaying && msg.IsSpectator)
+                // Neu phong dang choi, xử lý reconnect cho player hoặc cho spectator vào xem
+                if (room.IsPlaying)
                 {
                     var match = _matchManager.FindRoomMatch(room.RoomId);
                     if (match != null)
                     {
-                        var sb = new System.Text.StringBuilder(match.Board.Rows * match.Board.Columns);
-                        for (int r = 0; r < match.Board.Rows; r++)
+                        bool isReconnectingPlayer = (match.PlayerX?.Id == session.SessionId.ToString() || match.PlayerO?.Id == session.SessionId.ToString());
+
+                        if (msg.IsSpectator || isReconnectingPlayer)
                         {
-                            for (int c = 0; c < match.Board.Columns; c++)
+                            if (isReconnectingPlayer && match.State == MatchState.Suspended)
                             {
-                                var cell = match.Board.GetCell(r, c);
-                                sb.Append(cell == Shared.Models.CellState.X ? 'X' : (cell == Shared.Models.CellState.O ? 'O' : '-'));
+                                // Hủy đếm ngược grace period, tiếp tục trận đấu
+                                _reconnectManager.CancelGrace(session.SessionId.ToString());
+                                match.Resume();
+                                _matchManager.ResetTimer(match.MatchId);
+                                
+                                var opp = room.Players.FirstOrDefault(p => p.Id != session.SessionId.ToString());
+                                if (opp != null)
+                                {
+                                    await _connectionManager.SendMessageToClientAsync(opp.Id, new ResponseMessage { Action = "OpponentReconnected" });
+                                }
                             }
+
+                            var sb = new System.Text.StringBuilder(match.Board.Rows * match.Board.Columns);
+                            for (int r = 0; r < match.Board.Rows; r++)
+                            {
+                                for (int c = 0; c < match.Board.Columns; c++)
+                                {
+                                    var cell = match.Board.GetCell(r, c);
+                                    sb.Append(cell == Shared.Models.CellState.X ? 'X' : (cell == Shared.Models.CellState.O ? 'O' : '-'));
+                                }
+                            }
+
+                            Player? pX = match.PlayerX ?? (room.Players.Count > 0 ? room.Players[0] : null);
+                            Player? pO = match.PlayerO ?? (room.Players.Count > 1 ? room.Players[1] : null);
+
+                            var syncMsg = new GameStateMessage
+                            {
+                                RoomId = room.RoomId,
+                                BoardState = sb.ToString(),
+                                BoardSize = room.BoardSize,
+                                CurrentPlayerId = match.CurrentTurn == Shared.Models.CellState.X ? (pX?.Id ?? "") : (pO?.Id ?? ""),
+                                CurrentTurnName = match.CurrentTurn == Shared.Models.CellState.X ? (pX?.Username ?? "") : (pO?.Username ?? ""),
+                                PlayerXName = pX?.Username ?? "",
+                                PlayerOName = pO?.Username ?? "",
+                                Status = "Playing",
+                                MySymbol = "S",
+                                SpectatorCount = room.Spectators.Count
+                            };
+
+                            await session.SendAsync(syncMsg);
                         }
-
-                        Player? pX = match.PlayerX ?? (room.Players.Count > 0 ? room.Players[0] : null);
-                        Player? pO = match.PlayerO ?? (room.Players.Count > 1 ? room.Players[1] : null);
-
-                        var syncMsg = new GameStateMessage
-                        {
-                            RoomId = room.RoomId,
-                            BoardState = sb.ToString(),
-                            BoardSize = room.BoardSize,
-                            CurrentPlayerId = match.CurrentTurn == Shared.Models.CellState.X ? (pX?.Id ?? "") : (pO?.Id ?? ""),
-                            CurrentTurnName = match.CurrentTurn == Shared.Models.CellState.X ? (pX?.Username ?? "") : (pO?.Username ?? ""),
-                            PlayerXName = pX?.Username ?? "",
-                            PlayerOName = pO?.Username ?? "",
-                            Status = "Playing",
-                            MySymbol = "S",
-                            SpectatorCount = room.Spectators.Count
-                        };
-
-                        await session.SendAsync(syncMsg);
                     }
                 }
             }
@@ -650,6 +679,54 @@ public class MessageHandler
         {
             await ProcessPlayerLeaveAsync(session);
         }
+        else if (msg.Action == "AnswerWaitOpponent")
+        {
+            var room = _roomManager.FindPlayerRoom(session.SessionId.ToString());
+            if (room != null)
+            {
+                var match = _matchManager.FindRoomMatch(room.RoomId);
+                if (match != null && match.IsSuspended())
+                {
+                    if (msg.Data == "Yes")
+                    {
+                        // Đối thủ đồng ý chờ, bắt đầu 120s extended grace
+                        if (match.DisconnectedPlayerId != null)
+                        {
+                            _reconnectManager.StartGrace(match.DisconnectedPlayerId, GraceType.Extended, ReconnectManager.ExtendedGraceSeconds);
+                            
+                            // Báo cho các client biết để UI hiển thị tiếp 120s chờ
+                            var suspendMsg = new ResponseMessage
+                            {
+                                SenderId = "Server",
+                                Success = true,
+                                Action = "OpponentDisconnected",
+                                Data = ReconnectManager.ExtendedGraceSeconds.ToString()
+                            };
+                            
+                            foreach (var p in room.Players)
+                            {
+                                if (p.Id != match.DisconnectedPlayerId)
+                                    await _connectionManager.SendMessageToClientAsync(p.Id, suspendMsg);
+                            }
+                            foreach (var s in room.Spectators)
+                            {
+                                await _connectionManager.SendMessageToClientAsync(s.Id, suspendMsg);
+                            }
+                            Logger.Info($"[Reconnect] Doi thu dong y cho them {ReconnectManager.ExtendedGraceSeconds}s cho match {match.MatchId}");
+                        }
+                    }
+                    else
+                    {
+                        // Đối thủ từ chối, kết thúc trận ngay
+                        if (match.DisconnectedPlayerId != null)
+                        {
+                            _reconnectManager.CancelGrace(match.DisconnectedPlayerId);
+                            HandleGraceExpiredAsync(match.DisconnectedPlayerId, GraceType.Extended);
+                        }
+                    }
+                }
+            }
+        }
         else if (msg.Action == "JoinRoom")
         {
             var joinMsg = new JoinRoomMessage
@@ -693,28 +770,19 @@ public class MessageHandler
                 var match = _matchManager.FindRoomMatch(room.RoomId);
                 if (match != null && match.State == MatchState.Playing)
                 {
-                    var opponent = room.Players.FirstOrDefault(p => p.Id != session.SessionId.ToString());
-                    if (opponent != null)
+                    // Thay vì xử thua ngay lập tức, kích hoạt quy trình chờ (Grace Period)
+                    await HandleClientDisconnectedAsync(session);
+
+                    // Vẫn trả về response cho Client để client thoát ra Lobby
+                    var resLeave = new ResponseMessage
                     {
-                        var gameOverMsg = new GameOverMessage
-                        {
-                            RoomId = room.RoomId,
-                            ResultType = "Surrender",
-                            WinnerId = opponent.Id,
-                            WinnerName = opponent.Username,
-                            WinningLine = new string[0]
-                        };
-
-                        await _connectionManager.SendMessageToClientAsync(opponent.Id, gameOverMsg);
-                        foreach (var spec in room.Spectators)
-                        {
-                            await _connectionManager.SendMessageToClientAsync(spec.Id, gameOverMsg);
-                        }
-
-                        int? dbWinnerId = opponent.DatabaseId;
-                        _matchService.SaveMatchResult(match.DbMatchId, dbWinnerId, "Win");
-                    }
-                    _matchManager.EndMatch(match.MatchId, null);
+                        SenderId = "Server",
+                        Success = true,
+                        Action = "LeaveRoom",
+                        ErrorMessage = string.Empty
+                    };
+                    await session.SendAsync(resLeave);
+                    return; // Kết thúc sớm, không xóa người chơi khỏi room.Players
                 }
             }
 
@@ -739,6 +807,96 @@ public class MessageHandler
         await session.SendAsync(response);
 
         await BroadcastLobbyStateAsync();
+    }
+
+    private async Task HandlePlayMoveAsync(ClientSession session, MoveMessage msg)
+    {
+        Logger.Info($"[PlayMove] Session {session.SessionId} đánh cờ tại ({msg.Row}, {msg.Column}) trong phòng {msg.RoomId}");
+
+        var match = _matchManager.FindRoomMatch(msg.RoomId);
+        if (match == null || match.State != Shared.Models.MatchState.Playing)
+        {
+            var failResponse = new ResponseMessage
+            {
+                RequestMessageId = msg.MessageId,
+                SenderId = "Server",
+                Success = false,
+                ErrorMessage = "Trận đấu không tồn tại hoặc đã kết thúc."
+            };
+            await session.SendAsync(failResponse);
+            return;
+        }
+
+        var moveResult = _matchManager.TryMakeMove(match.MatchId, session.SessionId.ToString(), msg.Row, msg.Column);
+        bool success = moveResult.IsValid;
+
+        var response = new ResponseMessage
+        {
+            RequestMessageId = msg.MessageId,
+            SenderId = "Server",
+            Success = success,
+            ErrorMessage = success ? string.Empty : moveResult.Message
+        };
+
+        await session.SendAsync(response);
+
+        if (success)
+        {
+            // 1. Gửi broadcast nước đi cho tất cả người trong phòng
+            var broadcastMove = new MoveMessage
+            {
+                RoomId = match.MatchId,
+                Row = msg.Row,
+                Column = msg.Column,
+                Symbol = moveResult.Piece.ToString() // "X" hoặc "O"
+            };
+
+            var room = _roomManager.GetRoom(match.MatchId);
+            if (room != null)
+            {
+                foreach (var p in room.Players)
+                    await _connectionManager.SendMessageToClientAsync(p.Id, broadcastMove);
+                foreach (var p in room.Spectators)
+                    await _connectionManager.SendMessageToClientAsync(p.Id, broadcastMove);
+            }
+
+            // 2. Gửi kết quả ván đấu nếu thắng hoặc hòa
+            if (moveResult.IsWin || moveResult.IsDraw)
+            {
+                string resultType = moveResult.IsWin ? "Win" : "Draw";
+                string sessionX = match.PlayerX?.Id ?? string.Empty;
+                string sessionO = match.PlayerO?.Id ?? string.Empty;
+
+                string winnerId = moveResult.IsWin ? ((moveResult.Piece == Shared.Models.CellState.X) ? sessionX : sessionO) : string.Empty;
+                string winnerName = moveResult.IsWin ? ((moveResult.Piece == Shared.Models.CellState.X) ? match.PlayerX?.Username : match.PlayerO?.Username) : string.Empty;
+
+                var gameOverMsg = new GameOverMessage
+                {
+                    RoomId = match.MatchId,
+                    ResultType = resultType,
+                    WinnerId = winnerId,
+                    WinnerName = winnerName,
+                    WinningLine = moveResult.WinningLine != null ? moveResult.WinningLine.ToArray() : new string[0]
+                };
+
+                if (room != null)
+                {
+                    foreach (var p in room.Players)
+                        await _connectionManager.SendMessageToClientAsync(p.Id, gameOverMsg);
+                    foreach (var p in room.Spectators)
+                        await _connectionManager.SendMessageToClientAsync(p.Id, gameOverMsg);
+                }
+
+                // Lưu kết quả vào cơ sở dữ liệu
+                int? dbWinnerId = null;
+                if (moveResult.IsWin)
+                {
+                    dbWinnerId = (moveResult.Piece == Shared.Models.CellState.X) ? match.PlayerX?.DatabaseId : match.PlayerO?.DatabaseId;
+                }
+                var matchService = new Server.Services.MatchService();
+                matchService.SaveMatchResult(match.DbMatchId, dbWinnerId, resultType);
+            }
+        }
     }
 
     private async Task HandleChatAsync(ClientSession session, ChatMessage chatMsg)
@@ -772,7 +930,7 @@ public class MessageHandler
                 var match = _matchManager.FindRoomMatch(room.RoomId);
                 if (match != null && match.State == MatchState.Playing)
                 {
-                    // ✅ Tạm dừng Match, bắt đầu đếm ngược grace period thay vì kết thúc ngay
+                    // Tạm dừng Match, bắt đầu đếm ngược grace period thay vì kết thúc ngay
                     _matchManager.StopTimer(match.MatchId); // Dừng timer lượt đi
                     match.Suspend(session.SessionId.ToString());
 
@@ -785,7 +943,7 @@ public class MessageHandler
                             SenderId = "Server",
                             Success = true,
                             Action = "OpponentDisconnected",
-                            Data = ReconnectManager.GracePeriodSeconds.ToString() // Thông báo có bao nhiêu giây chờ
+                            Data = ReconnectManager.InitialGraceSeconds.ToString() // Thông báo có bao nhiêu giây chờ
                         };
                         await _connectionManager.SendMessageToClientAsync(opponent.Id, suspendMsg);
                     }
@@ -798,14 +956,14 @@ public class MessageHandler
                             SenderId = "Server",
                             Success = true,
                             Action = "OpponentDisconnected",
-                            Data = ReconnectManager.GracePeriodSeconds.ToString()
+                            Data = ReconnectManager.InitialGraceSeconds.ToString()
                         };
                         await _connectionManager.SendMessageToClientAsync(spec.Id, specNotify);
                     }
 
-                    // Bắt đầu đếm ngược grace period
-                    _reconnectManager.StartGrace(session.SessionId.ToString());
-                    Logger.Info($"[Reconnect] Match {match.MatchId} suspended. Grace period: {ReconnectManager.GracePeriodSeconds}s");
+                    // Bắt đầu đếm ngược grace period lần đầu (60s)
+                    _reconnectManager.StartGrace(session.SessionId.ToString(), GraceType.Initial, ReconnectManager.InitialGraceSeconds);
+                    Logger.Info($"[Reconnect] Match {match.MatchId} suspended. Initial grace period: {ReconnectManager.InitialGraceSeconds}s");
 
                     // QUAN TRỌNG: Không xóa người chơi khỏi phòng, không gọi BroadcastLobbyStateAsync
                     return;
@@ -825,14 +983,15 @@ public class MessageHandler
     }
 
     /// <summary>
-    /// Xử lý khi grace period 90 giây hết hạn — Player không reconnect kịp.
-    /// Kết thúc trận và xác nhận đối thủ còn lại thắng cuộc.
+    /// Xử lý khi grace period hết hạn.
+    /// - Nếu là lần đầu (Initial): Gửi AskWaitOpponent cho đối thủ.
+    /// - Nếu là gia hạn (Extended): Kết thúc trận đấu.
     /// </summary>
-    private async void HandleGraceExpiredAsync(string disconnectedPlayerId)
+    private async void HandleGraceExpiredAsync(string disconnectedPlayerId, GraceType type)
     {
         try
         {
-            Logger.Warn($"[Reconnect] Grace expired cho {disconnectedPlayerId}. Ket thuc tran.");
+            Logger.Warn($"[Reconnect] Grace expired ({type}) cho {disconnectedPlayerId}.");
 
             var room = _roomManager.FindPlayerRoom(disconnectedPlayerId);
             if (room == null) return;
@@ -840,8 +999,34 @@ public class MessageHandler
             var match = _matchManager.FindRoomMatch(room.RoomId);
             if (match == null || !match.IsSuspended()) return;
 
-            // Xác định người thắng là đối thủ còn lại
+            // Xác định đối thủ còn lại
             var opponent = room.Players.FirstOrDefault(p => p.Id != disconnectedPlayerId);
+
+            if (type == GraceType.Initial)
+            {
+                // Hết 60s đầu, hỏi ý kiến đối thủ
+                if (opponent != null)
+                {
+                    var askMsg = new ResponseMessage
+                    {
+                        SenderId = "Server",
+                        Success = true,
+                        Action = "AskWaitOpponent",
+                        Data = string.Empty
+                    };
+                    await _connectionManager.SendMessageToClientAsync(opponent.Id, askMsg);
+                    Logger.Info($"[Reconnect] Sent AskWaitOpponent to {opponent.Username}");
+                }
+                else
+                {
+                    // Nếu không có đối thủ thì tự kết thúc
+                    HandleGraceExpiredAsync(disconnectedPlayerId, GraceType.Extended);
+                }
+                return; // KHÔNG kết thúc trận đấu, chờ đối thủ trả lời
+            }
+
+            // Nếu type == GraceType.Extended (hoặc đối thủ từ chối chờ thêm) -> Kết thúc trận
+            Logger.Info($"[Reconnect] {disconnectedPlayerId} that bai reconnect hoan toan. Ket thuc tran.");
 
             var gameOverMsg = new GameOverMessage
             {

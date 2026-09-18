@@ -55,52 +55,6 @@ namespace Server.Services
     }
 
     /// <summary>
-    /// GameResult lưu kết quả cuối cùng của Match.
-    /// </summary>
-    public enum GameResultType
-    {
-        Win,
-        Draw,
-        Timeout,
-        Abandoned
-    }
-
-    public class GameResult
-    {
-        public string MatchId { get; }
-
-        public GameResultType ResultType { get; }
-
-        public string? WinnerId { get; }
-
-        public string? LoserId { get; }
-
-        public string Reason { get; }
-
-        public System.DateTime FinishedAt { get; }
-
-        public GameResult(
-            string matchId,
-            GameResultType resultType,
-            string? winnerId,
-            string? loserId,
-            string reason)
-        {
-            MatchId = matchId;
-
-            ResultType = resultType;
-
-            WinnerId = winnerId;
-
-            LoserId = loserId;
-
-            Reason = reason;
-
-            FinishedAt = System.DateTime.UtcNow;
-        }
-    }
-
-    /// <summary>
     /// Xử lý luật Caro phía Server.
     /// </summary>
     public class GameRuleService

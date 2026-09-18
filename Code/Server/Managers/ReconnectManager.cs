@@ -7,76 +7,87 @@ using Server.Utils;
 namespace Server.Managers;
 
 /// <summary>
-/// Quan ly grace period (90 giay) cho tinh nang ket noi lai (Reconnect).
-/// Khi mot Player disconnect giua tran, Manager giu trang thai tam dung trong
-/// GracePeriodSeconds giay. Neu Player khong ket noi lai kip, event OnGraceExpired se duoc kich hoat.
+/// Loại grace period (Chờ lần đầu hay Chờ thêm)
+/// </summary>
+public enum GraceType
+{
+    Initial,
+    Extended
+}
+
+/// <summary>
+/// Quan ly grace period cho tinh nang ket noi lai (Reconnect).
 /// </summary>
 public class ReconnectManager
 {
     /// <summary>
-    /// Thoi gian cho reconnect tinh bang giay (90 giay).
+    /// Thoi gian cho reconnect lan dau (60 giay).
     /// </summary>
-    public static readonly int GracePeriodSeconds = 60;
+    public static readonly int InitialGraceSeconds = 60;
+    
+    /// <summary>
+    /// Thoi gian cho them khi doi thu dong y (120 giay).
+    /// </summary>
+    public static readonly int ExtendedGraceSeconds = 120;
 
     // Key: PlayerId (Session GUID dang string)
-    // Value: CancellationTokenSource de huy grace period khi Player reconnect kip
-    private readonly Dictionary<string, CancellationTokenSource> _pendingGraces = new();
+    // Value: (CancellationTokenSource, GraceType) de huy grace period va xac dinh loai
+    private readonly Dictionary<string, (CancellationTokenSource Cts, GraceType Type)> _pendingGraces = new();
     private readonly object _lock = new();
 
     /// <summary>
     /// Duoc kich hoat khi grace period het han ma Player khong reconnect.
-    /// Arg: playerId (Session ID cu cua Player da disconnect).
+    /// Arg1: playerId, Arg2: loai grace period vua het han.
     /// </summary>
-    public event Action<string>? OnGraceExpired;
+    public event Action<string, GraceType>? OnGraceExpired;
 
     /// <summary>
     /// Bat dau dem nguoc grace period cho Player vua disconnect.
-    /// Neu Player da co grace period dang chay, reset lai tu dau.
     /// </summary>
-    public void StartGrace(string playerId)
+    public void StartGrace(string playerId, GraceType type, int seconds)
     {
         CancelGrace(playerId);
 
         var cts = new CancellationTokenSource();
         lock (_lock)
         {
-            _pendingGraces[playerId] = cts;
+            _pendingGraces[playerId] = (cts, type);
         }
 
-        Logger.Info($"[Reconnect] Grace period {GracePeriodSeconds}s bat dau cho Player {playerId}");
+        Logger.Info($"[Reconnect] Grace period ({type}) {seconds}s bat dau cho Player {playerId}");
 
         _ = Task.Run(async () =>
         {
             try
             {
-                await Task.Delay(TimeSpan.FromSeconds(GracePeriodSeconds), cts.Token);
+                await Task.Delay(TimeSpan.FromSeconds(seconds), cts.Token);
 
                 lock (_lock)
                 {
                     _pendingGraces.Remove(playerId);
                 }
 
-                Logger.Warn($"[Reconnect] Grace period het han cho Player {playerId}. Ket thuc tran dau.");
-                OnGraceExpired?.Invoke(playerId);
+                Logger.Warn($"[Reconnect] Grace period ({type}) het han cho Player {playerId}.");
+                OnGraceExpired?.Invoke(playerId, type);
             }
             catch (TaskCanceledException)
             {
-                Logger.Info($"[Reconnect] Grace period da bi huy (Player {playerId} da reconnect).");
+                Logger.Info($"[Reconnect] Grace period da bi huy (Player {playerId} da reconnect hoac duoc gia han).");
             }
         });
     }
 
     /// <summary>
-    /// Huy grace period - goi khi Player reconnect thanh cong trong thoi gian cho phep.
+    /// Huy grace period - goi khi Player reconnect thanh cong.
     /// </summary>
     public bool CancelGrace(string playerId)
     {
         lock (_lock)
         {
-            if (_pendingGraces.TryGetValue(playerId, out var cts))
+            if (_pendingGraces.TryGetValue(playerId, out var tuple))
             {
-                cts.Cancel();
-                cts.Dispose();
+                tuple.Cts.Cancel();
+                tuple.Cts.Dispose();
                 _pendingGraces.Remove(playerId);
                 return true;
             }

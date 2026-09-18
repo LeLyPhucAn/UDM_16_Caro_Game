@@ -62,24 +62,12 @@ namespace Client.Controls
             }
         }
 
-        // Đã xóa bỏ dòng ListBox bị lặp
-        private Label label2;
         private ListBox lstPlayers;
 
         private void InitializeComponent()
         {
-            label2 = new Label();
             lstPlayers = new ListBox();
             SuspendLayout();
-            // 
-            // label2
-            // 
-            label2.AutoSize = true;
-            label2.Location = new Point(424, 32);
-            label2.Name = "label2";
-            label2.Size = new Size(130, 20);
-            label2.TabIndex = 0;
-            label2.Text = "Người chơi Online";
             // 
             // lstPlayers
             // 
@@ -97,11 +85,9 @@ namespace Client.Controls
             // PlayerListControl
             // 
             Controls.Add(lstPlayers);
-            Controls.Add(label2);
             Name = "PlayerListControl";
             Size = new Size(927, 457);
             ResumeLayout(false);
-            PerformLayout();
         }
     }
 }

@@ -20,6 +20,7 @@ namespace Client.Forms
         private string _playerName;
         private ClientConnection _clientConnection;
         private Button? btnHistory;
+        private Button? btnLogout;
         private bool _isChallenging = false;
         private bool _isPromptingInvite = false;
 
@@ -51,6 +52,9 @@ namespace Client.Forms
             _clientConnection.OnMessageReceived += HandleServerMessage;
             _clientConnection.OnConnectionLost += HandleConnectionLost;
             _clientConnection.OnError += HandleError;
+
+            // Bắt sự kiện click chuột trên bảng phòng (gồm cả chuột phải)
+            dgvRooms.MouseClick += dgvRooms_MouseClick;
         }
 
         private void SetupProfileHeaderUI()
@@ -109,12 +113,29 @@ namespace Client.Forms
             pnlTopBar.Controls.Add(lblBadgeLosses);
             pnlTopBar.Controls.Add(lblBadgeWinRate);
 
-            // Nút LỊCH SỬ ĐẤU trên TopBar bên cạnh nút THOÁT GAME
+            // Nút LỊCH SỬ ĐẤU trên TopBar
             btnHistory = new Button
             {
                 Text = "LỊCH SỬ ĐẤU",
-                Size = new Size(135, 38),
+                Size = new Size(130, 38),
                 BackColor = Color.FromArgb(106, 90, 205),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 9.5F, FontStyle.Bold),
+                Anchor = AnchorStyles.Top | AnchorStyles.Right,
+                Location = new Point(pnlTopBar.Width - 440, 23),
+                Cursor = Cursors.Hand
+            };
+            btnHistory.FlatAppearance.BorderSize = 0;
+            btnHistory.Click += BtnHistory_Click;
+            pnlTopBar.Controls.Add(btnHistory);
+
+            // Nút ĐĂNG XUẤT - quay về màn hình đăng nhập
+            btnLogout = new Button
+            {
+                Text = "ĐĂNG XUẤT",
+                Size = new Size(120, 38),
+                BackColor = Color.FromArgb(180, 100, 30),
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
                 Font = new Font("Segoe UI", 9.5F, FontStyle.Bold),
@@ -122,23 +143,23 @@ namespace Client.Forms
                 Location = new Point(pnlTopBar.Width - 300, 23),
                 Cursor = Cursors.Hand
             };
-            btnHistory.FlatAppearance.BorderSize = 0;
-            btnHistory.Click += BtnHistory_Click;
-            pnlTopBar.Controls.Add(btnHistory);
+            btnLogout.FlatAppearance.BorderSize = 0;
+            btnLogout.Click += BtnLogout_Click;
+            pnlTopBar.Controls.Add(btnLogout);
 
             // Căn chỉnh lại nút Thoát và ServerInfo
             if (btnExitGame != null)
             {
                 btnExitGame.Anchor = AnchorStyles.Top | AnchorStyles.Right;
                 btnExitGame.Size = new Size(130, 38);
-                btnExitGame.Location = new Point(pnlTopBar.Width - 150, 23);
+                btnExitGame.Location = new Point(pnlTopBar.Width - 165, 23);
                 btnExitGame.Cursor = Cursors.Hand;
             }
 
             if (lblServerInfo != null)
             {
                 lblServerInfo.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-                lblServerInfo.Location = new Point(pnlTopBar.Width - 410, 31);
+                lblServerInfo.Location = new Point(pnlTopBar.Width - 550, 31);
             }
         }
 
@@ -234,6 +255,94 @@ namespace Client.Forms
                 Username = _playerName
             };
             _ = _clientConnection.SendMessageAsync(req);
+        }
+
+        // Đăng xuất: ngắt kết nối socket, quay về LoginForm
+        private void BtnLogout_Click(object? sender, EventArgs e)
+        {
+            var confirm = MessageBox.Show(
+                "Bạn có chắc muốn đăng xuất không?",
+                "Đăng xuất",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question
+            );
+            if (confirm != DialogResult.Yes) return;
+
+            // Ngắt hủy lắng nghe để tránh xử lý tin nhắn sau khi logout
+            _clientConnection.OnMessageReceived -= HandleServerMessage;
+            _clientConnection.OnConnectionLost -= HandleConnectionLost;
+            _clientConnection.Disconnect();
+
+            // Mở lại màn hình đăng nhập
+            var loginForm = new LoginForm();
+            loginForm.Show();
+
+            // Đóng Lobby mà không kéo theo sự kiện FormClosed gọi this.Close() của LoginForm cũ
+            this.FormClosed -= (s, args) => { }; // Tháo handler cũ nếu có
+            this.Close();
+        }
+
+        // ======================================================
+        // XỬ LÝ CHUỘT PHẢI TRÊN BẢNG PHÒNG
+        // ======================================================
+
+        // Khi người dùng click chuột phải vào một phòng đang chơi,
+        // hỏi xem họ có muốn vào xem với tư cách khán giả không.
+        private void dgvRooms_MouseClick(object? sender, MouseEventArgs e)
+        {
+            if (e.Button != MouseButtons.Right) return;
+
+            // Xác định dòng người dùng vừa click vào
+            var hitInfo = dgvRooms.HitTest(e.X, e.Y);
+            if (hitInfo.RowIndex < 0) return;
+
+            // Chọn dòng đó
+            dgvRooms.ClearSelection();
+            dgvRooms.Rows[hitInfo.RowIndex].Selected = true;
+
+            string roomStatus = dgvRooms.Rows[hitInfo.RowIndex].Cells[3].Value?.ToString() ?? "";
+
+            // Chỉ hiện hỏi khán giả khi phòng đang chơi hoặc đã đầy
+            if (!roomStatus.Contains("Đang chơi") && !roomStatus.Contains("Đã đầy")) return;
+
+            string roomName = dgvRooms.Rows[hitInfo.RowIndex].Cells[1].Value?.ToString() ?? "Phòng";
+            var result = MessageBox.Show(
+                $"Phòng '{roomName}' đang thi đấu.\nBạn có muốn vào xem với tư cách khán giả không?",
+                "Vào xem",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question
+            );
+            if (result != DialogResult.Yes) return;
+
+            // Lấy ID phòng và gửi yêu cầu tham gia với IsSpectator = true
+            string selectedRoomId = dgvRooms.Rows[hitInfo.RowIndex].Cells[0].Value?.ToString() ?? "";
+            var joinMsg = new CaroGame.Protocol.Messages.Room.JoinRoomMessage
+            {
+                SenderId = _playerName,
+                RoomId = selectedRoomId,
+                PlayerId = _playerName,
+                PlayerName = _playerName,
+                Password = "",
+                IsSpectator = true
+            };
+
+            _ = Task.Run(async () =>
+            {
+                try { await _clientConnection.SendMessageAsync(joinMsg); }
+                catch (Exception ex) { Console.WriteLine(ex.Message); }
+            });
+
+            _clientConnection.OnMessageReceived -= HandleServerMessage;
+
+            RoomForm roomForm = new RoomForm(_clientConnection, roomName, _playerName, false, null, true, selectedRoomId);
+            roomForm.FormClosed += (s, args) =>
+            {
+                _clientConnection.OnMessageReceived += HandleServerMessage;
+                this.Show();
+                RequestProfile();
+            };
+            roomForm.Show();
+            this.Hide();
         }
 
         private void PlayerListControl1_OnChallengePlayer(string targetPlayer)
@@ -349,7 +458,7 @@ namespace Client.Forms
             }
         }
 
-        // Đã xóa tham số ping không sử dụng
+        // Cập nhật số lượng người chơi online
         public void UpdateOnlineCount(int onlineCount)
         {
             if (this.InvokeRequired)
@@ -536,10 +645,10 @@ namespace Client.Forms
                 MessageBox.Show("Vui lòng click chọn một phòng trong danh sách!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
-            // 1. ĐỌC TRẠNG THÁI PHÒNG TỪ CỘT SỐ 3 (Cells[3])
+            // 1. Đọc trạng thái phòng từ bảng
             string roomStatus = dgvRooms.SelectedRows[0].Cells[3].Value?.ToString() ?? "";
 
-            // 2. LẬP CHỐT CHẶN: NẾU PHÒNG ĐÃ KÍN CHỖ THÌ TỪ CHỐI
+            // 2. Kiểm tra nếu phòng đã đầy hoặc đang chơi
             bool isSpectator = false;
             if (roomStatus.Contains("Đang chơi") || roomStatus.Contains("Đã đầy"))
             {
@@ -602,6 +711,7 @@ namespace Client.Forms
         {
             _clientConnection.OnMessageReceived -= HandleServerMessage;
             _clientConnection.OnConnectionLost -= HandleConnectionLost;
+            _clientConnection.OnError -= HandleError;
             base.OnFormClosed(e);
         }
 

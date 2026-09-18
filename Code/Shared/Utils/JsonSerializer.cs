@@ -32,9 +32,7 @@ namespace CaroGame.Protocol.Utils
         }
 
         /// <summary>
-        /// Kiểm tra một chuỗi có phải JSON hợp lệ về mặt cú pháp hay không,
-        /// dùng để PacketParser tách riêng lỗi "JSON sai cú pháp" khỏi lỗi
-        /// "JSON đúng cú pháp nhưng thiếu/sai field" (Task 2 - Validate JSON).
+        /// Kiểm tra một chuỗi có phải JSON hợp lệ về mặt cú pháp hay không.
         /// </summary>
         public static bool IsValidJson(string json)
         {
@@ -57,15 +55,7 @@ namespace CaroGame.Protocol.Utils
         }
 
         /// <summary>
-        /// Kiểm tra chuỗi JSON có chứa field "MessageId" dạng chuỗi và không rỗng
-        /// hay không (Task 2 - Kiểm tra MessageId).
-        ///
-        /// Bắt buộc phải kiểm tra trên chuỗi JSON THÔ thay vì trên object sau khi
-        /// Deserialize: BaseMessage tự sinh MessageId bằng Guid.NewGuid() ngay
-        /// trong constructor, và System.Text.Json chỉ ghi đè property nào có mặt
-        /// trong JSON - nếu người gửi không gửi MessageId, object sau deserialize
-        /// vẫn "có" MessageId (do constructor gán), khiến việc kiểm tra trên object
-        /// luôn pass một cách sai lệch dù packet gốc không hề mang MessageId.
+        /// Kiểm tra chuỗi JSON có chứa field MessageId hay không.
         /// </summary>
         public static bool HasValidMessageId(string json)
         {
@@ -110,7 +100,6 @@ namespace CaroGame.Protocol.Utils
                 case MessageType.Register:
                     return System.Text.Json.JsonSerializer.Deserialize<RegisterMessage>(json, OPTIONS);
 
-                // [TASK 1] Ánh xạ cho RequestMessage
                 case MessageType.Request:
                     return System.Text.Json.JsonSerializer.Deserialize<RequestMessage>(json, OPTIONS);
 

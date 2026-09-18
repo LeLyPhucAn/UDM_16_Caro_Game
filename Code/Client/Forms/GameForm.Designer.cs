@@ -311,9 +311,9 @@ namespace Client.Forms
             // 
             pnlBoard.Anchor = AnchorStyles.None;
             pnlBoard.BackColor = Color.FromArgb(34, 36, 40);
-            pnlBoard.Location = new Point(150, 90);
+            pnlBoard.Location = new Point(100, 40);
             pnlBoard.Name = "pnlBoard";
-            pnlBoard.Size = new Size(500, 500);
+            pnlBoard.Size = new Size(600, 600);
             pnlBoard.TabIndex = 0;
             // 
             // GameForm
