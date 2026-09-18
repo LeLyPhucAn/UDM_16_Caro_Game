@@ -13,10 +13,4 @@
     <ProjectReference Include="..\Shared\Shared.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Managers\" />
-    <Folder Include="Utils\" />
-    <Folder Include="Services\" />
-  </ItemGroup>
-
 </Project>

@@ -6,6 +6,7 @@ namespace Shared.Models
     {
         Waiting,
         Playing,
+        Suspended,   // Tạm dừng chờ Player reconnect
         Finished
     }
 
@@ -39,6 +40,14 @@ namespace Shared.Models
         public MatchState State { get; set; }
         public string? WinnerId { get; set; }
         public int MoveCount { get; set; }
+
+        // =========================
+        // RECONNECT
+        // =========================
+        /// <summary>Session ID của Player đang mất kết nối (khi State = Suspended)</summary>
+        public string? DisconnectedPlayerId { get; set; }
+        /// <summary>Thời điểm trận bị tạm dừng do disconnect</summary>
+        public DateTime? SuspendedAt { get; set; }
 
         // =========================
         // THỜI GIAN
@@ -138,9 +147,36 @@ namespace Shared.Models
             return State == MatchState.Playing;
         }
 
+        public bool IsSuspended()
+        {
+            return State == MatchState.Suspended;
+        }
+
         public bool IsFinished()
         {
             return State == MatchState.Finished;
+        }
+
+        /// <summary>
+        /// Tạm dừng Match khi một Player mất kết nối. Timer lượt đi đã được dừng trước khi gọi hàm này.
+        /// </summary>
+        public void Suspend(string disconnectedPlayerId)
+        {
+            State = MatchState.Suspended;
+            DisconnectedPlayerId = disconnectedPlayerId;
+            SuspendedAt = DateTime.UtcNow;
+        }
+
+        /// <summary>
+        /// Tiếp tục Match sau khi Player đã reconnect thành công.
+        /// </summary>
+        public bool Resume()
+        {
+            if (State != MatchState.Suspended) return false;
+            State = MatchState.Playing;
+            DisconnectedPlayerId = null;
+            SuspendedAt = null;
+            return true;
         }
 
         /// <summary>

@@ -14,10 +14,13 @@ namespace Server.Managers
         public string RoomName { get; private set; }
 
         public int MaxPlayers { get; private set; }
+        public int BoardSize { get; set; }
 
         public List<Player> Players { get; private set; }
+        public List<Player> Spectators { get; private set; }
 
         public bool IsPlaying { get; set; }
+        public string HostSymbol { get; set; } = "X";
 
         public Room(
             string roomId,
@@ -29,8 +32,11 @@ namespace Server.Managers
             MaxPlayers = maxPlayers;
 
             Players = new List<Player>();
+            Spectators = new List<Player>();
 
             IsPlaying = false;
+            BoardSize = 15; // Mặc định là 15
+            HostSymbol = "X";
         }
 
         // ==============================
@@ -65,6 +71,14 @@ namespace Server.Managers
         }
 
         // ==============================
+        // ĐỔI QUÂN (X / O)
+        // ==============================
+        public void SwapPlayers()
+        {
+            HostSymbol = (HostSymbol == "X") ? "O" : "X";
+        }
+
+        // ==============================
         // XÓA PLAYER
         // ==============================
         public bool RemovePlayer(string playerId)
@@ -72,11 +86,34 @@ namespace Server.Managers
             Player? player = Players.FirstOrDefault(
                 p => p.Id == playerId);
 
-            if (player == null)
+            if (player != null)
+            {
+                Players.Remove(player);
+                return true;
+            }
+
+            Player? spectator = Spectators.FirstOrDefault(
+                p => p.Id == playerId);
+            
+            if (spectator != null)
+            {
+                Spectators.Remove(spectator);
+                return true;
+            }
+
+            return false;
+        }
+
+        // ==============================
+        // THÊM KHÁN GIẢ
+        // ==============================
+        public bool AddSpectator(Player player)
+        {
+            if (player == null) return false;
+            if (Spectators.Any(p => p.Id == player.Id) || Players.Any(p => p.Id == player.Id)) 
                 return false;
-
-            Players.Remove(player);
-
+            
+            Spectators.Add(player);
             return true;
         }
 
@@ -85,8 +122,8 @@ namespace Server.Managers
         // ==============================
         public Player? GetPlayer(string playerId)
         {
-            return Players.FirstOrDefault(
-                p => p.Id == playerId);
+            return Players.FirstOrDefault(p => p.Id == playerId)
+                ?? Spectators.FirstOrDefault(s => s.Id == playerId);
         }
 
         // ==============================
@@ -94,8 +131,8 @@ namespace Server.Managers
         // ==============================
         public bool ContainsPlayer(string playerId)
         {
-            return Players.Any(
-                p => p.Id == playerId);
+            return Players.Any(p => p.Id == playerId)
+                || Spectators.Any(s => s.Id == playerId);
         }
     }
 
@@ -175,7 +212,8 @@ namespace Server.Managers
         // ==============================
         public bool JoinRoom(
             string roomId,
-            Player player)
+            Player player,
+            bool isSpectator = false)
         {
             if (string.IsNullOrWhiteSpace(roomId))
                 return false;
@@ -188,12 +226,21 @@ namespace Server.Managers
             if (room == null)
                 return false;
 
-            bool result = room.AddPlayer(player);
+            bool result = false;
+            if (isSpectator)
+            {
+                result = room.AddSpectator(player);
+            }
+            else
+            {
+                result = room.AddPlayer(player);
+            }
 
             if (result)
             {
+                string role = isSpectator ? "Spectator" : "Player";
                 Console.WriteLine(
-                    $"[ROOM] {player.Username} joined {room.RoomName}");
+                    $"[ROOM] {player.Username} joined {room.RoomName} as {role}");
             }
 
             return result;

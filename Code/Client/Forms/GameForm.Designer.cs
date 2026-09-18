@@ -68,7 +68,7 @@ namespace Client.Forms
             lblSpectators.Name = "lblSpectators";
             lblSpectators.Size = new Size(95, 23);
             lblSpectators.TabIndex = 2;
-            lblSpectators.Text = "Khán giả: 4";
+            lblSpectators.Text = "Khán giả: 0";
             // 
             // lblBadge
             // 
@@ -80,7 +80,7 @@ namespace Client.Forms
             lblBadge.Padding = new Padding(5);
             lblBadge.Size = new Size(130, 30);
             lblBadge.TabIndex = 1;
-            lblBadge.Text = "Standard 10x10";
+            lblBadge.Text = "Standard 15x15";
             // 
             // lblTitle
             // 
@@ -311,9 +311,9 @@ namespace Client.Forms
             // 
             pnlBoard.Anchor = AnchorStyles.None;
             pnlBoard.BackColor = Color.FromArgb(34, 36, 40);
-            pnlBoard.Location = new Point(150, 90);
+            pnlBoard.Location = new Point(100, 40);
             pnlBoard.Name = "pnlBoard";
-            pnlBoard.Size = new Size(500, 500);
+            pnlBoard.Size = new Size(600, 600);
             pnlBoard.TabIndex = 0;
             // 
             // GameForm

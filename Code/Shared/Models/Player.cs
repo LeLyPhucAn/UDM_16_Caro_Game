@@ -22,12 +22,15 @@ namespace Shared.Models
 
         public bool IsOnline { get; set; }
 
+        public bool IsReady { get; set; }
+
         public Player()
         {
             Id = string.Empty;
             Username = string.Empty;
             DisplayName = string.Empty;
             IsOnline = false;
+            IsReady = false;
         }
 
         /// <summary>
@@ -49,6 +52,7 @@ namespace Shared.Models
                     : displayName;
 
             IsOnline = false;
+            IsReady = false;
         }
 
         /// <summary>
@@ -71,6 +75,7 @@ namespace Shared.Models
                     : displayName;
 
             IsOnline = false;
+            IsReady = false;
         }
     }
 }

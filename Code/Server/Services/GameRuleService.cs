@@ -1,4 +1,4 @@
-﻿using Shared.Models;
+using Shared.Models;
 
 namespace Server.Services
 {
@@ -31,6 +31,8 @@ namespace Server.Services
 
         public string? LoserId { get; set; }
 
+        public System.Collections.Generic.List<string> WinningLine { get; set; } = new();
+
         public CellState Piece { get; set; }
 
         public int Row { get; set; }
@@ -49,52 +51,6 @@ namespace Server.Services
 
             Row = -1;
             Column = -1;
-        }
-    }
-
-    /// <summary>
-    /// GameResult lưu kết quả cuối cùng của Match.
-    /// </summary>
-    public enum GameResultType
-    {
-        Win,
-        Draw,
-        Timeout,
-        Abandoned
-    }
-
-    public class GameResult
-    {
-        public string MatchId { get; }
-
-        public GameResultType ResultType { get; }
-
-        public string? WinnerId { get; }
-
-        public string? LoserId { get; }
-
-        public string Reason { get; }
-
-        public System.DateTime FinishedAt { get; }
-
-        public GameResult(
-            string matchId,
-            GameResultType resultType,
-            string? winnerId,
-            string? loserId,
-            string reason)
-        {
-            MatchId = matchId;
-
-            ResultType = resultType;
-
-            WinnerId = winnerId;
-
-            LoserId = loserId;
-
-            Reason = reason;
-
-            FinishedAt = System.DateTime.UtcNow;
         }
     }
 
@@ -226,6 +182,8 @@ namespace Server.Services
                     row,
                     column);
 
+            var winningLine = win ? GetWinningLine(board, row, column) : new System.Collections.Generic.List<string>();
+
             bool draw =
                 !win &&
                 CheckDraw(board);
@@ -242,6 +200,8 @@ namespace Server.Services
                 WinnerId =
                     win ? playerId : null,
 
+                WinningLine = winningLine,
+
                 Piece = piece,
 
                 Row = row,
@@ -255,6 +215,63 @@ namespace Server.Services
                             ? "Match draw."
                             : "Move accepted."
             };
+        }
+
+        /// <summary>
+        /// Lấy tọa độ danh sách các ô tạo thành chuỗi 5 quân chiến thắng
+        /// </summary>
+        public System.Collections.Generic.List<string> GetWinningLine(
+            Board board,
+            int row,
+            int column)
+        {
+            var result = new System.Collections.Generic.List<string>();
+            if (!board.IsValidPosition(row, column))
+                return result;
+
+            CellState piece = board.GetCell(row, column);
+            if (piece == CellState.Empty)
+                return result;
+
+            int[][] directions = new int[][]
+            {
+                new int[] { 0, 1 },   // Ngang
+                new int[] { 1, 0 },   // Dọc
+                new int[] { 1, 1 },   // Chéo chính
+                new int[] { 1, -1 }   // Chéo phụ
+            };
+
+            foreach (var dir in directions)
+            {
+                var line = new System.Collections.Generic.List<string> { $"{row},{column}" };
+
+                // Hướng dương
+                int r = row + dir[0];
+                int c = column + dir[1];
+                while (board.IsValidPosition(r, c) && board.GetCell(r, c) == piece)
+                {
+                    line.Add($"{r},{c}");
+                    r += dir[0];
+                    c += dir[1];
+                }
+
+                // Hướng âm
+                r = row - dir[0];
+                c = column - dir[1];
+                while (board.IsValidPosition(r, c) && board.GetCell(r, c) == piece)
+                {
+                    line.Insert(0, $"{r},{c}");
+                    r -= dir[0];
+                    c -= dir[1];
+                }
+
+                if (line.Count >= WinLength)
+                {
+                    return line;
+                }
+            }
+
+            return result;
         }
 
         /// <summary>

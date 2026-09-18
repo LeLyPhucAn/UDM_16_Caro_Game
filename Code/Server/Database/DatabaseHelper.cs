@@ -6,7 +6,7 @@ namespace Server.Database;
 
 public static class DatabaseHelper
 {
-    private static readonly string _connectionString = new DatabaseConfig().ConnectionString;
+    private static string _connectionString = new DatabaseConfig().ConnectionString;
 
     /// <summary>
     /// Tạo và trả về một SqlConnection mới
@@ -88,7 +88,99 @@ public static class DatabaseHelper
     }
 
     /// <summary>
-    /// Kiểm tra kết nối CSDL khi khởi động Server (Chống sập Server)
+    /// Tự động kiểm tra và khởi tạo Database CaroDB cùng các bảng nếu chưa có trên máy mới
+    /// </summary>
+    public static bool EnsureDatabaseCreated()
+    {
+        string[] candidateServers = new[]
+        {
+            @"(localdb)\mssqllocaldb",
+            "localhost",
+            @".\SQLEXPRESS",
+            "."
+        };
+
+        foreach (var server in candidateServers)
+        {
+            try
+            {
+                string masterConnStr = $"Server={server};Database=master;Trusted_Connection=True;TrustServerCertificate=True;";
+                using (var masterConn = new SqlConnection(masterConnStr))
+                {
+                    masterConn.Open();
+
+                    // 1. Tạo Database CaroDB nếu chưa tồn tại
+                    string createDbSql = "IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = N'CaroDB') CREATE DATABASE CaroDB;";
+                    using (var cmd = new SqlCommand(createDbSql, masterConn))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+
+                // 2. Kết nối trực tiếp vào CaroDB để tạo bảng nếu chưa có
+                string caroDbConnStr = $"Server={server};Database=CaroDB;Trusted_Connection=True;TrustServerCertificate=True;";
+                using (var caroConn = new SqlConnection(caroDbConnStr))
+                {
+                    caroConn.Open();
+                    string createTablesSql = @"
+                        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Users')
+                        CREATE TABLE Users (
+                            Id INT IDENTITY(1,1) PRIMARY KEY,
+                            Username NVARCHAR(50) NOT NULL UNIQUE,
+                            PasswordHash NVARCHAR(256) NOT NULL,
+                            Score INT NOT NULL DEFAULT 0,
+                            Wins INT NOT NULL DEFAULT 0,
+                            Losses INT NOT NULL DEFAULT 0,
+                            Draws INT NOT NULL DEFAULT 0,
+                            CreatedAt DATETIME DEFAULT GETDATE()
+                        );
+
+                        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Matches')
+                        CREATE TABLE Matches (
+                            MatchId INT IDENTITY(1,1) PRIMARY KEY,
+                            Player1Id INT NOT NULL,
+                            Player2Id INT NOT NULL,
+                            StartTime DATETIME NOT NULL,
+                            EndTime DATETIME,
+                            WinnerId INT,
+                            Result NVARCHAR(50),
+                            Status NVARCHAR(50) NOT NULL DEFAULT 'IN_PROGRESS'
+                        );
+
+                        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'History')
+                        CREATE TABLE History (
+                            HistoryId INT IDENTITY(1,1) PRIMARY KEY,
+                            MatchId INT NOT NULL,
+                            PlayerId INT NOT NULL,
+                            MoveX INT NOT NULL,
+                            MoveY INT NOT NULL,
+                            StepOrder INT NOT NULL,
+                            MoveTime DATETIME DEFAULT GETDATE()
+                        );
+                    ";
+                    using (var cmd = new SqlCommand(createTablesSql, caroConn))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+
+                _connectionString = caroDbConnStr;
+                Console.WriteLine($"[Database] Đã kết nối và tự động khởi tạo CaroDB tại server: {server}");
+                return true;
+            }
+            catch
+            {
+                // Thử ứng viên tiếp theo nếu server này không chạy
+                continue;
+            }
+        }
+
+        Console.WriteLine("[Database Warning] Không thể tự động kết nối SQL Server. Vui lòng kiểm tra dịch vụ SQL Server.");
+        return false;
+    }
+
+    /// <summary>
+    /// Kiểm tra kết nối CSDL khi khởi động Server
     /// </summary>
     public static bool TestConnection()
     {

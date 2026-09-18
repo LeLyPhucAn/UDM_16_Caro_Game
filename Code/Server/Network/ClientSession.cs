@@ -16,17 +16,14 @@ public class ClientSession
     public TcpClient Client { get; }
 
     public string PlayerName { get; set; } = string.Empty;
+    public int UserId { get; set; } = 0;
 
     public NetworkStream Stream { get; }
 
     public IPEndPoint? RemoteEndPoint { get; }
 
     public DateTime ConnectedTime { get; }
-
-    public DateTime LastPingTime { get; set; }
-
-    public DateTime LastPongTime { get; set; }
-
+ 
     public bool IsConnected => Client.Connected;
 
     public ClientSession(TcpClient client)
@@ -40,8 +37,6 @@ public class ClientSession
         RemoteEndPoint = client.Client.RemoteEndPoint as IPEndPoint;
 
         ConnectedTime = DateTime.Now;
-        LastPingTime = DateTime.Now;
-        LastPongTime = DateTime.Now;
     }
 
     public async Task<bool> SendAsync(BaseMessage message)

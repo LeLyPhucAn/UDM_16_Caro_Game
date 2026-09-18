@@ -14,7 +14,7 @@ namespace Server.Managers;
 
 public class ConnectionManager
 {
-    // Sử dụng ConcurrentDictionary để đảm bảo an toàn đa luồng (Thread-Safety)
+    // Quản lý danh sách các session client đang kết nối
     private readonly ConcurrentDictionary<Guid, ClientSession> _clients = new();
 
     /// <summary>
@@ -122,16 +122,16 @@ public class ConnectionManager
     /// </summary>
     public async Task BroadcastLobbyStateAsync()
     {
-        // Lấy danh sách tên người chơi đang online (Giả sử ClientSession có property Username)
+        // Lấy danh sách tên người chơi đang online
         var players = _clients.Values
-            .Select(c => c.SessionId.ToString()) // Tạm lấy SessionId làm tên nếu chưa lưu Username
+            .Select(c => c.SessionId.ToString())
             .ToList();
 
-        var lobbyData = new Shared.Models.LobbyStateDto
+        var lobbyData = new CaroGame.Protocol.LobbyStateDto
         {
             OnlineCount = _clients.Count,
             OnlinePlayers = players,
-            Rooms = new List<Shared.Models.RoomInfo>()// Sau này quản lý phòng thì điền vào đây
+            Rooms = new List<CaroGame.Protocol.RoomInfo>()// Sau này quản lý phòng thì điền vào đây
         };
 
         var response = new ResponseMessage
@@ -147,7 +147,7 @@ public class ConnectionManager
     {
         List<string> playerNames = new List<string>();
 
-        foreach (var session in _clients.Values) // Thay _clients bằng tên biến Dictionary thực tế của bạn
+        foreach (var session in _clients.Values) 
         {
             if (!string.IsNullOrWhiteSpace(session.PlayerName))
             {
@@ -162,4 +162,20 @@ public class ConnectionManager
 
         return playerNames;
     }
+
+    /// <summary>
+    /// Cập nhật mapping khi một Player reconnect với Session ID mới.
+    /// Xóa entry cũ (oldSessionId) và thêm entry mới (newSession).
+    /// Dùng trong luồng Reconnect sau khi Player login lại thành công.
+    /// </summary>
+    public void UpdateSessionId(string oldSessionId, ClientSession newSession)
+    {
+        if (Guid.TryParse(oldSessionId, out Guid oldGuid))
+        {
+            _clients.TryRemove(oldGuid, out _);
+        }
+        _clients.TryAdd(newSession.SessionId, newSession);
+        Logger.Info($"[Reconnect] Mapping cap nhat: {oldSessionId} -> {newSession.SessionId}");
+    }
 }
+

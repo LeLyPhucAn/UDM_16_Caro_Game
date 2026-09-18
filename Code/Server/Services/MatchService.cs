@@ -11,17 +11,12 @@ public class MatchService
     private readonly HistoryRepository _historyRepository;
     private readonly UserRepository _userRepository;
 
-    /// <summary>
-    /// Constructor mặc định (Khởi tạo tự động các Repository nếu không dùng DI container)
-    /// </summary>
+    // Khởi tạo các repository mặc định
     public MatchService() 
         : this(new MatchRepository(), new HistoryRepository(), new UserRepository())
     {
     }
 
-    /// <summary>
-    /// Constructor nhận Dependency Injection
-    /// </summary>
     public MatchService(MatchRepository matchRepository, HistoryRepository historyRepository, UserRepository userRepository)
     {
         _matchRepository = matchRepository ?? throw new ArgumentNullException(nameof(matchRepository));
@@ -29,9 +24,7 @@ public class MatchService
         _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
     }
 
-    /// <summary>
-    /// 1. Tạo trận đấu mới
-    /// </summary>
+    // Tạo trận đấu mới và lưu vào CSDL
     public int StartNewMatch(int player1Id, int player2Id)
     {
         if (player1Id <= 0 || player2Id <= 0 || player1Id == player2Id)
@@ -51,27 +44,7 @@ public class MatchService
         }
     }
 
-    /// <summary>
-    /// 2. Hủy trận đấu (Khi thoát game / mất mạng)
-    /// </summary>
-    public bool CancelMatch(int matchId, string reason)
-    {
-        if (matchId <= 0) return false;
-
-        try
-        {
-            return _matchRepository.EndMatch(matchId, null, $"CANCELLED: {reason}", DateTime.Now);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"[MatchService Error - CancelMatch]: {ex.Message}");
-            return false;
-        }
-    }
-
-    /// <summary>
-    /// 3. Lấy lịch sử đấu của một User
-    /// </summary>
+    // Lấy lịch sử đấu của một người chơi
     public DataTable GetUserMatchHistory(int userId)
     {
         if (userId <= 0) return new DataTable();
@@ -87,9 +60,7 @@ public class MatchService
         }
     }
 
-    /// <summary>
-    /// 4. Lưu kết quả trận đấu và cập nhật thống kê người chơi
-    /// </summary>
+    // Lưu kết quả trận đấu và cập nhật thống kê người chơi
     public bool SaveMatchResult(int matchId, int? winnerId, string result)
     {
         return SaveMatchResult(matchId, winnerId, result, DateTime.Now);
@@ -133,24 +104,6 @@ public class MatchService
         {
             Console.WriteLine($"[MatchService DB Exception - SaveMatchResult]: {ex.Message}");
             return false;
-        }
-    }
-
-    /// <summary>
-    /// 5. Lấy danh sách nước đi để Replay trận đấu
-    /// </summary>
-    public List<MoveDto> GetMatchReplayMoves(int matchId)
-    {
-        if (matchId <= 0) return new List<MoveDto>();
-
-        try
-        {
-            return _historyRepository.GetHistoryByMatchId(matchId);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"[MatchService Error - GetMatchReplayMoves]: {ex.Message}");
-            return new List<MoveDto>();
         }
     }
 }

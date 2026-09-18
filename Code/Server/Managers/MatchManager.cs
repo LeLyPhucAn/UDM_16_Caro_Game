@@ -13,9 +13,7 @@ namespace Server.Managers
     public sealed class MatchManager : IDisposable
     {
         private readonly Dictionary<string, Match> matches = new();
-
-        // GameResult chính thức dùng Shared.Enums.GameResultType
-        private readonly Dictionary<string, Shared.Models.GameResult> gameResults = new();
+        private readonly Dictionary<string, GameResult> gameResults = new();
 
         private readonly GameRuleService ruleService;
         private readonly GameTimerService timerService;
@@ -29,65 +27,30 @@ namespace Server.Managers
         // =========================================================
         // EVENT: Thông báo ra ngoài khi một trận hết giờ
         // =========================================================
-        /// <summary>
-        /// Được kích hoạt khi người chơi hết giờ.
-        /// Args: Match, winnerId (string), winnerName (string)
-        /// </summary>
         public event Action<Match, string, string>? OnMatchTimeout;
 
         public MatchManager()
         {
             ruleService = new GameRuleService();
-
-            // GameTimerService yêu cầu TimeSpan
-            timerService = new GameTimerService(
-                TimeSpan.FromSeconds(DefaultTurnTimeSeconds),
-                HandleTimeout);
+            timerService = new GameTimerService(TimeSpan.FromSeconds(DefaultTurnTimeSeconds), HandleTimeout);
         }
 
         // =========================================================
         // CREATE MATCH
         // =========================================================
 
-        public Match CreateMatch()
-        {
-            string matchId = Guid.NewGuid().ToString();
-
-            return CreateMatch(matchId, string.Empty);
-        }
-
-        public Match CreateMatch(string matchId)
-        {
-            return CreateMatch(matchId, string.Empty);
-        }
-
-        public Match CreateMatch(
-            string matchId,
-            string roomId)
+        public Match CreateMatch(string matchId, string roomId = "")
         {
             if (string.IsNullOrWhiteSpace(matchId))
-            {
-                throw new ArgumentException(
-                    "Match ID cannot be empty.",
-                    nameof(matchId));
-            }
-
-            roomId ??= string.Empty;
+                throw new ArgumentException("Match ID cannot be empty.", nameof(matchId));
 
             lock (syncRoot)
             {
                 if (matches.ContainsKey(matchId))
-                {
-                    throw new InvalidOperationException(
-                        $"Match '{matchId}' already exists.");
-                }
+                    throw new InvalidOperationException($"Match '{matchId}' already exists.");
 
-                Match match = new Match(
-                    matchId,
-                    roomId);
-
+                Match match = new Match(matchId, roomId);
                 matches.Add(matchId, match);
-
                 return match;
             }
         }
@@ -98,7 +61,8 @@ namespace Server.Managers
         public Match? CreateMatch(
             string roomId,
             Player playerX,
-            Player playerO)
+            Player playerO,
+            int boardSize = 15)
         {
             if (string.IsNullOrWhiteSpace(roomId))
                 throw new ArgumentException("Room ID cannot be empty.", nameof(roomId));
@@ -115,6 +79,7 @@ namespace Server.Managers
                 Match match = new Match(roomId, roomId);
                 match.PlayerX = playerX;
                 match.PlayerO = playerO;
+                match.Board = new Board(boardSize, boardSize);
 
                 matches.Add(roomId, match);
                 return match;
@@ -458,19 +423,6 @@ namespace Server.Managers
 
                 return result;
             }
-        }
-
-        // =========================================================
-        // MAKE MOVE
-        // =========================================================
-
-        public MoveResult MakeMove(
-            string matchId,
-            Move move)
-        {
-            return TryMakeMove(
-                matchId,
-                move);
         }
 
         // =========================================================
