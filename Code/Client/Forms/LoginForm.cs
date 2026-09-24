@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Client.Network;
@@ -9,6 +9,9 @@ namespace Client.Forms
 {
     public partial class LoginForm : Form
     {
+        private const int DEFAULT_SERVER_PORT = 5000;
+        private const string DEFAULT_SERVER_IP = "127.0.0.1";
+
         private readonly ClientConnection _clientConnection;
         private bool _isLoggedIn = false;
 
@@ -66,7 +69,7 @@ namespace Client.Forms
                     {
                         MessageBox.Show("Đăng ký thất bại: " + res.ErrorMessage, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     }
-                    
+
                     btnRegister.Enabled = true;
                     btnRegister.Text = "ĐĂNG KÝ";
                     btnEnterLobby.Enabled = true;
@@ -149,7 +152,7 @@ namespace Client.Forms
                 // 1. Kết nối đến Server nếu chưa kết nối
                 if (!_clientConnection.IsConnected)
                 {
-                    await _clientConnection.ConnectToServer(serverIp, 5000);
+                    await _clientConnection.ConnectToServer(serverIp, DEFAULT_SERVER_PORT);
                 }
 
                 // 2. Tạo đối tượng LoginMessage
@@ -165,7 +168,7 @@ namespace Client.Forms
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi kết nối Server ({serverIp}:5000): " + ex.Message, "Lỗi kết nối", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Lỗi kết nối Server ({serverIp}:{DEFAULT_SERVER_PORT}): " + ex.Message, "Lỗi kết nối", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 btnEnterLobby.Enabled = true;
                 btnRegister.Enabled = true;
                 btnEnterLobby.Text = "ĐĂNG NHẬP";
@@ -193,7 +196,7 @@ namespace Client.Forms
 
                 if (!_clientConnection.IsConnected)
                 {
-                    await _clientConnection.ConnectToServer(serverIp, 5000);
+                    await _clientConnection.ConnectToServer(serverIp, DEFAULT_SERVER_PORT);
                 }
 
                 RegisterMessage regMsg = new RegisterMessage
@@ -207,7 +210,7 @@ namespace Client.Forms
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi kết nối Server ({serverIp}:5000): " + ex.Message, "Lỗi kết nối", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Lỗi kết nối Server ({serverIp}:{DEFAULT_SERVER_PORT}): " + ex.Message, "Lỗi kết nối", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 btnEnterLobby.Enabled = true;
                 btnRegister.Enabled = true;
                 btnRegister.Text = "ĐĂNG KÝ";
@@ -217,7 +220,7 @@ namespace Client.Forms
         private string GetServerIp()
         {
             string ip = txtServerIp.Text.Trim();
-            return string.IsNullOrWhiteSpace(ip) ? "127.0.0.1" : ip;
+            return string.IsNullOrWhiteSpace(ip) ? DEFAULT_SERVER_IP : ip;
         }
 
         private void btnExit_Click(object? sender, EventArgs e)

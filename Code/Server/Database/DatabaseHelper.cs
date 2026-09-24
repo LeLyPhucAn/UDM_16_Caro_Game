@@ -1,3 +1,4 @@
+﻿using Server.Utils;
 using System;
 using System.Data;
 using Microsoft.Data.SqlClient;
@@ -165,17 +166,17 @@ public static class DatabaseHelper
                 }
 
                 _connectionString = caroDbConnStr;
-                Console.WriteLine($"[Database] Đã kết nối và tự động khởi tạo CaroDB tại server: {server}");
+                Logger.Info($"[Database] Kết nối database CaroDB thành công: {server}");
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
-                // Thử ứng viên tiếp theo nếu server này không chạy
+                Logger.Debug($"[Database] Thử server {server} không thành công: {ex.Message}");
                 continue;
             }
         }
 
-        Console.WriteLine("[Database Warning] Không thể tự động kết nối SQL Server. Vui lòng kiểm tra dịch vụ SQL Server.");
+        Logger.Warn("[Database] Không thể kết nối SQL Server. Vui lòng kiểm tra dịch vụ SQL Server.");
         return false;
     }
 
@@ -194,7 +195,7 @@ public static class DatabaseHelper
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[DB Error] Không thể kết nối Database: {ex.Message}");
+            Logger.Error("[Database] Không thể kết nối Database", ex);
             return false;
         }
     }

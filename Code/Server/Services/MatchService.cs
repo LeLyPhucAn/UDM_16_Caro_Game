@@ -1,3 +1,4 @@
+﻿using Server.Utils;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -12,7 +13,7 @@ public class MatchService
     private readonly UserRepository _userRepository;
 
     // Khởi tạo các repository mặc định
-    public MatchService() 
+    public MatchService()
         : this(new MatchRepository(), new HistoryRepository(), new UserRepository())
     {
     }
@@ -29,7 +30,7 @@ public class MatchService
     {
         if (player1Id <= 0 || player2Id <= 0 || player1Id == player2Id)
         {
-            Console.WriteLine("[MatchService Warning]: ID người chơi không hợp lệ.");
+            Logger.Warn("[MatchService]: ID người chơi không hợp lệ.");
             return -1;
         }
 
@@ -39,7 +40,7 @@ public class MatchService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[MatchService Error - StartNewMatch]: {ex.Message}");
+            Logger.Error("[MatchService Error - StartNewMatch]", ex);
             return -1;
         }
     }
@@ -55,7 +56,7 @@ public class MatchService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[MatchService Error - GetUserMatchHistory]: {ex.Message}");
+            Logger.Error("[MatchService Error - GetUserMatchHistory]", ex);
             return new DataTable();
         }
     }
@@ -70,21 +71,21 @@ public class MatchService
     {
         if (matchId <= 0)
         {
-            Console.WriteLine("[MatchService Warning]: MatchID không hợp lệ.");
+            Logger.Warn("[MatchService]: MatchID không hợp lệ.");
             return false;
         }
 
         try
         {
-            Console.WriteLine($"[MatchService]: Cập nhật kết quả Match #{matchId} (WinnerId: {winnerId?.ToString() ?? "Hòa/Hủy"}, Result: {result})...");
-            
+            Logger.Info($"[MatchService]: Cập nhật kết quả Match #{matchId} (WinnerId: {winnerId?.ToString() ?? "Hòa/Hủy"}, Result: {result})");
+
             // Cập nhật thống kê người chơi (thắng / thua / hòa)
             DataTable matchInfo = _matchRepository.GetMatchById(matchId);
             if (matchInfo.Rows.Count > 0)
             {
                 int p1 = Convert.ToInt32(matchInfo.Rows[0]["Player1Id"]);
                 int p2 = Convert.ToInt32(matchInfo.Rows[0]["Player2Id"]);
-                
+
                 if (string.Equals(result, "DRAW", StringComparison.OrdinalIgnoreCase))
                 {
                     _userRepository.UpdateUserStats(p1, false, true);  // hòa
@@ -102,7 +103,7 @@ public class MatchService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[MatchService DB Exception - SaveMatchResult]: {ex.Message}");
+            Logger.Error("[MatchService DB Exception - SaveMatchResult]", ex);
             return false;
         }
     }

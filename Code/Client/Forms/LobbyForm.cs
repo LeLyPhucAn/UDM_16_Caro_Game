@@ -1,4 +1,4 @@
-using CaroGame.Protocol;
+﻿using CaroGame.Protocol;
 using CaroGame.Protocol.Messages;
 using Client.Controls;
 using Client.Network;
@@ -25,6 +25,10 @@ namespace Client.Forms
         private bool _isPromptingInvite = false;
         public bool IsLoggedOut { get; private set; } = false;
 
+        // Bot AI
+        private string _selectedBotDifficulty = "Easy";
+        private ContextMenuStrip? _botDifficultyMenu;
+
         // Profile UI Controls in TopBar
         private Panel? pnlAvatar;
         private Label? lblAvatarChar;
@@ -46,6 +50,11 @@ namespace Client.Forms
             btnJoinRoom.Click += btnJoinRoom_Click;
             btnCreateRoom.Click += btnCreateRoom_Click;
             btnExitGame.Click += btnExitGame_Click;
+
+            // Bot AI: Đăng ký sự kiện và tạo menu chọn độ khó
+            btnPlayBot.Click += btnPlayBot_Click;
+            btnBotDropdown.Click += btnBotDropdown_Click;
+            SetupBotDifficultyMenu();
 
             this.Load += LobbyForm_Load;
 
@@ -194,10 +203,7 @@ namespace Client.Forms
                     };
                     await _clientConnection.SendMessageAsync(reqMsg);
                 }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"[Lobby RequestProfile Error] {ex.Message}");
-                }
+                catch (Exception ex) { HandleError(ex); }
             });
         }
 
@@ -236,10 +242,7 @@ namespace Client.Forms
                     };
                     await _clientConnection.SendMessageAsync(reqMsg);
                 }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Lỗi gửi RefreshLobby: {ex.Message}");
-                }
+                catch (Exception ex) { HandleError(ex); }
             });
 
             if (playerListControl1 != null)
@@ -278,10 +281,7 @@ namespace Client.Forms
 
             this.Close();
         }
-
-        // ======================================================
         // XỬ LÝ CHUỘT PHẢI TRÊN BẢNG PHÒNG
-        // ======================================================
 
         // Khi người dùng click chuột phải vào một phòng:
         // - Nếu phòng đang chơi hoặc đầy: hỏi vào xem với tư cách khán giả
@@ -341,7 +341,7 @@ namespace Client.Forms
             _ = Task.Run(async () =>
             {
                 try { await _clientConnection.SendMessageAsync(joinMsg); }
-                catch (Exception ex) { Console.WriteLine(ex.Message); }
+                catch (Exception ex) { HandleError(ex); }
             });
 
             _clientConnection.OnMessageReceived -= HandleServerMessage;
@@ -394,7 +394,7 @@ namespace Client.Forms
                     _ = Task.Run(async () =>
                     {
                         try { await _clientConnection.SendMessageAsync(requestMsg); }
-                        catch (Exception ex) { Console.WriteLine(ex.Message); }
+                        catch (Exception ex) { HandleError(ex); }
                     });
 
                     // Tạm dừng lắng nghe tin nhắn ở Lobby để không tranh chấp với RoomForm
@@ -416,8 +416,9 @@ namespace Client.Forms
                     _isChallenging = false;
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                HandleError(ex);
                 _isChallenging = false;
             }
         }
@@ -594,11 +595,26 @@ namespace Client.Forms
                         // (Tùy chọn) Gửi tin nhắn từ chối lại cho Sender nếu muốn
                     }
                 }
+                else if (message.Type == MessageType.GameState && message is GameStateMessage syncMsg)
+                {
+                    _clientConnection.OnMessageReceived -= HandleServerMessage;
+
+                    // Tạo RoomForm ngầm để khôi phục dữ liệu phòng
+                    RoomForm roomForm = new RoomForm(_clientConnection, "Phòng đấu (Reconnect)", _playerName, false, null, false, syncMsg.RoomId);
+                    roomForm.FormClosed += (s, args) =>
+                    {
+                        _clientConnection.OnMessageReceived += HandleServerMessage;
+                        this.Show();
+                        RequestProfile();
+                    };
+
+                    // Ép RoomForm xử lý gói tin bàn cờ, nó sẽ tự mở GameForm và ẩn chính nó
+                    roomForm.HandleRoomMessage(syncMsg);
+
+                    this.Hide();
+                }
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[Lobby Parse Error] {ex.Message}");
-            }
+            catch (Exception ex) { HandleError(ex); }
         }
 
         private void HandleConnectionLost()
@@ -608,11 +624,12 @@ namespace Client.Forms
             this.Close();
         }
 
-        private void HandleError(Exception ex) => Console.WriteLine($"[Lobby Error] {ex.Message}");
+        private void HandleError(Exception ex)
+        {
+            // Bắt và xử lý ngoại lệ đường truyền an toàn
+            _ = ex.Message;
+        }
 
-        // ======================================================
-        // NÚT BẤM VÀO GAME
-        // ======================================================
         private void btnCreateRoom_Click(object? sender, EventArgs e)
         {
             string roomName = $"Phòng của {_playerName}";
@@ -631,7 +648,7 @@ namespace Client.Forms
             _ = Task.Run(async () =>
             {
                 try { await _clientConnection.SendMessageAsync(requestMsg); }
-                catch (Exception ex) { Console.WriteLine(ex.Message); }
+                catch (Exception ex) { HandleError(ex); }
             });
 
             // Tạm dừng lắng nghe tin nhắn ở Lobby để không tranh chấp với RoomForm
@@ -692,7 +709,7 @@ namespace Client.Forms
             _ = Task.Run(async () =>
             {
                 try { await _clientConnection.SendMessageAsync(requestMsg); }
-                catch (Exception ex) { Console.WriteLine(ex.Message); }
+                catch (Exception ex) { HandleError(ex); }
             });
 
             // Tạm dừng lắng nghe tin nhắn ở Lobby để không tranh chấp với RoomForm
@@ -736,5 +753,51 @@ namespace Client.Forms
         {
 
         }
+        // BOT AI HANDLERS
+
+        private void SetupBotDifficultyMenu()
+        {
+            _botDifficultyMenu = new ContextMenuStrip();
+            _botDifficultyMenu.Items.Add("Easy", null, BotDifficultyMenuItem_Click).Tag = "Easy";
+            _botDifficultyMenu.Items.Add("Medium", null, BotDifficultyMenuItem_Click).Tag = "Medium";
+            _botDifficultyMenu.Items.Add("Hard", null, BotDifficultyMenuItem_Click).Tag = "Hard";
+        }
+
+        private void btnPlayBot_Click(object? sender, EventArgs e)
+        {
+            // Gửi yêu cầu đánh với Bot
+            var req = new CaroGame.Protocol.Messages.RequestMessage
+            {
+                SenderId = _playerName,
+                Action = "PlayWithBot",
+                Data = _selectedBotDifficulty
+            };
+
+            _ = _clientConnection.SendMessageAsync(req);
+        }
+
+        private void btnBotDropdown_Click(object? sender, EventArgs e)
+        {
+            if (_botDifficultyMenu != null && btnPlayBot != null)
+            {
+                // Hiển thị menu ngay bên dưới nút
+                _botDifficultyMenu.Show(btnPlayBot, new Point(0, btnPlayBot.Height));
+            }
+        }
+
+        private void BotDifficultyMenuItem_Click(object? sender, EventArgs e)
+        {
+            if (sender is ToolStripMenuItem item && item.Tag is string difficulty)
+            {
+                _selectedBotDifficulty = difficulty;
+
+                if (btnPlayBot != null)
+                {
+                    btnPlayBot.Text = $"ĐẤU VỚI MÁY {difficulty}";
+                }
+            }
+        }
     }
 }
+
+

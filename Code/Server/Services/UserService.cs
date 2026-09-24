@@ -1,3 +1,4 @@
+﻿using Server.Utils;
 
 using System;
 using System.Data;
@@ -20,7 +21,7 @@ public class UserService
             DataTable existing = _userRepo.GetUserByUsername(username);
             if (existing != null && existing.Rows.Count > 0)
             {
-                Console.WriteLine($"[UserService]: Tên đăng nhập '{username}' đã tồn tại.");
+                Logger.Warn($"[UserService]: Tên đăng nhập '{username}' đã tồn tại.");
                 return false;
             }
 
@@ -29,7 +30,7 @@ public class UserService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[UserService Exception - Register]: {ex.Message}");
+            Logger.Error("[UserService Exception - Register]", ex);
             return false;
         }
     }
@@ -61,7 +62,7 @@ public class UserService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[UserService Exception - Login]: {ex.Message}");
+            Logger.Error("[UserService Exception - Login]", ex);
             return false;
         }
     }
@@ -80,7 +81,7 @@ public class UserService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[UserService Exception - GetUserById]: {ex.Message}");
+            Logger.Error("[UserService Exception - GetUserById]", ex);
             return null;
         }
     }
@@ -96,7 +97,7 @@ public class UserService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[UserService Exception - GetAllUsers]: {ex.Message}");
+            Logger.Error("[UserService Exception - GetAllUsers]", ex);
             return new DataTable();
         }
     }
@@ -117,7 +118,10 @@ public class UserService
                     return Convert.ToInt32(dt.Rows[0]["UserId"]);
             }
         }
-        catch { }
+        catch (Exception ex)
+        {
+            Logger.Error("[UserService Exception - GetUserId]", ex);
+        }
         return 0;
     }
 
@@ -144,7 +148,7 @@ public class UserService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[UserService Exception - GetUserProfile]: {ex.Message}");
+            Logger.Error("[UserService Exception - GetUserProfile]", ex);
         }
         return null;
     }

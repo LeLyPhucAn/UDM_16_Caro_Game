@@ -1,3 +1,4 @@
+﻿using Server.Utils;
 using System;
 using System.Text;
 using Server.Config;
@@ -25,5 +26,5 @@ try
 }
 catch (Exception ex)
 {
-    Console.WriteLine(ex.Message);
+    Logger.Error("Lỗi hệ thống khi chạy server", ex);
 }

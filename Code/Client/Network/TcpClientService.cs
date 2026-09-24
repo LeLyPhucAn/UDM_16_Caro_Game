@@ -1,4 +1,4 @@
-using CaroGame.Protocol.Messages;
+﻿using CaroGame.Protocol.Messages;
 using System;
 using System.IO;
 using System.Net.Sockets;
@@ -130,11 +130,14 @@ namespace Client.Network
                     OnMessageReceived?.Invoke(message);
                 }
             }
-            catch (OperationCanceledException) { }
+            catch (OperationCanceledException)
+            {
+                // Hủy nhận tin khi đóng kết nối
+            }
             catch (Exception ex)
             {
                 HandleError(ex);
-            }                                                                                                                                                                                                                                                                                       
+            }
             finally
             {
                 Disconnect();
@@ -147,3 +150,4 @@ namespace Client.Network
         }
     }
 }
+

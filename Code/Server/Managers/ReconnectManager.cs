@@ -23,8 +23,8 @@ public class ReconnectManager
     /// <summary>
     /// Thoi gian cho reconnect lan dau (60 giay).
     /// </summary>
-    public static readonly int InitialGraceSeconds = 60;
-    
+    public static readonly int InitialGraceSeconds = 90;
+
     /// <summary>
     /// Thoi gian cho them khi doi thu dong y (120 giay).
     /// </summary>

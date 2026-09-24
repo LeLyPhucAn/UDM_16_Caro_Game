@@ -1,4 +1,4 @@
-using CaroGame.Protocol;
+﻿using CaroGame.Protocol;
 using CaroGame.Protocol.Messages; // Namespace chứa ResponseMessage và RoomStateDto
 using System;
 using System.Drawing;
@@ -21,7 +21,7 @@ namespace Client.Forms
         private bool _isReady = false;
         private int _boardSize = 15; // Co dinh 15x15
         private string? _challengeTarget;
-        
+
         private Button btnSwapSymbol = null!;
         private Label lblSpectatorsCount = null!;
 
@@ -30,6 +30,7 @@ namespace Client.Forms
         public RoomForm(ClientConnection connection, string roomName, string playerName, bool isHost, string? challengeTarget = null, bool isSpectator = false, string roomId = "")
         {
             InitializeComponent();
+            var _ = this.Handle; // Bắt buộc tạo Window Handle ngay lập tức để InvokeRequired hoạt động an toàn
 
             _clientConnection = connection;
             _roomName = roomName;
@@ -128,11 +129,8 @@ namespace Client.Forms
             var req = new RequestMessage { Action = "SwapSymbol", Data = "", SenderId = "" };
             _ = _clientConnection.SendMessageAsync(req);
         }
-
-        // ==========================================
         // NHẬN DỮ LIỆU TỪ SERVER VÀ VẼ LẠI UI
-        // ==========================================
-        private void HandleRoomMessage(BaseMessage message)
+        public void HandleRoomMessage(BaseMessage message)
         {
             if (this.InvokeRequired)
             {
@@ -148,7 +146,18 @@ namespace Client.Forms
                     _clientConnection.OnMessageReceived -= HandleRoomMessage;
 
                     GameForm gameForm = new GameForm(_clientConnection, this._roomId, _roomName, _playerName, _isHost, _boardSize, _isSpectator);
-                    gameForm.FormClosed += (s, args) => this.Close();
+                    gameForm.FormClosed += (s, args) =>
+                    {
+                        if (gameForm.DialogResult == DialogResult.Retry)
+                        {
+                            _clientConnection.OnMessageReceived += HandleRoomMessage;
+                            this.Show();
+                        }
+                        else
+                        {
+                            this.Close();
+                        }
+                    };
                     gameForm.InitGameState(gameState);
 
                     this.Hide();
@@ -223,7 +232,7 @@ namespace Client.Forms
                             lblPlayerO_Status.Text = "Đang chờ khách...";
                             lblPlayerO_Status.ForeColor = Color.Gray;
                         }
-                        
+
                         if (lblSpectatorsCount != null)
                         {
                             lblSpectatorsCount.Text = "Khán giả đang xem: " + state.SpectatorCount;
@@ -244,7 +253,27 @@ namespace Client.Forms
                     _clientConnection.OnMessageReceived -= HandleRoomMessage;
 
                     GameForm gameForm = new GameForm(_clientConnection, this._roomId, _roomName, _playerName, _isHost, _boardSize, _isSpectator);
-                    gameForm.FormClosed += (s, args) => this.Close();
+                    gameForm.FormClosed += (s, args) =>
+                    {
+                        if (gameForm.DialogResult == DialogResult.Retry)
+                        {
+                            _clientConnection.OnMessageReceived += HandleRoomMessage;
+
+                            // Đảm bảo nút Sẵn sàng / Bắt đầu được reset đúng trạng thái
+                            if (!_isHost && !_isSpectator)
+                            {
+                                btnStartGame.Text = "SẴN SÀNG";
+                                btnStartGame.BackColor = Color.Orange;
+                                btnStartGame.Enabled = true;
+                            }
+
+                            this.Show();
+                        }
+                        else
+                        {
+                            this.Close();
+                        }
+                    };
 
                     this.Hide();
                     gameForm.Show();
@@ -272,9 +301,13 @@ namespace Client.Forms
                     RoomId = _roomId // Dùng RoomId đúng chuẩn
                 };
 
-                _ = Task.Run(async () => {
+                _ = Task.Run(async () =>
+                {
                     try { await _clientConnection.SendMessageAsync(request); }
-                    catch { /* Bỏ qua nếu lỗi mạng */ }
+                    catch (Exception)
+                    {
+                        // Bỏ qua ngoại lệ đường truyền khi đang chuyển trạng thái
+                    }
                 });
             }
             else
@@ -302,10 +335,14 @@ namespace Client.Forms
                     RoomId = _roomId,
                     IsReady = _isReady
                 };
-                
-                _ = Task.Run(async () => {
+
+                _ = Task.Run(async () =>
+                {
                     try { await _clientConnection.SendMessageAsync(request); }
-                    catch { /* Bỏ qua nếu lỗi mạng */ }
+                    catch (Exception)
+                    {
+                        // Bỏ qua ngoại lệ đường truyền khi đang chuyển trạng thái
+                    }
                 });
             }
         }

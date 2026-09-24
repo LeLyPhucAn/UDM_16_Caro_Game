@@ -101,8 +101,6 @@ namespace CaroGame.Protocol.Network
                 return false;
             }
         }
-
-        // ===================== Rà soát Header =====================
         /// <summary>Kiểm tra data có đủ byte để đọc Header (Type + Length) hay không.</summary>
         private static void ValidateHeader(byte[] data)
         {
@@ -123,8 +121,6 @@ namespace CaroGame.Protocol.Network
                 BodyLength = BitConverter.ToInt32(data, NetworkMessage.TYPE_SIZE)
             };
         }
-
-        // ===================== Kiểm tra MessageType =====================
         /// <summary>Kiểm tra rawType đọc từ Header có tồn tại trong enum MessageType hay không.</summary>
         private static void ValidateMessageType(int rawType)
         {
@@ -135,8 +131,6 @@ namespace CaroGame.Protocol.Network
                     "MessageType không hợp lệ hoặc không được hỗ trợ: " + rawType);
             }
         }
-
-        // ===================== Rà soát Payload =====================
         /// <summary>
         /// Kiểm tra độ dài Body hợp lệ: không âm, không rỗng, không vượt giới
         /// hạn, và data có đủ byte tương ứng.
@@ -177,8 +171,6 @@ namespace CaroGame.Protocol.Network
             Buffer.BlockCopy(data, NetworkMessage.HEADER_SIZE, body, 0, bodyLength);
             return body;
         }
-
-        // ===================== Kiểm tra JSON =====================
         /// <summary>Kiểm tra Body có đúng cú pháp JSON hay không.</summary>
         private static void ValidateJson(string json, MessageType type)
         {
@@ -189,8 +181,6 @@ namespace CaroGame.Protocol.Network
                     "Payload không phải JSON hợp lệ cho message loại " + type + ".");
             }
         }
-
-        // ===================== Kiểm tra MessageId =====================
         /// <summary>
         /// Kiểm tra JSON có field MessageId hợp lệ hay không. Phải kiểm tra
         /// trên chuỗi JSON thô (trước khi Deserialize) vì BaseMessage luôn tự
@@ -205,8 +195,6 @@ namespace CaroGame.Protocol.Network
                     "Message loại " + type + " thiếu MessageId hoặc MessageId rỗng.");
             }
         }
-
-        // ===================== Deserialize Packet =====================
         /// <summary>Chuyển JSON thành đúng class con tương ứng với MessageType.</summary>
         private static BaseMessage DeserializePacket(string json, MessageType type)
         {
@@ -233,3 +221,4 @@ namespace CaroGame.Protocol.Network
         }
     }
 }
+

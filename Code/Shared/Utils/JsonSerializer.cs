@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using CaroGame.Protocol.Messages;
 using CaroGame.Protocol.Messages.Room;
 using CaroGame.Protocol.Messages.Game;
@@ -84,7 +84,7 @@ namespace CaroGame.Protocol.Utils
             }
         }
 
-        public static BaseMessage Deserialize(string json, MessageType type)
+        public static BaseMessage? Deserialize(string json, MessageType type)
         {
             if (string.IsNullOrEmpty(json))
             {

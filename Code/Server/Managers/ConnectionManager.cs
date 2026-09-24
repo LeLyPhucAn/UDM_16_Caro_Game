@@ -147,7 +147,7 @@ public class ConnectionManager
     {
         List<string> playerNames = new List<string>();
 
-        foreach (var session in _clients.Values) 
+        foreach (var session in _clients.Values)
         {
             if (!string.IsNullOrWhiteSpace(session.PlayerName))
             {

@@ -22,11 +22,8 @@ namespace Server.Managers
 
         private bool disposed;
 
-        private const int DefaultTurnTimeSeconds = 30;
-
-        // =========================================================
+        private const int DefaultTurnTimeSeconds = 60;
         // EVENT: Thông báo ra ngoài khi một trận hết giờ
-        // =========================================================
         public event Action<Match, string, string>? OnMatchTimeout;
 
         public MatchManager()
@@ -34,10 +31,7 @@ namespace Server.Managers
             ruleService = new GameRuleService();
             timerService = new GameTimerService(TimeSpan.FromSeconds(DefaultTurnTimeSeconds), HandleTimeout);
         }
-
-        // =========================================================
         // CREATE MATCH
-        // =========================================================
 
         public Match CreateMatch(string matchId, string roomId = "")
         {
@@ -85,10 +79,7 @@ namespace Server.Managers
                 return match;
             }
         }
-
-        // =========================================================
         // CANCEL MATCH (hủy trận khi có người ngắt kết nối)
-        // =========================================================
 
         /// <summary>
         /// Hủy trận đấu đang diễn ra (gọi khi có người disconnect).
@@ -102,10 +93,7 @@ namespace Server.Managers
                 type: Shared.Enums.GameResultType.Abandoned,
                 reason: reason);
         }
-
-        // =========================================================
         // GET MATCH
-        // =========================================================
 
         public Match? GetMatch(string matchId)
         {
@@ -121,10 +109,7 @@ namespace Server.Managers
                 return match;
             }
         }
-
-        // =========================================================
         // ADD PLAYER
-        // =========================================================
 
         public bool AddPlayer(
             string matchId,
@@ -174,10 +159,7 @@ namespace Server.Managers
                 return true;
             }
         }
-
-        // =========================================================
         // REMOVE PLAYER
-        // =========================================================
 
         public bool RemovePlayer(
             string matchId,
@@ -235,10 +217,7 @@ namespace Server.Managers
                 return true;
             }
         }
-
-        // =========================================================
         // START MATCH
-        // =========================================================
 
         public bool StartMatch(string matchId)
         {
@@ -272,10 +251,7 @@ namespace Server.Managers
                 return true;
             }
         }
-
-        // =========================================================
         // TRY MAKE MOVE
-        // =========================================================
 
         /// <summary>
         /// Overload tiện lợi: nhận playerId và tọa độ riêng biệt thay vì Move object.
@@ -363,10 +339,7 @@ namespace Server.Managers
 
                 // Tắt timer của lượt cũ
                 timerService.Stop(matchId);
-
-                // =================================================
                 // WIN
-                // =================================================
 
                 if (result.IsWin)
                 {
@@ -392,10 +365,7 @@ namespace Server.Managers
 
                     return result;
                 }
-
-                // =================================================
                 // DRAW
-                // =================================================
 
                 if (result.IsDraw)
                 {
@@ -411,10 +381,7 @@ namespace Server.Managers
 
                     return result;
                 }
-
-                // =================================================
                 // CONTINUE MATCH
-                // =================================================
 
                 match.ChangeTurn();
 
@@ -424,10 +391,7 @@ namespace Server.Managers
                 return result;
             }
         }
-
-        // =========================================================
         // TIMEOUT
-        // =========================================================
 
         private void HandleTimeout(
             string matchId)
@@ -486,10 +450,7 @@ namespace Server.Managers
                     OnMatchTimeout?.Invoke(capMatch, capWinnerId, capWinnerName));
             }
         }
-
-        // =========================================================
         // GET GAME RESULT
-        // =========================================================
 
         public Shared.Models.GameResult? GetGameResult(
             string matchId)
@@ -506,10 +467,7 @@ namespace Server.Managers
                 return result;
             }
         }
-
-        // =========================================================
         // TIMER
-        // =========================================================
 
         public int GetRemainingSeconds(
             string matchId)
@@ -561,10 +519,7 @@ namespace Server.Managers
                 timerService.StartOrReset(matchId);
             }
         }
-
-        // =========================================================
         // END MATCH
-        // =========================================================
 
         public bool EndMatch(
             string matchId,
@@ -604,10 +559,7 @@ namespace Server.Managers
                 return true;
             }
         }
-
-        // =========================================================
         // RESET MATCH
-        // =========================================================
 
         public bool ResetMatch(string matchId)
         {
@@ -632,10 +584,7 @@ namespace Server.Managers
                 return true;
             }
         }
-
-        // =========================================================
         // REMOVE MATCH
-        // =========================================================
 
         public bool RemoveMatch(string matchId)
         {
@@ -651,10 +600,7 @@ namespace Server.Managers
                 return matches.Remove(matchId);
             }
         }
-
-        // =========================================================
         // FIND PLAYER MATCH
-        // =========================================================
 
         public Match? FindPlayerMatch(
             string playerId)
@@ -671,10 +617,7 @@ namespace Server.Managers
                             playerId));
             }
         }
-
-        // =========================================================
         // FIND ROOM MATCH
-        // =========================================================
 
         public Match? FindRoomMatch(
             string roomId)
@@ -699,10 +642,7 @@ namespace Server.Managers
                         roomId,
                         StringComparison.OrdinalIgnoreCase));
         }
-
-        // =========================================================
         // MATCH EXISTS
-        // =========================================================
 
         public bool MatchExists(
             string matchId)
@@ -716,10 +656,7 @@ namespace Server.Managers
                     matchId);
             }
         }
-
-        // =========================================================
         // GET ALL MATCHES
-        // =========================================================
 
         public List<Match> GetAllMatches()
         {
@@ -728,10 +665,7 @@ namespace Server.Managers
                 return matches.Values.ToList();
             }
         }
-
-        // =========================================================
         // GET PLAYING MATCHES
-        // =========================================================
 
         public List<Match> GetPlayingMatches()
         {
@@ -743,10 +677,7 @@ namespace Server.Managers
                     .ToList();
             }
         }
-
-        // =========================================================
         // GET MATCH COUNT
-        // =========================================================
 
         public int GetMatchCount()
         {
@@ -755,10 +686,7 @@ namespace Server.Managers
                 return matches.Count;
             }
         }
-
-        // =========================================================
         // HELPERS
-        // =========================================================
 
         private static bool IsPlayerInMatch(
             Match match,
@@ -809,10 +737,7 @@ namespace Server.Managers
                 Message = message
             };
         }
-
-        // =========================================================
         // DISPOSE
-        // =========================================================
 
         public void Dispose()
         {

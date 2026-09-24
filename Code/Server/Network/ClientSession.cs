@@ -1,3 +1,4 @@
+﻿using Server.Utils;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -23,7 +24,7 @@ public class ClientSession
     public IPEndPoint? RemoteEndPoint { get; }
 
     public DateTime ConnectedTime { get; }
- 
+
     public bool IsConnected => Client.Connected;
 
     public ClientSession(TcpClient client)
@@ -51,6 +52,9 @@ public class ClientSession
             Stream?.Close();
             Client?.Close();
         }
-        catch { }
+        catch (Exception ex)
+        {
+            Logger.Debug($"Lỗi giải phóng kết nối session {SessionId}: {ex.Message}");
+        }
     }
 }

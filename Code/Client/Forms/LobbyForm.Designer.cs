@@ -29,6 +29,8 @@ namespace Client.Forms
             playerListControl1 = new Client.Controls.PlayerListControl();
             btnJoinRoom = new Button();
             btnCreateRoom = new Button();
+            btnPlayBot = new Button();
+            btnBotDropdown = new Button();
             lblStats = new Label();
             lblActionTitle = new Label();
             pnlMain = new Panel();
@@ -121,6 +123,8 @@ namespace Client.Forms
             pnlRightBar.Controls.Add(playerListControl1);
             pnlRightBar.Controls.Add(btnJoinRoom);
             pnlRightBar.Controls.Add(btnCreateRoom);
+            pnlRightBar.Controls.Add(btnBotDropdown);
+            pnlRightBar.Controls.Add(btnPlayBot);
             pnlRightBar.Controls.Add(lblStats);
             pnlRightBar.Controls.Add(lblActionTitle);
             pnlRightBar.Dock = DockStyle.Right;
@@ -147,9 +151,9 @@ namespace Client.Forms
             btnJoinRoom.FlatAppearance.BorderColor = Color.Gray;
             btnJoinRoom.FlatStyle = FlatStyle.Flat;
             btnJoinRoom.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
-            btnJoinRoom.Location = new Point(25, 562);
+            btnJoinRoom.Location = new Point(25, 541);
             btnJoinRoom.Name = "btnJoinRoom";
-            btnJoinRoom.Size = new Size(250, 50);
+            btnJoinRoom.Size = new Size(250, 40);
             btnJoinRoom.TabIndex = 3;
             btnJoinRoom.Text = "THAM GIA PHÒNG";
             btnJoinRoom.UseVisualStyleBackColor = false;
@@ -161,12 +165,42 @@ namespace Client.Forms
             btnCreateRoom.FlatAppearance.BorderSize = 0;
             btnCreateRoom.FlatStyle = FlatStyle.Flat;
             btnCreateRoom.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
-            btnCreateRoom.Location = new Point(25, 506);
+            btnCreateRoom.Location = new Point(25, 495);
             btnCreateRoom.Name = "btnCreateRoom";
-            btnCreateRoom.Size = new Size(250, 50);
+            btnCreateRoom.Size = new Size(250, 40);
             btnCreateRoom.TabIndex = 2;
             btnCreateRoom.Text = "TẠO PHÒNG MỚI";
             btnCreateRoom.UseVisualStyleBackColor = false;
+            // 
+            // btnPlayBot
+            // 
+            btnPlayBot.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            btnPlayBot.BackColor = Color.FromArgb(180, 90, 20);
+            btnPlayBot.FlatAppearance.BorderSize = 0;
+            btnPlayBot.FlatStyle = FlatStyle.Flat;
+            btnPlayBot.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+            btnPlayBot.ForeColor = Color.White;
+            btnPlayBot.Location = new Point(25, 587);
+            btnPlayBot.Name = "btnPlayBot";
+            btnPlayBot.Size = new Size(210, 40);
+            btnPlayBot.TabIndex = 4;
+            btnPlayBot.Text = "ĐẤU VỚI MÁY Easy";
+            btnPlayBot.UseVisualStyleBackColor = false;
+            // 
+            // btnBotDropdown
+            // 
+            btnBotDropdown.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            btnBotDropdown.BackColor = Color.FromArgb(150, 70, 10);
+            btnBotDropdown.FlatAppearance.BorderSize = 0;
+            btnBotDropdown.FlatStyle = FlatStyle.Flat;
+            btnBotDropdown.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            btnBotDropdown.ForeColor = Color.White;
+            btnBotDropdown.Location = new Point(235, 587);
+            btnBotDropdown.Name = "btnBotDropdown";
+            btnBotDropdown.Size = new Size(40, 40);
+            btnBotDropdown.TabIndex = 5;
+            btnBotDropdown.Text = "▼";
+            btnBotDropdown.UseVisualStyleBackColor = false;
             // 
             // lblStats
             // 
@@ -323,6 +357,8 @@ namespace Client.Forms
         private System.Windows.Forms.Label lblStats;
         private System.Windows.Forms.Button btnCreateRoom;
         private System.Windows.Forms.Button btnJoinRoom;
+        private System.Windows.Forms.Button btnPlayBot;
+        private System.Windows.Forms.Button btnBotDropdown;
 
         private System.Windows.Forms.Panel pnlMain;
         private System.Windows.Forms.Label lblListTitle;

@@ -14,7 +14,7 @@ namespace Client.Controls
         public PlayerListControl()
         {
             InitializeComponent();
-            
+
             _contextMenu = new ContextMenuStrip();
             var item = _contextMenu.Items.Add("Thách Đấu");
             item.Click += Challenge_Click;

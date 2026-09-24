@@ -13,10 +13,10 @@ namespace Client.Controls
         private int _cellSize = 40;
         private string[,] _grid;
         private List<Point> _winningCells = new List<Point>();
-        
+
         private Point _hoveredCell = new Point(-1, -1);
         private bool _isMyTurn = true; // Để biết có được hover highlight không
-        
+
         // Cấu hình màu sắc
         private readonly Color _lineColor = Color.FromArgb(60, 60, 60);
         private readonly Color _bgColor = Color.FromArgb(34, 36, 40);
@@ -25,7 +25,7 @@ namespace Client.Controls
         private readonly Color _oColor = Color.FromArgb(217, 83, 79);
         private readonly Color _winBgColor = Color.FromArgb(60, 241, 196, 15); // Vàng trong suốt
         private readonly Color _winLineColor = Color.FromArgb(217, 83, 79); // Đỏ kẻ xuyên qua
-        
+
         private Font _markFont;
 
         public event Action<int, int>? OnCellClicked;
@@ -37,7 +37,7 @@ namespace Client.Controls
             this.Cursor = Cursors.Hand;
             _grid = new string[15, 15]; // Default
             _markFont = new Font("Segoe UI", _cellSize / 2.5f, FontStyle.Bold);
-            
+
             this.MouseMove += BoardControl_MouseMove;
             this.MouseLeave += BoardControl_MouseLeave;
             this.MouseClick += BoardControl_MouseClick;
@@ -47,15 +47,15 @@ namespace Client.Controls
         {
             _rows = boardSize;
             _cols = boardSize;
-            
+
             _cellSize = Math.Min(40, this.Parent != null ? Math.Min(this.Parent.Width, this.Parent.Height) / boardSize : 600 / boardSize);
             this.Size = new Size(_cols * _cellSize, _rows * _cellSize);
-            
+
             _grid = new string[_rows, _cols];
             _winningCells.Clear();
             _markFont?.Dispose();
             _markFont = new Font("Segoe UI", _cellSize / 2.5f, FontStyle.Bold);
-            
+
             this.Invalidate(); // Yêu cầu vẽ lại
         }
 
@@ -67,7 +67,7 @@ namespace Client.Controls
         private void BoardControl_MouseMove(object? sender, MouseEventArgs e)
         {
             if (!_isMyTurn) return;
-            
+
             int c = e.X / _cellSize;
             int r = e.Y / _cellSize;
 
@@ -130,10 +130,7 @@ namespace Client.Controls
             _winningCells.AddRange(winningCells);
             this.Invalidate();
         }
-
-        // ============================================
         // HÀM VẼ GIAO DIỆN (GDI+) CHÍNH
-        // ============================================
         protected override void OnPaint(PaintEventArgs e)
         {
             base.OnPaint(e);

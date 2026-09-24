@@ -210,7 +210,7 @@ namespace Client.Forms
             lblTimerValue.Padding = new Padding(5);
             lblTimerValue.Size = new Size(54, 38);
             lblTimerValue.TabIndex = 8;
-            lblTimerValue.Text = "30s";
+            lblTimerValue.Text = "60s";
             // 
             // lblTimerTitle
             // 

@@ -15,9 +15,7 @@ namespace Shared.Models
     /// </summary>
     public class Match
     {
-        // =========================
         // THÔNG TIN TRẬN ĐẤU
-        // =========================
         public string MatchId { get; set; }
         public string RoomId { get; set; }
 
@@ -25,33 +23,24 @@ namespace Shared.Models
         /// ID của trận đấu lưu trong Database
         /// </summary>
         public int DbMatchId { get; set; }
-
-        // =========================
         // NGƯỜI CHƠI
-        // =========================
         public Player? PlayerX { get; set; }
         public Player? PlayerO { get; set; }
-
-        // =========================
         // BÀN CỜ & TRẠNG THÁI
-        // =========================
         public Board Board { get; set; }
         public CellState CurrentTurn { get; set; }
         public MatchState State { get; set; }
         public string? WinnerId { get; set; }
         public int MoveCount { get; set; }
-
-        // =========================
+        // REMATCH
+        public bool PlayerXWantsRematch { get; set; }
+        public bool PlayerOWantsRematch { get; set; }
         // RECONNECT
-        // =========================
         /// <summary>Session ID của Player đang mất kết nối (khi State = Suspended)</summary>
         public string? DisconnectedPlayerId { get; set; }
         /// <summary>Thời điểm trận bị tạm dừng do disconnect</summary>
         public DateTime? SuspendedAt { get; set; }
-
-        // =========================
         // THỜI GIAN
-        // =========================
         public DateTime CreatedAt { get; set; }
         public DateTime? StartedAt { get; set; }
         public DateTime? FinishedAt { get; set; }
@@ -81,10 +70,7 @@ namespace Shared.Models
             MatchId = matchId ?? string.Empty;
             RoomId = roomId ?? string.Empty;
         }
-
-        // =========================
         // PLAYER HELPERS
-        // =========================
 
         /// <summary>
         /// Match đã đủ 2 Player chưa.
@@ -114,10 +100,7 @@ namespace Shared.Models
         {
             return GetCurrentPlayer()?.Id.ToString();
         }
-
-        // =========================
         // MATCH STATE CONTROL
-        // =========================
 
         /// <summary>
         /// Bắt đầu Match.
@@ -201,10 +184,7 @@ namespace Shared.Models
         {
             End(winnerId);
         }
-
-        // =========================
         // TURN & MOVE CONTROL
-        // =========================
 
         /// <summary>
         /// Chuyển lượt.
@@ -235,6 +215,15 @@ namespace Shared.Models
             MoveCount = 0;
             StartedAt = null;
             FinishedAt = null;
+            PlayerXWantsRematch = false;
+            PlayerOWantsRematch = false;
+        }
+
+        public void SwapPlayers()
+        {
+            var temp = PlayerX;
+            PlayerX = PlayerO;
+            PlayerO = temp;
         }
 
         public void ResetMatch()

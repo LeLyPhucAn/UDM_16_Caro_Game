@@ -16,10 +16,7 @@ namespace Client.Forms
             this.BackColor = Color.FromArgb(28, 30, 34);
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
-
-            // ======================================================
             // THỐNG KÊ KẾT QUẢ
-            // ======================================================
             int wins = 0, draws = 0, losses = 0;
             if (matches != null)
             {
@@ -34,10 +31,7 @@ namespace Client.Forms
                         losses++;
                 }
             }
-
-            // ======================================================
             // TIÊU ĐỀ & THÔNG TIN NGƯỜI CHƠI (THEO MẪU THIẾT KẾ)
-            // ======================================================
             var lblTitle = new Label
             {
                 Text = "LỊCH SỬ THI ĐẤU",
@@ -55,11 +49,8 @@ namespace Client.Forms
                 AutoSize = true,
                 Location = new Point(23, 50)
             };
-
-            // ======================================================
             // BẢNG LỊCH SỬ (5 CỘT CHUẨN)
             // STT | THỜI GIAN | THỜI LƯỢNG | KẾT QUẢ | GHI CHÚ
-            // ======================================================
             var lstHistory = new ListView
             {
                 View = View.Details,
@@ -149,10 +140,7 @@ namespace Client.Forms
                 emptyItem.SubItems.Add("");
                 lstHistory.Items.Add(emptyItem);
             }
-
-            // ======================================================
             // NÚT ĐÓNG
-            // ======================================================
             var btnClose = new Button
             {
                 Text = "ĐÓNG",
@@ -174,3 +162,4 @@ namespace Client.Forms
         }
     }
 }
+

@@ -1,3 +1,4 @@
+﻿using Server.Utils;
 using System;
 using System.Data;
 using Microsoft.Data.SqlClient;
@@ -26,7 +27,7 @@ public class HistoryRepository
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[HistoryRepository Error - GetMatchHistoryByUserId]: {ex.Message}");
+            Logger.Error("[HistoryRepository Error - GetMatchHistoryByUserId]", ex);
             return new DataTable();
         }
     }
