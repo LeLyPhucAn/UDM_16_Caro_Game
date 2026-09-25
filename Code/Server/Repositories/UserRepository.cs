@@ -21,7 +21,7 @@ public class UserRepository
         return DatabaseHelper.ExecuteQuery(query, parameters);
     }
 
-    // BỔ SUNG 1: Lấy thông tin User bằng UserId
+    // Lấy thông tin User theo UserId
     public DataTable GetUserById(int userId)
     {
         string query = "SELECT * FROM Users WHERE Id = @Id";
@@ -51,35 +51,23 @@ public class UserRepository
         return DatabaseHelper.ExecuteNonQuery(query, parameters);
     }
 
-    // BỔ SUNG 2: Cập nhật WinCount / LossCount khi trận đấu kết thúc (Chạy chung Transaction với MatchService)
-    public bool UpdateUserStats(int userId, bool isWinner, SqlConnection conn, SqlTransaction trans)
-    {
-        // Thay tên cột WinCount, LossCount hoặc Score theo đúng tên cột trong CSDL của bạn
-        string query = isWinner 
-            ? "UPDATE Users SET Wins = ISNULL(Wins, 0) + 1 WHERE Id = @Id"
-            : "UPDATE Users SET Losses = ISNULL(Losses, 0) + 1 WHERE Id = @Id";
-
-        using (var cmd = new SqlCommand(query, conn, trans))
-        {
-            cmd.Parameters.AddWithValue("@Id", userId);
-            return cmd.ExecuteNonQuery() > 0;
-        }
-    }
-
-    // BỔ SUNG 3: Overload đơn giản (không cần Transaction ngoài) - dùng DatabaseHelper
+    // Cập nhật số trận thắng, thua, hòa và điểm số của người chơi
     public bool UpdateUserStats(int userId, bool isWinner, bool isDraw = false)
     {
         string query;
         if (isDraw)
         {
-            query = "UPDATE Users SET Draws = ISNULL(Draws, 0) + 1 WHERE Id = @Id";
+            // Hòa: cộng 1 điểm
+            query = "UPDATE Users SET Draws = ISNULL(Draws, 0) + 1, Score = ISNULL(Score, 0) + 1 WHERE Id = @Id";
         }
         else if (isWinner)
         {
-            query = "UPDATE Users SET Wins = ISNULL(Wins, 0) + 1 WHERE Id = @Id";
+            // Thắng: cộng 3 điểm
+            query = "UPDATE Users SET Wins = ISNULL(Wins, 0) + 1, Score = ISNULL(Score, 0) + 3 WHERE Id = @Id";
         }
         else
         {
+            // Thua: giữ nguyên điểm số, tăng số trận thua
             query = "UPDATE Users SET Losses = ISNULL(Losses, 0) + 1 WHERE Id = @Id";
         }
 

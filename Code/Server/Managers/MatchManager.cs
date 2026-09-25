@@ -13,9 +13,7 @@ namespace Server.Managers
     public sealed class MatchManager : IDisposable
     {
         private readonly Dictionary<string, Match> matches = new();
-
-        // GameResult chính thức dùng Shared.Enums.GameResultType
-        private readonly Dictionary<string, Shared.Models.GameResult> gameResults = new();
+        private readonly Dictionary<string, GameResult> gameResults = new();
 
         private readonly GameRuleService ruleService;
         private readonly GameTimerService timerService;
@@ -24,70 +22,29 @@ namespace Server.Managers
 
         private bool disposed;
 
-        private const int DefaultTurnTimeSeconds = 30;
-
-        // =========================================================
+        private const int DefaultTurnTimeSeconds = 60;
         // EVENT: Thông báo ra ngoài khi một trận hết giờ
-        // =========================================================
-        /// <summary>
-        /// Được kích hoạt khi người chơi hết giờ.
-        /// Args: Match, winnerId (string), winnerName (string)
-        /// </summary>
         public event Action<Match, string, string>? OnMatchTimeout;
 
         public MatchManager()
         {
             ruleService = new GameRuleService();
-
-            // GameTimerService yêu cầu TimeSpan
-            timerService = new GameTimerService(
-                TimeSpan.FromSeconds(DefaultTurnTimeSeconds),
-                HandleTimeout);
+            timerService = new GameTimerService(TimeSpan.FromSeconds(DefaultTurnTimeSeconds), HandleTimeout);
         }
-
-        // =========================================================
         // CREATE MATCH
-        // =========================================================
 
-        public Match CreateMatch()
-        {
-            string matchId = Guid.NewGuid().ToString();
-
-            return CreateMatch(matchId, string.Empty);
-        }
-
-        public Match CreateMatch(string matchId)
-        {
-            return CreateMatch(matchId, string.Empty);
-        }
-
-        public Match CreateMatch(
-            string matchId,
-            string roomId)
+        public Match CreateMatch(string matchId, string roomId = "")
         {
             if (string.IsNullOrWhiteSpace(matchId))
-            {
-                throw new ArgumentException(
-                    "Match ID cannot be empty.",
-                    nameof(matchId));
-            }
-
-            roomId ??= string.Empty;
+                throw new ArgumentException("Match ID cannot be empty.", nameof(matchId));
 
             lock (syncRoot)
             {
                 if (matches.ContainsKey(matchId))
-                {
-                    throw new InvalidOperationException(
-                        $"Match '{matchId}' already exists.");
-                }
+                    throw new InvalidOperationException($"Match '{matchId}' already exists.");
 
-                Match match = new Match(
-                    matchId,
-                    roomId);
-
+                Match match = new Match(matchId, roomId);
                 matches.Add(matchId, match);
-
                 return match;
             }
         }
@@ -98,7 +55,8 @@ namespace Server.Managers
         public Match? CreateMatch(
             string roomId,
             Player playerX,
-            Player playerO)
+            Player playerO,
+            int boardSize = 15)
         {
             if (string.IsNullOrWhiteSpace(roomId))
                 throw new ArgumentException("Room ID cannot be empty.", nameof(roomId));
@@ -115,15 +73,13 @@ namespace Server.Managers
                 Match match = new Match(roomId, roomId);
                 match.PlayerX = playerX;
                 match.PlayerO = playerO;
+                match.Board = new Board(boardSize, boardSize);
 
                 matches.Add(roomId, match);
                 return match;
             }
         }
-
-        // =========================================================
         // CANCEL MATCH (hủy trận khi có người ngắt kết nối)
-        // =========================================================
 
         /// <summary>
         /// Hủy trận đấu đang diễn ra (gọi khi có người disconnect).
@@ -137,10 +93,7 @@ namespace Server.Managers
                 type: Shared.Enums.GameResultType.Abandoned,
                 reason: reason);
         }
-
-        // =========================================================
         // GET MATCH
-        // =========================================================
 
         public Match? GetMatch(string matchId)
         {
@@ -156,10 +109,7 @@ namespace Server.Managers
                 return match;
             }
         }
-
-        // =========================================================
         // ADD PLAYER
-        // =========================================================
 
         public bool AddPlayer(
             string matchId,
@@ -209,10 +159,7 @@ namespace Server.Managers
                 return true;
             }
         }
-
-        // =========================================================
         // REMOVE PLAYER
-        // =========================================================
 
         public bool RemovePlayer(
             string matchId,
@@ -270,10 +217,7 @@ namespace Server.Managers
                 return true;
             }
         }
-
-        // =========================================================
         // START MATCH
-        // =========================================================
 
         public bool StartMatch(string matchId)
         {
@@ -307,10 +251,7 @@ namespace Server.Managers
                 return true;
             }
         }
-
-        // =========================================================
         // TRY MAKE MOVE
-        // =========================================================
 
         /// <summary>
         /// Overload tiện lợi: nhận playerId và tọa độ riêng biệt thay vì Move object.
@@ -398,10 +339,7 @@ namespace Server.Managers
 
                 // Tắt timer của lượt cũ
                 timerService.Stop(matchId);
-
-                // =================================================
                 // WIN
-                // =================================================
 
                 if (result.IsWin)
                 {
@@ -427,10 +365,7 @@ namespace Server.Managers
 
                     return result;
                 }
-
-                // =================================================
                 // DRAW
-                // =================================================
 
                 if (result.IsDraw)
                 {
@@ -446,10 +381,7 @@ namespace Server.Managers
 
                     return result;
                 }
-
-                // =================================================
                 // CONTINUE MATCH
-                // =================================================
 
                 match.ChangeTurn();
 
@@ -459,23 +391,7 @@ namespace Server.Managers
                 return result;
             }
         }
-
-        // =========================================================
-        // MAKE MOVE
-        // =========================================================
-
-        public MoveResult MakeMove(
-            string matchId,
-            Move move)
-        {
-            return TryMakeMove(
-                matchId,
-                move);
-        }
-
-        // =========================================================
         // TIMEOUT
-        // =========================================================
 
         private void HandleTimeout(
             string matchId)
@@ -534,10 +450,7 @@ namespace Server.Managers
                     OnMatchTimeout?.Invoke(capMatch, capWinnerId, capWinnerName));
             }
         }
-
-        // =========================================================
         // GET GAME RESULT
-        // =========================================================
 
         public Shared.Models.GameResult? GetGameResult(
             string matchId)
@@ -554,10 +467,7 @@ namespace Server.Managers
                 return result;
             }
         }
-
-        // =========================================================
         // TIMER
-        // =========================================================
 
         public int GetRemainingSeconds(
             string matchId)
@@ -609,10 +519,7 @@ namespace Server.Managers
                 timerService.StartOrReset(matchId);
             }
         }
-
-        // =========================================================
         // END MATCH
-        // =========================================================
 
         public bool EndMatch(
             string matchId,
@@ -652,10 +559,7 @@ namespace Server.Managers
                 return true;
             }
         }
-
-        // =========================================================
         // RESET MATCH
-        // =========================================================
 
         public bool ResetMatch(string matchId)
         {
@@ -680,10 +584,7 @@ namespace Server.Managers
                 return true;
             }
         }
-
-        // =========================================================
         // REMOVE MATCH
-        // =========================================================
 
         public bool RemoveMatch(string matchId)
         {
@@ -699,10 +600,7 @@ namespace Server.Managers
                 return matches.Remove(matchId);
             }
         }
-
-        // =========================================================
         // FIND PLAYER MATCH
-        // =========================================================
 
         public Match? FindPlayerMatch(
             string playerId)
@@ -719,10 +617,7 @@ namespace Server.Managers
                             playerId));
             }
         }
-
-        // =========================================================
         // FIND ROOM MATCH
-        // =========================================================
 
         public Match? FindRoomMatch(
             string roomId)
@@ -747,10 +642,7 @@ namespace Server.Managers
                         roomId,
                         StringComparison.OrdinalIgnoreCase));
         }
-
-        // =========================================================
         // MATCH EXISTS
-        // =========================================================
 
         public bool MatchExists(
             string matchId)
@@ -764,10 +656,7 @@ namespace Server.Managers
                     matchId);
             }
         }
-
-        // =========================================================
         // GET ALL MATCHES
-        // =========================================================
 
         public List<Match> GetAllMatches()
         {
@@ -776,10 +665,7 @@ namespace Server.Managers
                 return matches.Values.ToList();
             }
         }
-
-        // =========================================================
         // GET PLAYING MATCHES
-        // =========================================================
 
         public List<Match> GetPlayingMatches()
         {
@@ -791,10 +677,7 @@ namespace Server.Managers
                     .ToList();
             }
         }
-
-        // =========================================================
         // GET MATCH COUNT
-        // =========================================================
 
         public int GetMatchCount()
         {
@@ -803,10 +686,7 @@ namespace Server.Managers
                 return matches.Count;
             }
         }
-
-        // =========================================================
         // HELPERS
-        // =========================================================
 
         private static bool IsPlayerInMatch(
             Match match,
@@ -857,10 +737,7 @@ namespace Server.Managers
                 Message = message
             };
         }
-
-        // =========================================================
         // DISPOSE
-        // =========================================================
 
         public void Dispose()
         {

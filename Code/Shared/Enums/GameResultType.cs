@@ -1,4 +1,4 @@
-﻿namespace Shared.Enums
+namespace Shared.Enums
 {
     /// <summary>
     /// Loại kết quả của một trận Caro.
@@ -23,6 +23,11 @@
         /// <summary>
         /// Trận đấu bị kết thúc bởi Server hoặc người chơi rời trận.
         /// </summary>
-        Abandoned
+        Abandoned,
+
+        /// <summary>
+        /// Người chơi đầu hàng.
+        /// </summary>
+        Surrender
     }
 }

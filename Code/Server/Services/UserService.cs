@@ -1,3 +1,4 @@
+﻿using Server.Utils;
 
 using System;
 using System.Data;
@@ -20,7 +21,7 @@ public class UserService
             DataTable existing = _userRepo.GetUserByUsername(username);
             if (existing != null && existing.Rows.Count > 0)
             {
-                Console.WriteLine($"[UserService]: Tên đăng nhập '{username}' đã tồn tại.");
+                Logger.Warn($"[UserService]: Tên đăng nhập '{username}' đã tồn tại.");
                 return false;
             }
 
@@ -29,7 +30,7 @@ public class UserService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[UserService Exception - Register]: {ex.Message}");
+            Logger.Error("[UserService Exception - Register]", ex);
             return false;
         }
     }
@@ -61,7 +62,7 @@ public class UserService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[UserService Exception - Login]: {ex.Message}");
+            Logger.Error("[UserService Exception - Login]", ex);
             return false;
         }
     }
@@ -80,7 +81,7 @@ public class UserService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[UserService Exception - GetUserById]: {ex.Message}");
+            Logger.Error("[UserService Exception - GetUserById]", ex);
             return null;
         }
     }
@@ -96,9 +97,60 @@ public class UserService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[UserService Exception - GetAllUsers]: {ex.Message}");
+            Logger.Error("[UserService Exception - GetAllUsers]", ex);
             return new DataTable();
         }
+    }
+
+    /// <summary>
+    /// Lấy UserId dựa trên Username
+    /// </summary>
+    public int GetUserId(string username)
+    {
+        try
+        {
+            DataTable dt = _userRepo.GetUserByUsername(username);
+            if (dt != null && dt.Rows.Count > 0)
+            {
+                if (dt.Columns.Contains("Id") && dt.Rows[0]["Id"] != DBNull.Value)
+                    return Convert.ToInt32(dt.Rows[0]["Id"]);
+                if (dt.Columns.Contains("UserId") && dt.Rows[0]["UserId"] != DBNull.Value)
+                    return Convert.ToInt32(dt.Rows[0]["UserId"]);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.Error("[UserService Exception - GetUserId]", ex);
+        }
+        return 0;
+    }
+
+    /// <summary>
+    /// Lấy thông tin hồ sơ Profile của User theo Username
+    /// </summary>
+    public CaroGame.Protocol.Messages.UserProfileDto? GetUserProfile(string username)
+    {
+        try
+        {
+            DataTable dt = _userRepo.GetUserByUsername(username);
+            if (dt != null && dt.Rows.Count > 0)
+            {
+                var row = dt.Rows[0];
+                return new CaroGame.Protocol.Messages.UserProfileDto
+                {
+                    Username = username,
+                    Score = row.Table.Columns.Contains("Score") && row["Score"] != DBNull.Value ? Convert.ToInt32(row["Score"]) : 0,
+                    Wins = row.Table.Columns.Contains("Wins") && row["Wins"] != DBNull.Value ? Convert.ToInt32(row["Wins"]) : 0,
+                    Losses = row.Table.Columns.Contains("Losses") && row["Losses"] != DBNull.Value ? Convert.ToInt32(row["Losses"]) : 0,
+                    Draws = row.Table.Columns.Contains("Draws") && row["Draws"] != DBNull.Value ? Convert.ToInt32(row["Draws"]) : 0
+                };
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.Error("[UserService Exception - GetUserProfile]", ex);
+        }
+        return null;
     }
 }
 

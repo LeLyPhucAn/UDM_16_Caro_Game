@@ -10,7 +10,7 @@ namespace Client
         {
             ApplicationConfiguration.Initialize();
 
-            // Khởi động giao diện Đăng nhập chính thức (Không tạo kết nối ngầm nữa)
+            // Khởi động giao diện Đăng nhập chính thức 
             Application.Run(new Client.Forms.LoginForm());
         }
     }

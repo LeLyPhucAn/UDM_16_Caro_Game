@@ -1,3 +1,4 @@
+﻿using Server.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -5,19 +6,24 @@ using Shared.Models;
 
 namespace Server.Managers
 {
-    // ==============================
     // ROOM
-    // ==============================
     public class Room
     {
         public string RoomId { get; private set; }
         public string RoomName { get; private set; }
 
         public int MaxPlayers { get; private set; }
+        public int BoardSize { get; set; }
 
         public List<Player> Players { get; private set; }
+        public List<Player> Spectators { get; private set; }
 
         public bool IsPlaying { get; set; }
+        public string HostSymbol { get; set; } = "X";
+
+        // Cờ cho Bot AI
+        public bool IsBotRoom { get; set; } = false;
+        public string BotDifficulty { get; set; } = "Easy";
 
         public Room(
             string roomId,
@@ -29,21 +35,18 @@ namespace Server.Managers
             MaxPlayers = maxPlayers;
 
             Players = new List<Player>();
+            Spectators = new List<Player>();
 
             IsPlaying = false;
+            BoardSize = 15; // Mặc định là 15
+            HostSymbol = "X";
         }
-
-        // ==============================
         // KIỂM TRA PHÒNG ĐẦY
-        // ==============================
         public bool IsFull()
         {
             return Players.Count >= MaxPlayers;
         }
-
-        // ==============================
         // THÊM PLAYER
-        // ==============================
         public bool AddPlayer(Player player)
         {
             if (player == null)
@@ -63,45 +66,58 @@ namespace Server.Managers
 
             return true;
         }
-
-        // ==============================
+        // ĐỔI QUÂN (X / O)
+        public void SwapPlayers()
+        {
+            HostSymbol = (HostSymbol == "X") ? "O" : "X";
+        }
         // XÓA PLAYER
-        // ==============================
         public bool RemovePlayer(string playerId)
         {
             Player? player = Players.FirstOrDefault(
                 p => p.Id == playerId);
 
-            if (player == null)
+            if (player != null)
+            {
+                Players.Remove(player);
+                return true;
+            }
+
+            Player? spectator = Spectators.FirstOrDefault(
+                p => p.Id == playerId);
+
+            if (spectator != null)
+            {
+                Spectators.Remove(spectator);
+                return true;
+            }
+
+            return false;
+        }
+        // THÊM KHÁN GIẢ
+        public bool AddSpectator(Player player)
+        {
+            if (player == null) return false;
+            if (Spectators.Any(p => p.Id == player.Id) || Players.Any(p => p.Id == player.Id))
                 return false;
 
-            Players.Remove(player);
-
+            Spectators.Add(player);
             return true;
         }
-
-        // ==============================
         // TÌM PLAYER
-        // ==============================
         public Player? GetPlayer(string playerId)
         {
-            return Players.FirstOrDefault(
-                p => p.Id == playerId);
+            return Players.FirstOrDefault(p => p.Id == playerId)
+                ?? Spectators.FirstOrDefault(s => s.Id == playerId);
         }
-
-        // ==============================
         // KIỂM TRA PLAYER CÓ TRONG PHÒNG
-        // ==============================
         public bool ContainsPlayer(string playerId)
         {
-            return Players.Any(
-                p => p.Id == playerId);
+            return Players.Any(p => p.Id == playerId)
+                || Spectators.Any(s => s.Id == playerId);
         }
     }
-
-    // ==============================
     // ROOM MANAGER
-    // ==============================
     public class RoomManager
     {
         private readonly Dictionary<string, Room> rooms;
@@ -110,10 +126,7 @@ namespace Server.Managers
         {
             rooms = new Dictionary<string, Room>();
         }
-
-        // ==============================
         // TẠO PHÒNG
-        // ==============================
         public Room CreateRoom(string roomName)
         {
             if (string.IsNullOrWhiteSpace(roomName))
@@ -130,15 +143,12 @@ namespace Server.Managers
 
             rooms.Add(roomId, room);
 
-            Console.WriteLine(
+            Logger.Info(
                 $"[ROOM] Created: {room.RoomName} ({room.RoomId})");
 
             return room;
         }
-
-        // ==============================
         // XÓA PHÒNG
-        // ==============================
         public bool RemoveRoom(string roomId)
         {
             if (string.IsNullOrWhiteSpace(roomId))
@@ -149,15 +159,12 @@ namespace Server.Managers
 
             rooms.Remove(roomId);
 
-            Console.WriteLine(
+            Logger.Info(
                 $"[ROOM] Removed: {roomId}");
 
             return true;
         }
-
-        // ==============================
         // LẤY PHÒNG
-        // ==============================
         public Room? GetRoom(string roomId)
         {
             if (string.IsNullOrWhiteSpace(roomId))
@@ -169,13 +176,11 @@ namespace Server.Managers
 
             return room;
         }
-
-        // ==============================
         // PLAYER THAM GIA PHÒNG
-        // ==============================
         public bool JoinRoom(
             string roomId,
-            Player player)
+            Player player,
+            bool isSpectator = false)
         {
             if (string.IsNullOrWhiteSpace(roomId))
                 return false;
@@ -188,20 +193,26 @@ namespace Server.Managers
             if (room == null)
                 return false;
 
-            bool result = room.AddPlayer(player);
+            bool result = false;
+            if (isSpectator)
+            {
+                result = room.AddSpectator(player);
+            }
+            else
+            {
+                result = room.AddPlayer(player);
+            }
 
             if (result)
             {
-                Console.WriteLine(
-                    $"[ROOM] {player.Username} joined {room.RoomName}");
+                string role = isSpectator ? "Spectator" : "Player";
+                Logger.Info(
+                    $"[ROOM] {player.Username} joined {room.RoomName} as {role}");
             }
 
             return result;
         }
-
-        // ==============================
         // PLAYER RỜI PHÒNG
-        // ==============================
         public bool LeaveRoom(
             string roomId,
             string playerId)
@@ -226,7 +237,7 @@ namespace Server.Managers
 
             if (result)
             {
-                Console.WriteLine(
+                Logger.Info(
                     $"[ROOM] {player.Username} left {room.RoomName}");
             }
 
@@ -238,10 +249,7 @@ namespace Server.Managers
 
             return result;
         }
-
-        // ==============================
         // TÌM PHÒNG CỦA PLAYER
-        // ==============================
         public Room? FindPlayerRoom(string playerId)
         {
             if (string.IsNullOrWhiteSpace(playerId))
@@ -257,10 +265,7 @@ namespace Server.Managers
 
             return null;
         }
-
-        // ==============================
         // KIỂM TRA PHÒNG TỒN TẠI
-        // ==============================
         public bool RoomExists(string roomId)
         {
             if (string.IsNullOrWhiteSpace(roomId))
@@ -268,26 +273,17 @@ namespace Server.Managers
 
             return rooms.ContainsKey(roomId);
         }
-
-        // ==============================
         // LẤY DANH SÁCH PHÒNG
-        // ==============================
         public List<Room> GetRooms()
         {
             return rooms.Values.ToList();
         }
-
-        // ==============================
         // LẤY SỐ LƯỢNG PHÒNG
-        // ==============================
         public int GetRoomCount()
         {
             return rooms.Count;
         }
-
-        // ==============================
         // LẤY SỐ PLAYER TRONG PHÒNG
-        // ==============================
         public int GetPlayerCount(string roomId)
         {
             Room? room = GetRoom(roomId);
@@ -297,10 +293,7 @@ namespace Server.Managers
 
             return room.Players.Count;
         }
-
-        // ==============================
         // KIỂM TRA PHÒNG CÓ THỂ CHƠI
-        // ==============================
         public bool CanStartGame(string roomId)
         {
             Room? room = GetRoom(roomId);
@@ -311,10 +304,7 @@ namespace Server.Managers
             return room.Players.Count == 2 &&
                    !room.IsPlaying;
         }
-
-        // ==============================
         // ĐẶT TRẠNG THÁI ĐANG CHƠI
-        // ==============================
         public bool SetPlaying(
             string roomId,
             bool playing)

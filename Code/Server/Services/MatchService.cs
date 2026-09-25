@@ -1,3 +1,4 @@
+﻿using Server.Utils;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -11,17 +12,12 @@ public class MatchService
     private readonly HistoryRepository _historyRepository;
     private readonly UserRepository _userRepository;
 
-    /// <summary>
-    /// Constructor mặc định (Khởi tạo tự động các Repository nếu không dùng DI container)
-    /// </summary>
-    public MatchService() 
+    // Khởi tạo các repository mặc định
+    public MatchService()
         : this(new MatchRepository(), new HistoryRepository(), new UserRepository())
     {
     }
 
-    /// <summary>
-    /// Constructor nhận Dependency Injection
-    /// </summary>
     public MatchService(MatchRepository matchRepository, HistoryRepository historyRepository, UserRepository userRepository)
     {
         _matchRepository = matchRepository ?? throw new ArgumentNullException(nameof(matchRepository));
@@ -29,14 +25,12 @@ public class MatchService
         _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
     }
 
-    /// <summary>
-    /// 1. Tạo trận đấu mới
-    /// </summary>
+    // Tạo trận đấu mới và lưu vào CSDL
     public int StartNewMatch(int player1Id, int player2Id)
     {
         if (player1Id <= 0 || player2Id <= 0 || player1Id == player2Id)
         {
-            Console.WriteLine("[MatchService Warning]: ID người chơi không hợp lệ.");
+            Logger.Warn("[MatchService]: ID người chơi không hợp lệ.");
             return -1;
         }
 
@@ -46,32 +40,12 @@ public class MatchService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[MatchService Error - StartNewMatch]: {ex.Message}");
+            Logger.Error("[MatchService Error - StartNewMatch]", ex);
             return -1;
         }
     }
 
-    /// <summary>
-    /// 2. Hủy trận đấu (Khi thoát game / mất mạng)
-    /// </summary>
-    public bool CancelMatch(int matchId, string reason)
-    {
-        if (matchId <= 0) return false;
-
-        try
-        {
-            return _matchRepository.EndMatch(matchId, null, $"CANCELLED: {reason}", DateTime.Now);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"[MatchService Error - CancelMatch]: {ex.Message}");
-            return false;
-        }
-    }
-
-    /// <summary>
-    /// 3. Lấy lịch sử đấu của một User
-    /// </summary>
+    // Lấy lịch sử đấu của một người chơi
     public DataTable GetUserMatchHistory(int userId)
     {
         if (userId <= 0) return new DataTable();
@@ -82,14 +56,12 @@ public class MatchService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[MatchService Error - GetUserMatchHistory]: {ex.Message}");
+            Logger.Error("[MatchService Error - GetUserMatchHistory]", ex);
             return new DataTable();
         }
     }
 
-    /// <summary>
-    /// 4. Lưu kết quả trận đấu và cập nhật thống kê người chơi
-    /// </summary>
+    // Lưu kết quả trận đấu và cập nhật thống kê người chơi
     public bool SaveMatchResult(int matchId, int? winnerId, string result)
     {
         return SaveMatchResult(matchId, winnerId, result, DateTime.Now);
@@ -99,21 +71,21 @@ public class MatchService
     {
         if (matchId <= 0)
         {
-            Console.WriteLine("[MatchService Warning]: MatchID không hợp lệ.");
+            Logger.Warn("[MatchService]: MatchID không hợp lệ.");
             return false;
         }
 
         try
         {
-            Console.WriteLine($"[MatchService]: Cập nhật kết quả Match #{matchId} (WinnerId: {winnerId?.ToString() ?? "Hòa/Hủy"}, Result: {result})...");
-            
+            Logger.Info($"[MatchService]: Cập nhật kết quả Match #{matchId} (WinnerId: {winnerId?.ToString() ?? "Hòa/Hủy"}, Result: {result})");
+
             // Cập nhật thống kê người chơi (thắng / thua / hòa)
             DataTable matchInfo = _matchRepository.GetMatchById(matchId);
             if (matchInfo.Rows.Count > 0)
             {
                 int p1 = Convert.ToInt32(matchInfo.Rows[0]["Player1Id"]);
                 int p2 = Convert.ToInt32(matchInfo.Rows[0]["Player2Id"]);
-                
+
                 if (string.Equals(result, "DRAW", StringComparison.OrdinalIgnoreCase))
                 {
                     _userRepository.UpdateUserStats(p1, false, true);  // hòa
@@ -131,26 +103,8 @@ public class MatchService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[MatchService DB Exception - SaveMatchResult]: {ex.Message}");
+            Logger.Error("[MatchService DB Exception - SaveMatchResult]", ex);
             return false;
-        }
-    }
-
-    /// <summary>
-    /// 5. Lấy danh sách nước đi để Replay trận đấu
-    /// </summary>
-    public List<MoveDto> GetMatchReplayMoves(int matchId)
-    {
-        if (matchId <= 0) return new List<MoveDto>();
-
-        try
-        {
-            return _historyRepository.GetHistoryByMatchId(matchId);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"[MatchService Error - GetMatchReplayMoves]: {ex.Message}");
-            return new List<MoveDto>();
         }
     }
 }

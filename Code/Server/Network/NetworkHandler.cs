@@ -1,3 +1,4 @@
+﻿using Server.Utils;
 using System;
 using System.IO;
 using System.Net.Sockets;
@@ -11,6 +12,7 @@ namespace Server.Network;
 
 public class NetworkHandler
 {
+    private const int MAX_PACKET_SIZE = 10 * 1024 * 1024; // Giới hạn 10MB
     /// <summary>
     /// Đọc chính xác đủ count bytes từ NetworkStream.
     /// Trả về false nếu stream bị ngắt kết nối giữa chừng.
@@ -56,9 +58,9 @@ public class NetworkHandler
                 MessageType type = (MessageType)BitConverter.ToInt32(headerBuffer, 0);
                 int bodyLength = BitConverter.ToInt32(headerBuffer, 4);
 
-                if (bodyLength < 0 || bodyLength > 10 * 1024 * 1024) // Giới hạn 10MB
+                if (bodyLength < 0 || bodyLength > MAX_PACKET_SIZE) // Giới hạn 10MB
                 {
-                    Console.WriteLine($"[NetworkError] Kích thước gói tin không hợp lệ ({bodyLength} bytes) từ {session.RemoteEndPoint}");
+                    Logger.Warn($"[Network] Kích thước gói tin không hợp lệ ({bodyLength} bytes) từ {session.RemoteEndPoint}");
                     break;
                 }
 
@@ -82,8 +84,6 @@ public class NetworkHandler
                 }
 
                 BaseMessage message = PacketParser.Unpack(fullPacket);
-                
-                NetworkEvents.RaisePacketReceived(session, fullPacket.Length);
 
                 // 4. Gọi Callback xử lý Message
                 if (onMessageReceived != null)
@@ -94,13 +94,11 @@ public class NetworkHandler
         }
         catch (SocketException ex)
         {
-            Console.WriteLine($"[Network] Client {session.RemoteEndPoint} ngắt socket: {ex.Message}");
-            NetworkEvents.RaisePacketError(session, ex);
+            Logger.Debug($"Client {session.RemoteEndPoint} ngắt socket: {ex.Message}");
         }
         catch (IOException ex)
         {
-            Console.WriteLine($"[Network] Client {session.RemoteEndPoint} lỗi I/O: {ex.Message}");
-            NetworkEvents.RaisePacketError(session, ex);
+            Logger.Debug($"Client {session.RemoteEndPoint} lỗi I/O: {ex.Message}");
         }
         catch (ObjectDisposedException)
         {
@@ -108,8 +106,7 @@ public class NetworkHandler
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[NetworkError] Ngoại lệ khi nhận dữ liệu từ {session.RemoteEndPoint}: {ex.Message}");
-            NetworkEvents.RaisePacketError(session, ex);
+            Logger.Error($"Ngoại lệ khi nhận dữ liệu từ {session.RemoteEndPoint}", ex);
         }
         finally
         {
@@ -130,15 +127,12 @@ public class NetworkHandler
             byte[] packetBytes = PacketParser.Pack(message);
             await session.Stream.WriteAsync(packetBytes.AsMemory());
             await session.Stream.FlushAsync();
-            
-            NetworkEvents.RaisePacketSent(session, packetBytes.Length);
-            
+
             return true;
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[NetworkError] Lỗi khi gửi dữ liệu tới {session.RemoteEndPoint}: {ex.Message}");
-            NetworkEvents.RaisePacketError(session, ex);
+            Logger.Error($"Lỗi khi gửi dữ liệu tới {session.RemoteEndPoint}", ex);
             session.Close();
             return false;
         }

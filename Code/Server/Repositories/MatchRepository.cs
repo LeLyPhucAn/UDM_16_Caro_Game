@@ -1,3 +1,4 @@
+﻿using Server.Utils;
 using System;
 using System.Data;
 using Microsoft.Data.SqlClient;
@@ -28,7 +29,7 @@ public class MatchRepository
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[MatchRepository Error - CreateMatch]: {ex.Message}");
+            Logger.Error("[MatchRepository Error - CreateMatch]", ex);
             return -1;
         }
     }
@@ -57,7 +58,7 @@ public class MatchRepository
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[MatchRepository Error - EndMatch]: {ex.Message}");
+            Logger.Error("[MatchRepository Error - EndMatch]", ex);
             return false;
         }
     }
@@ -74,7 +75,7 @@ public class MatchRepository
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[MatchRepository Error - GetMatchById]: {ex.Message}");
+            Logger.Error("[MatchRepository Error - GetMatchById]", ex);
             return new DataTable();
         }
     }

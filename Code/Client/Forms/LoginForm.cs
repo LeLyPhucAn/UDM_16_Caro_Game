@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Client.Network;
@@ -9,7 +9,11 @@ namespace Client.Forms
 {
     public partial class LoginForm : Form
     {
+        private const int DEFAULT_SERVER_PORT = 5000;
+        private const string DEFAULT_SERVER_IP = "127.0.0.1";
+
         private readonly ClientConnection _clientConnection;
+        private bool _isLoggedIn = false;
 
         public LoginForm()
         {
@@ -65,35 +69,65 @@ namespace Client.Forms
                     {
                         MessageBox.Show("Đăng ký thất bại: " + res.ErrorMessage, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     }
-                    
+
                     btnRegister.Enabled = true;
                     btnRegister.Text = "ĐĂNG KÝ";
                     btnEnterLobby.Enabled = true;
                     return;
                 }
 
-                if (res.Success)
+                // CHỈ XỬ LÝ KHI ĐÚNG LÀ GÓI TIN PHẢN HỒI ĐĂNG NHẬP
+                if (res.Data == "Login thành công" || res.Action == "Login")
                 {
-                    string playerName = txtPlayerName.Text.Trim();
+                    if (res.Success)
+                    {
+                        if (_isLoggedIn) return; // Đảm bảo chỉ mở 1 LobbyForm duy nhất
+                        _isLoggedIn = true;
 
-                    // Hủy lắng nghe tin nhắn để không tranh chấp dữ liệu với LobbyForm
-                    _clientConnection.OnMessageReceived -= XyLyKetQuaLogin;
+                        // Hủy lắng nghe tin nhắn ngay lập tức để không tranh chấp dữ liệu với LobbyForm
+                        _clientConnection.OnMessageReceived -= XyLyKetQuaLogin;
 
-                    LobbyForm formLobby = new LobbyForm(playerName, _clientConnection);
-                    formLobby.FormClosed += (s, args) => this.Close();
+                        string playerName = txtPlayerName.Text.Trim();
+                        LobbyForm formLobby = new LobbyForm(playerName, _clientConnection);
+                        formLobby.FormClosed += (s, args) =>
+                        {
+                            if (formLobby.IsLoggedOut)
+                            {
+                                // Người dùng chọn Đăng xuất: phục hồi trạng thái và hiện lại màn hình Đăng nhập
+                                this.ResetLoginForm();
+                                this.Show();
+                            }
+                            else
+                            {
+                                // Người dùng chọn Thoát game hoặc bấm dấu X: đóng hẳn ứng dụng
+                                this.Close();
+                            }
+                        };
 
-                    formLobby.Show();
-                    this.Hide();
-                }
-                else
-                {
-                    // Lúc này gọi MessageBox hoàn toàn an toàn, Client không bị Server đá nữa
-                    MessageBox.Show("Đăng nhập thất bại: " + res.ErrorMessage, "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    btnEnterLobby.Enabled = true;
-                    btnEnterLobby.Text = "ĐĂNG NHẬP"; // Đổi lại thành Đăng nhập cho khớp ảnh
-                    btnRegister.Enabled = true;
+                        formLobby.Show();
+                        this.Hide();
+                    }
+                    else
+                    {
+                        MessageBox.Show("Đăng nhập thất bại: " + res.ErrorMessage, "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        btnEnterLobby.Enabled = true;
+                        btnEnterLobby.Text = "ĐĂNG NHẬP";
+                        btnRegister.Enabled = true;
+                    }
                 }
             }
+        }
+
+        public void ResetLoginForm()
+        {
+            _isLoggedIn = false;
+            _clientConnection.OnMessageReceived -= XyLyKetQuaLogin;
+            _clientConnection.OnMessageReceived += XyLyKetQuaLogin;
+            txtPassword.Text = string.Empty;
+            btnEnterLobby.Enabled = true;
+            btnEnterLobby.Text = "ĐĂNG NHẬP";
+            btnRegister.Enabled = true;
+            btnRegister.Text = "ĐĂNG KÝ";
         }
 
         private async void btnEnterLobby_Click(object? sender, EventArgs e)
@@ -107,6 +141,8 @@ namespace Client.Forms
                 return;
             }
 
+            string serverIp = GetServerIp();
+
             try
             {
                 btnEnterLobby.Enabled = false;
@@ -116,7 +152,7 @@ namespace Client.Forms
                 // 1. Kết nối đến Server nếu chưa kết nối
                 if (!_clientConnection.IsConnected)
                 {
-                    await _clientConnection.ConnectToServer("127.0.0.1", 5000);
+                    await _clientConnection.ConnectToServer(serverIp, DEFAULT_SERVER_PORT);
                 }
 
                 // 2. Tạo đối tượng LoginMessage
@@ -132,7 +168,7 @@ namespace Client.Forms
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Lỗi kết nối Server: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Lỗi kết nối Server ({serverIp}:{DEFAULT_SERVER_PORT}): " + ex.Message, "Lỗi kết nối", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 btnEnterLobby.Enabled = true;
                 btnRegister.Enabled = true;
                 btnEnterLobby.Text = "ĐĂNG NHẬP";
@@ -150,6 +186,8 @@ namespace Client.Forms
                 return;
             }
 
+            string serverIp = GetServerIp();
+
             try
             {
                 btnEnterLobby.Enabled = false;
@@ -158,7 +196,7 @@ namespace Client.Forms
 
                 if (!_clientConnection.IsConnected)
                 {
-                    await _clientConnection.ConnectToServer("127.0.0.1", 5000);
+                    await _clientConnection.ConnectToServer(serverIp, DEFAULT_SERVER_PORT);
                 }
 
                 RegisterMessage regMsg = new RegisterMessage
@@ -172,11 +210,17 @@ namespace Client.Forms
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Lỗi kết nối Server: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Lỗi kết nối Server ({serverIp}:{DEFAULT_SERVER_PORT}): " + ex.Message, "Lỗi kết nối", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 btnEnterLobby.Enabled = true;
                 btnRegister.Enabled = true;
                 btnRegister.Text = "ĐĂNG KÝ";
             }
+        }
+
+        private string GetServerIp()
+        {
+            string ip = txtServerIp.Text.Trim();
+            return string.IsNullOrWhiteSpace(ip) ? DEFAULT_SERVER_IP : ip;
         }
 
         private void btnExit_Click(object? sender, EventArgs e)

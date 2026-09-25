@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Server.Utils;
+using System;
 using System.Collections.Concurrent;
 using System.Threading;
 
@@ -209,10 +210,9 @@ namespace Server.Services
                 {
                     timeoutCallback(matchId);
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // Không để exception từ callback
-                    // làm crash Timer thread.
+                    Logger.Error($"[GameTimerService] Lỗi khi thực thi timeoutCallback cho matchId {matchId}", ex);
                 }
             }
         }
