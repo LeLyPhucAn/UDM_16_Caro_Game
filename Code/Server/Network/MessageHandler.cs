@@ -1130,6 +1130,33 @@ public class MessageHandler
                     await _connectionManager.SendMessageToClientAsync(p.Id, broadcastMove);
             }
 
+            // Lưu chi tiết nước đi vào bảng History trong CSDL (chạy ngầm không ảnh hưởng tốc độ game)
+            if (match.DbMatchId > 0)
+            {
+                int playerDbId = (moveResult.Piece == Shared.Models.CellState.X)
+                    ? (match.PlayerX?.DatabaseId ?? session.UserId)
+                    : (match.PlayerO?.DatabaseId ?? session.UserId);
+
+                if (playerDbId > 0)
+                {
+                    int row = msg.Row;
+                    int col = msg.Column;
+                    int step = match.MoveCount;
+                    int dbMatchId = match.DbMatchId;
+                    _ = Task.Run(() =>
+                    {
+                        try
+                        {
+                            _matchService.RecordMove(dbMatchId, playerDbId, row, col, step);
+                        }
+                        catch (Exception dbEx)
+                        {
+                            Logger.Error($"[Database] Lỗi lưu History nước đi Match #{dbMatchId}", dbEx);
+                        }
+                    });
+                }
+            }
+
             // 2. Gửi kết quả ván đấu nếu thắng hoặc hòa
             if (moveResult.IsWin || moveResult.IsDraw)
             {

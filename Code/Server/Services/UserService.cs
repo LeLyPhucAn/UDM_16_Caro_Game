@@ -1,7 +1,8 @@
-﻿using Server.Utils;
-
+using Server.Utils;
 using System;
 using System.Data;
+using System.Security.Cryptography;
+using System.Text;
 using Server.Repositories;
 
 namespace Server.Services;
@@ -9,6 +10,16 @@ namespace Server.Services;
 public class UserService
 {
     private readonly UserRepository _userRepo = new();
+
+    /// <summary>
+    /// Băm mật khẩu bằng thuật toán SHA-256 an toàn
+    /// </summary>
+    public static string HashPassword(string password)
+    {
+        if (string.IsNullOrEmpty(password)) return string.Empty;
+        byte[] hashBytes = SHA256.HashData(Encoding.UTF8.GetBytes(password));
+        return Convert.ToHexString(hashBytes).ToLowerInvariant();
+    }
 
     /// <summary>
     /// Đăng ký tài khoản mới. Trả về true nếu thành công, false nếu thất bại (hoặc đã tồn tại).
@@ -25,7 +36,9 @@ public class UserService
                 return false;
             }
 
-            int rows = _userRepo.InsertUser(username, password);
+            // Băm mật khẩu bằng SHA-256 trước khi lưu vào CSDL
+            string passwordHash = HashPassword(password);
+            int rows = _userRepo.InsertUser(username, passwordHash);
             return rows > 0;
         }
         catch (Exception ex)
@@ -52,12 +65,25 @@ public class UserService
         userRow = null;
         try
         {
-            DataTable dt = _userRepo.ValidateUser(username, password);
+            string passwordHash = HashPassword(password);
+            DataTable dt = _userRepo.ValidateUser(username, passwordHash);
             if (dt != null && dt.Rows.Count > 0)
             {
                 userRow = dt.Rows[0];
                 return true;
             }
+
+            // Hỗ trợ tương thích ngược: nếu tài khoản cũ trong CSDL chưa được băm SHA-256
+            DataTable dtOld = _userRepo.ValidateUser(username, password);
+            if (dtOld != null && dtOld.Rows.Count > 0)
+            {
+                userRow = dtOld.Rows[0];
+                // Tự động nâng cấp mật khẩu cũ sang dạng băm SHA-256
+                _userRepo.UpdatePassword(username, passwordHash);
+                Logger.Info($"[UserService]: Đã tự động nâng cấp mật khẩu sang SHA-256 cho tài khoản '{username}'.");
+                return true;
+            }
+
             return false;
         }
         catch (Exception ex)
@@ -153,4 +179,3 @@ public class UserService
         return null;
     }
 }
-

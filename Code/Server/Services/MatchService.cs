@@ -1,4 +1,4 @@
-﻿using Server.Utils;
+using Server.Utils;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -58,6 +58,24 @@ public class MatchService
         {
             Logger.Error("[MatchService Error - GetUserMatchHistory]", ex);
             return new DataTable();
+        }
+    }
+
+    /// <summary>
+    /// Ghi nhận chi tiết từng nước đi vào bảng History
+    /// </summary>
+    public bool RecordMove(int matchId, int playerId, int row, int col, int stepOrder)
+    {
+        if (matchId <= 0 || playerId <= 0) return false;
+
+        try
+        {
+            return _historyRepository.InsertMoveHistory(matchId, playerId, row, col, stepOrder);
+        }
+        catch (Exception ex)
+        {
+            Logger.Error($"[MatchService Error - RecordMove] Match: {matchId}", ex);
+            return false;
         }
     }
 

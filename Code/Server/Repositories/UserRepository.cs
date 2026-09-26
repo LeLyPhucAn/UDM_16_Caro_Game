@@ -51,6 +51,16 @@ public class UserRepository
         return DatabaseHelper.ExecuteNonQuery(query, parameters);
     }
 
+    public bool UpdatePassword(string username, string passwordHash)
+    {
+        string query = "UPDATE Users SET PasswordHash = @PasswordHash WHERE Username = @Username";
+        SqlParameter[] parameters = {
+            new SqlParameter("@Username", username),
+            new SqlParameter("@PasswordHash", passwordHash)
+        };
+        return DatabaseHelper.ExecuteNonQuery(query, parameters) > 0;
+    }
+
     // Cập nhật số trận thắng, thua, hòa và điểm số của người chơi
     public bool UpdateUserStats(int userId, bool isWinner, bool isDraw = false)
     {

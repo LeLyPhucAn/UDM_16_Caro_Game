@@ -29,17 +29,12 @@ namespace Client.Forms
 
         private const int TURN_TIMEOUT_SECONDS = 60;
         private const int GRACE_PERIOD_SECONDS = 90;
-        private const int REMATCH_PROMPT_DELAY_MS = 5000;
+        private const int REMATCH_PROMPT_DELAY_MS = 5000; // Đợi 5 giây trước khi hỏi tái đấu
 
-        // Flag: ván đấu đã kết thúc (dùng để phân biệt GameStateMessage là rematch hay sync đầu game)
         private bool _gameEnded = false;
-
 
         private Button? _btnSurrender;
         private Button? _btnDraw;
-        private Label? _lblCountdownOverlay;
-        private System.Windows.Forms.Timer? _countdownTimer;
-        private int _countdownTicks;
         private System.Windows.Forms.Timer _clientTimer = new System.Windows.Forms.Timer();
         private int _remainingSeconds = TURN_TIMEOUT_SECONDS;
 
@@ -148,40 +143,7 @@ namespace Client.Forms
                 pnlTop.Controls.Add(_btnDraw);
             }
 
-            // Setup countdown overlay
-            _lblCountdownOverlay = new Label
-            {
-                AutoSize = false,
-                Dock = DockStyle.Fill,
-                TextAlign = ContentAlignment.MiddleCenter,
-                Font = new Font("Segoe UI", 72, FontStyle.Bold),
-                BackColor = Color.FromArgb(200, 0, 0, 0),
-                ForeColor = Color.Yellow,
-                Visible = false
-            };
-            pnlBoard.Controls.Add(_lblCountdownOverlay);
-            _lblCountdownOverlay.BringToFront();
 
-            _countdownTimer = new System.Windows.Forms.Timer { Interval = 1000 };
-            _countdownTimer.Tick += (s, e) =>
-            {
-                _countdownTicks--;
-                if (_countdownTicks > 0)
-                {
-                    _lblCountdownOverlay.Text = _countdownTicks.ToString();
-                }
-                else if (_countdownTicks == 0)
-                {
-                    _lblCountdownOverlay.Text = "BẮT ĐẦU!";
-                    _boardControl.Enabled = true;
-                    _clientTimer.Start();
-                }
-                else
-                {
-                    _countdownTimer.Stop();
-                    _lblCountdownOverlay.Visible = false;
-                }
-            };
 
             btnSend.Click += BtnSend_Click;
             txtChatInput.KeyDown += TxtChatInput_KeyDown;
@@ -349,8 +311,11 @@ namespace Client.Forms
                         }
                     }
 
-                    // Bắt đầu đếm ngược thời gian
+                    // Bắt đầu đếm ngược thời gian lượt đi
                     _remainingSeconds = TURN_TIMEOUT_SECONDS;
+                    UpdateTimerUI(_remainingSeconds);
+
+                    if (_boardControl != null) _boardControl.Enabled = !_isSpectator;
                     _clientTimer.Start();
                 }
                 // 2. XỬ LÝ KHI CÓ NGƯỜI ĐÁNH CỜ
@@ -796,9 +761,8 @@ namespace Client.Forms
                         "Kết thúc", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
 
-                // Doi 5 giay hieu ung
+                // Đợi 5 giây hiệu ứng trước khi hiển thị hộp thoại tái đấu
                 await Task.Delay(REMATCH_PROMPT_DELAY_MS);
-                HideVictoryEffect();
 
                 // Ca 2 ben (Win, Timeout, Surrender) deu duoc hoi tai dau (tru khan gia va Disconnect)
                 bool canRematch = !_isSpectator && gameOverMsg.ResultType != "Disconnect";
