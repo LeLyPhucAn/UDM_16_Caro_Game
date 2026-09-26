@@ -4,6 +4,8 @@
 
 ## Mã nhóm: Net3_Group_08
 
+## Video Demo: https://youtu.be/7Rs3WFidfCY
+
 ## Thành viên
 
 | STT | MSSV         | Họ và tên               | Vai trò |
@@ -110,17 +112,19 @@
 
 ## Kiến trúc hệ thống
 
-- **Mô hình**: Client – Server (TCP Socket)
-- **Protocol**: Custom JSON Message Protocol qua TCP Sockets
-- **Port mặc định**: `8888` (hoặc cấu hình tùy chỉnh trong `ServerConfig.json`)
-- **Cấu trúc message**: Dạng gói tin JSON chuẩn gồm Header (`MessageType`, `SenderId`, `Timestamp`) và `Payload` data.
+- **Mô hình**: Client–Server (TCP Socket đa luồng bất đồng bộ)
+- **Protocol**: Custom Binary Framing kết hợp JSON UTF-8 payload
+- **Port mặc định**: `5000` (cấu hình trong `Code/Server/Config/ServerConfig.json`)
+- **Cấu trúc message**: Binary Length-Prefix Framing: `[4 bytes MessageType] [4 bytes BodyLength] [Body JSON UTF-8]`
 
 ## Yêu cầu môi trường
 
-- **Hệ điều hành**: Windows 10 / Windows 11
-- **Runtime**: .NET 10.0 SDK (`net10.0` và `net10.0-windows`)
-- **Công cụ**: Visual Studio 2022 / VS Code (có C# Dev Kit extension)
-- **Database**: Microsoft SQL Server (Express hoặc LocalDB)
+- **Hệ điều hành**: Windows 10 / Windows 11 (64-bit)
+- **Ngôn ngữ và phiên bản**: C# 13 / .NET 10.0 SDK (`net10.0` và `net10.0-windows`), Python 3.10+ (cho script kiểm thử)
+- **Công cụ hoặc dependency**:
+  - Visual Studio 2022 (v17.12+) hoặc VS Code (có C# Dev Kit extension)
+  - Hệ quản trị CSDL: Microsoft SQL Server (Express hoặc LocalDB `(localdb)\mssqllocaldb`)
+  - Thư viện: `Microsoft.Data.SqlClient`, `System.Text.Json`
 
 ## Cài đặt
 
@@ -137,62 +141,73 @@
 
 ## Hướng dẫn chạy
 
-### 1. Khởi chạy Server
+### Server
 
 - **Cách 1 (Bằng CLI / Terminal)**:
   ```bash
-  cd Code/Server
-  dotnet run
+  dotnet run --project Code/Server
   ```
 - **Cách 2 (Visual Studio)**:
   - Chọn project `Server` làm Startup Project và nhấn `F5` hoặc `Ctrl + F5`.
 
-### 2. Khởi chạy Client / Player
+### Client
 
 - **Cách 1 (Bằng CLI / Terminal)**:
   ```bash
-  cd Code/Client/Player
-  dotnet run
+  dotnet run --project Code/Client
   ```
 - **Cách 2 (Visual Studio)**:
-  - Chọn project `Player` làm Startup Project và nhấn `F5`.
-  - Có thể khởi chạy nhiều phiên bản Player (Client) cùng lúc để thử nghiệm chơi 2 người.
+  - Chọn project `Client` làm Startup Project và nhấn `F5`.
+  - Có thể khởi chạy nhiều phiên bản Client cùng lúc trên một hoặc nhiều máy để thử nghiệm thi đấu.
 
 ## Cấu hình
 
 File cấu hình Server nằm tại `Code/Server/Config/ServerConfig.json`:
 ```json
 {
-  "ServerIp": "127.0.0.1",
-  "Port": 8888,
-  "MaxConnections": 100,
-  "ConnectionString": "Server=localhost;Database=CaroDb;Trusted_Connection=True;TrustServerCertificate=True;"
+  "Server": {
+    "Ip": "0.0.0.0",
+    "Port": 5000,
+    "MaxClients": 100
+  }
 }
 ```
+- **Thay đổi IP & Port**: Sửa trường `"Ip"` và `"Port"` trong file `ServerConfig.json` (phía Server) hoặc nhập IP trực tiếp trên giao diện màn hình `LoginForm` (phía Client).
+- **Lưu ý bảo mật**: Không ghi password, chuỗi kết nối chứa mật khẩu hoặc dữ liệu nhạy cảm vào repository.
 
 ## Chức năng
 
-- [x] Đăng nhập / Đăng ký tài khoản người chơi
-- [x] Quản lý sảnh (Lobby) và danh sách người chơi online
-- [x] Tạo phòng chơi và tham gia phòng
-- [x] Gửi lời mời chơi và chấp nhận/từ chối
-- [x] Chơi game Caro (vẽ bàn cờ, đánh cờ, kiểm tra luật thắng 5 nước)
-- [x] Tính giờ đếm ngược nước đi (Timer)
-- [ ] Chế độ xem người khác chơi (Spectator mode)
-- [x] Lưu lịch sử trận đấu vào SQL Server
-- [ ] Xử lý mất kết nối & Reconnect
+- [x] Đăng nhập / Đăng ký tài khoản người chơi (kiểm tra tính hợp lệ dữ liệu)
+- [x] Quản lý sảnh (Lobby): danh sách người chơi online, danh sách phòng chơi
+- [x] Tạo phòng chơi mới, đặt tên phòng và tham gia phòng
+- [x] Gửi lời mời thách đấu và chấp nhận / từ chối lời mời
+- [x] Chơi game Caro thời gian thực (vẽ bàn cờ, đánh cờ theo lượt, xét duyệt thắng thua 5 nước tự động)
+- [x] Tính giờ đếm ngược nước đi 30 giây (Timer) và tự động xử thua khi hết giờ
+- [x] Chế độ đấu với máy (Bot AI nhiều cấp độ: Dễ, Vừa, Khó)
+- [x] Cầu hòa, đầu hàng và nhắn tin trò chuyện trong phòng đấu (Chat)
+- [x] Chế độ khán giả theo dõi trận đấu (Spectator mode)
+- [x] Lưu trữ kết quả trận đấu và điểm số người chơi vào SQL Server
+- [x] Tra cứu và hiển thị lịch sử thi đấu (Match History)
+- [x] Xử lý mất kết nối & đếm ngược 90 giây giữ phòng chờ kết nối lại (Reconnect)
 
 ## Kiểm thử
 
+- **Functional test**: Đã xây dựng và thực thi thành công 32 ca kiểm thử (TC_01 -> TC_32) bao phủ toàn diện: Xác thực tài khoản, Sảnh chờ Lobby, Thách đấu, Ván đấu thời gian thực, Tính giờ 30s, Luật thắng 5 nước, Lưu CSDL và Lịch sử đấu. Chi tiết lưu tại [`Extra/Test Cases Template.xlsx`](Extra/Test%20Cases%20Template.xlsx).
+- **Test dữ liệu không hợp lệ**: Kiểm tra và chặn triệt để các trường hợp đăng nhập tài khoản không tồn tại (TC_24), đăng ký thiếu thông tin hoặc sai định dạng (TC_25), đánh cờ sai lượt hoặc click vào ô đã có quân cờ (TC_28).
+- **Test mất kết nối**: Phát hiện sự cố rớt mạng đột ngột (End Task / mất socket), kích hoạt overlay khóa bàn cờ và đếm ngược 90s; hỗ trợ Reconnect khôi phục ván đấu nguyên vẹn hoặc xử thua nếu đối thủ bỏ cuộc (TC_17, TC_18, TC_19, TC_31).
+- **Stress test**: Kiểm thử bão ngắt kết nối đồng loạt 50 - 60 client cùng lúc, Server dọn dẹp phiên trong 2.39 ms và phục hồi ngay lập tức sau 0.49 ms mà không xảy ra hiện tượng crash hay rò rỉ socket.
+- **Performance test**: Thử nghiệm mở rộng kết nối từ 10 đến 200 client đồng thời (tỉ lệ thành công 100%, thời gian bắt tay TCP Handshake chỉ 0.27 - 0.58 ms); Thông lượng xử lý đạt đỉnh ~2,900 - 44,000 requests/giây; Độ trễ phản hồi vòng lặp RTT trung vị cực thấp ~0.03 - 3.74 ms. Chạy kiểm thử tự động bằng [`Extra/stress_test.py`](Extra/stress_test.py).
 
+Bằng chứng kiểm thử lưu tại `Extra/` (ảnh chụp màn hình [`stress_test_result.png`](Extra/stress_test_result.png), nhật ký lệnh [`stress_test_result.txt`](Extra/stress_test_result.txt), và bảng test case [`Test Cases Template.xlsx`](Extra/Test%20Cases%20Template.xlsx)).
 
 ## Demo
 
-- **Video**: [Đang cập nhật]
-- **Slide**: `PPTX/`
-- **Báo cáo**: `DOCX/`
+- **Video**: https://youtu.be/7Rs3WFidfCY
+- **Slide**: `PPTX/UDM_16_Caro_Game.pptx`
+- **Báo cáo**: `DOCX/Net3_Group_08_UDM_16.docx`
 
 ## Giới hạn
 
-- Hiện tại hệ thống đang phát triển ở giao diện WinForms cơ bản.
-- Chưa hỗ trợ Chat âm thanh (Voice Chat).
+- Giao diện hiện tại được xây dựng trên nền tảng Windows Forms cơ bản, chỉ hỗ trợ hệ điều hành Windows.
+- Chưa hỗ trợ tính năng Voice Chat (âm thanh trực tiếp).
+- Chưa có hệ thống tự động ghép cặp thông minh (Auto-matchmaking) dựa trên xếp hạng điểm Elo.
