@@ -14,6 +14,7 @@ namespace Client.Network
         private TcpClient? _client;
         private NetworkStream? _stream;
         private CancellationTokenSource? _cancellationTokenSource;
+        private bool _isDisconnected = false;
 
         public bool IsConnected => _client != null && _client.Connected;
 
@@ -26,6 +27,7 @@ namespace Client.Network
         {
             try
             {
+                _isDisconnected = false;
                 _client = new TcpClient();
                 await _client.ConnectAsync(host, port);
                 _stream = _client.GetStream();
@@ -43,7 +45,8 @@ namespace Client.Network
 
         public void Disconnect()
         {
-            if (!IsConnected) return;
+            if (_isDisconnected) return;
+            _isDisconnected = true;
 
             try
             {

@@ -1,4 +1,4 @@
-﻿using CaroGame.Protocol;
+using CaroGame.Protocol;
 using CaroGame.Protocol.Messages;
 using Client.Controls;
 using Client.Network;
@@ -592,14 +592,26 @@ namespace Client.Forms
                     }
                     else
                     {
-                        // (Tùy chọn) Gửi tin nhắn từ chối lại cho Sender nếu muốn
+                        // B từ chối: thông báo cho A (người gửi lời mời) biết
+                        var declineReq = new RequestMessage
+                        {
+                            Type = MessageType.Request,
+                            SenderId = _playerName,
+                            Action = "InviteDeclined",
+                            Data = inviteMsg.SenderId // SenderId của lời mời = tên người thách đấu
+                        };
+                        _ = Task.Run(async () =>
+                        {
+                            try { await _clientConnection.SendMessageAsync(declineReq); }
+                            catch (Exception ex) { HandleError(ex); }
+                        });
                     }
                 }
                 else if (message.Type == MessageType.GameState && message is GameStateMessage syncMsg)
                 {
                     _clientConnection.OnMessageReceived -= HandleServerMessage;
 
-                    // Tạo RoomForm ngầm để khôi phục dữ liệu phòng
+                    // Tao RoomForm de khoi phuc luong phong sau khi reconnect
                     RoomForm roomForm = new RoomForm(_clientConnection, "Phòng đấu (Reconnect)", _playerName, false, null, false, syncMsg.RoomId);
                     roomForm.FormClosed += (s, args) =>
                     {
@@ -608,10 +620,12 @@ namespace Client.Forms
                         RequestProfile();
                     };
 
-                    // Ép RoomForm xử lý gói tin bàn cờ, nó sẽ tự mở GameForm và ẩn chính nó
-                    roomForm.HandleRoomMessage(syncMsg);
-
+                    // Phai Show() RoomForm truoc de form handle duoc tao va Hide() hoat dong dung
+                    roomForm.Show();
                     this.Hide();
+
+                    // Ep RoomForm xu ly goi tin ban co - no se tu mo GameForm va an ban than
+                    roomForm.HandleRoomMessage(syncMsg);
                 }
             }
             catch (Exception ex) { HandleError(ex); }
@@ -619,9 +633,31 @@ namespace Client.Forms
 
         private void HandleConnectionLost()
         {
-            UpdateConnectionStatus(false);
-            MessageBox.Show("Mất kết nối với máy chủ!", "Ngắt kết nối", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            this.Close();
+            if (this.InvokeRequired)
+            {
+                this.BeginInvoke(new Action(HandleConnectionLost));
+                return;
+            }
+            
+            // Only show message if we are not already closing/disposed
+            if (!this.IsDisposed && !this.Disposing)
+            {
+                MessageBox.Show("Mất kết nối với máy chủ!", "Ngắt kết nối", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                
+                // Close any open GameForm or RoomForm
+                for (int i = Application.OpenForms.Count - 1; i >= 0; i--)
+                {
+                    Form form = Application.OpenForms[i];
+                    if (form.Name == "GameForm" || form.Name == "RoomForm")
+                    {
+                        form.Close();
+                    }
+                }
+
+                // Return to LoginForm
+                this.DialogResult = DialogResult.Retry;
+                this.Close();
+            }
         }
 
         private void HandleError(Exception ex)

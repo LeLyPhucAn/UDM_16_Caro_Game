@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using CaroGame.Protocol;
 using CaroGame.Protocol.Messages;
@@ -724,31 +724,74 @@ public class MessageHandler
         else if (msg.Action == "RematchAccepted")
         {
             var room = _roomManager.FindPlayerRoom(session.SessionId.ToString());
-            if (room != null)
+            if (room == null || room.Players.Count < 2) return;
+
+            var oldMatch = _matchManager.FindRoomMatch(room.RoomId);
+            if (oldMatch != null)
+                _matchManager.RemoveMatch(oldMatch.MatchId);
+
+            // Doi quan cho van tiep theo
+            room.HostSymbol = (room.HostSymbol == "X") ? "O" : "X";
+            foreach (var p in room.Players)
+                p.IsReady = false;
+
+            Player playerX = (room.HostSymbol == "X") ? room.Players[0] : room.Players[1];
+            Player playerO = (room.HostSymbol == "O") ? room.Players[0] : room.Players[1];
+
+            if (playerX.DatabaseId <= 0) playerX.DatabaseId = _userService.GetUserId(playerX.Username);
+            if (playerO.DatabaseId <= 0) playerO.DatabaseId = _userService.GetUserId(playerO.Username);
+
+            _roomManager.SetPlaying(room.RoomId, true);
+            var newMatch = _matchManager.CreateMatch(room.RoomId, playerX, playerO, room.BoardSize);
+            if (newMatch == null)
             {
-                _roomManager.SetPlaying(room.RoomId, false);
-                room.HostSymbol = (room.HostSymbol == "X") ? "O" : "X"; // Swap roles for next match
+                Logger.Error($"[Rematch] Khong the tao match moi cho phong {room.RoomId}");
+                return;
+            }
 
-                // Đồng bộ: Đặt lại trạng thái Sẵn Sàng của tất cả người chơi trong phòng về false
-                // Bắt buộc người chơi phải tự click Sẵn Sàng/Bắt đầu lại, tránh việc StartGame sớm khi chưa chuyển cảnh.
-                foreach (var p in room.Players)
+            if (playerX.DatabaseId > 0 && playerO.DatabaseId > 0)
+            {
+                newMatch.DbMatchId = _matchService.StartNewMatch(playerX.DatabaseId, playerO.DatabaseId);
+                Logger.Info($"[Rematch] Tao Match #{newMatch.DbMatchId} cho tai dau {playerX.Username} vs {playerO.Username}");
+            }
+
+            _matchManager.StartMatch(newMatch.MatchId);
+            Logger.Info($"[Rematch] Match {newMatch.MatchId} bat dau trong phong {room.RoomId}");
+
+            string hostSymbol = room.HostSymbol;
+            string guestSymbol = (hostSymbol == "X") ? "O" : "X";
+
+            var gameStateHost = new GameStateMessage
+            {
+                RoomId = room.RoomId, BoardState = string.Empty, BoardSize = room.BoardSize,
+                CurrentPlayerId = newMatch.CurrentTurn == CellState.X ? playerX.Id : playerO.Id,
+                CurrentTurnName = newMatch.CurrentTurn == CellState.X ? playerX.Username : playerO.Username,
+                PlayerXName = playerX.Username, PlayerOName = playerO.Username,
+                Status = "Playing", MySymbol = hostSymbol, SpectatorCount = room.Spectators.Count
+            };
+            var gameStateGuest = new GameStateMessage
+            {
+                RoomId = room.RoomId, BoardState = string.Empty, BoardSize = room.BoardSize,
+                CurrentPlayerId = newMatch.CurrentTurn == CellState.X ? playerX.Id : playerO.Id,
+                CurrentTurnName = newMatch.CurrentTurn == CellState.X ? playerX.Username : playerO.Username,
+                PlayerXName = playerX.Username, PlayerOName = playerO.Username,
+                Status = "Playing", MySymbol = guestSymbol, SpectatorCount = room.Spectators.Count
+            };
+
+            await _connectionManager.SendMessageToClientAsync(room.Players[0].Id, gameStateHost);
+            await _connectionManager.SendMessageToClientAsync(room.Players[1].Id, gameStateGuest);
+
+            foreach (var spec in room.Spectators)
+            {
+                var specState = new GameStateMessage
                 {
-                    p.IsReady = false;
-                }
-
-                await BroadcastRoomStateAsync(room);
-
-                var response = new ResponseMessage
-                {
-                    SenderId = "Server",
-                    Success = true,
-                    Action = "RematchAccepted",
-                    Data = room.RoomId
+                    RoomId = room.RoomId, BoardState = string.Empty, BoardSize = room.BoardSize,
+                    CurrentPlayerId = newMatch.CurrentTurn == CellState.X ? playerX.Id : playerO.Id,
+                    CurrentTurnName = newMatch.CurrentTurn == CellState.X ? playerX.Username : playerO.Username,
+                    PlayerXName = playerX.Username, PlayerOName = playerO.Username,
+                    Status = "Playing", MySymbol = "S", SpectatorCount = room.Spectators.Count
                 };
-                foreach (var p in room.Players)
-                    await _connectionManager.SendMessageToClientAsync(p.Id, response);
-                foreach (var p in room.Spectators)
-                    await _connectionManager.SendMessageToClientAsync(p.Id, response);
+                await _connectionManager.SendMessageToClientAsync(spec.Id, specState);
             }
         }
         else if (msg.Action == "RematchDeclined")
@@ -914,6 +957,27 @@ public class MessageHandler
                         }
                     }
                 }
+            }
+        }
+        else if (msg.Action == "InviteDeclined")
+        {
+            // B từ chối lời thách đấu → tìm A theo tên và gửi thông báo
+            string challengerName = msg.Data ?? string.Empty;
+            Logger.Info($"[Invite] {session.PlayerName} từ chối lời mời của '{challengerName}'.");
+
+            var challengerSession = _connectionManager.GetAll()
+                .FirstOrDefault(s => s.PlayerName == challengerName);
+
+            if (challengerSession != null)
+            {
+                var declinedMsg = new ResponseMessage
+                {
+                    SenderId = "Server",
+                    Success = false,
+                    Action = "InviteDeclined",
+                    ErrorMessage = $"'{session.PlayerName}' đã từ chối lời thách đấu của bạn."
+                };
+                await _connectionManager.SendMessageToClientAsync(challengerSession.SessionId.ToString(), declinedMsg);
             }
         }
         else if (msg.Action == "JoinRoom")
