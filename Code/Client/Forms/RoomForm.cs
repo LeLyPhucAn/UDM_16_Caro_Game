@@ -1,4 +1,4 @@
-﻿using CaroGame.Protocol;
+using CaroGame.Protocol;
 using CaroGame.Protocol.Messages; // Namespace chứa ResponseMessage và RoomStateDto
 using System;
 using System.Drawing;
@@ -169,6 +169,21 @@ namespace Client.Forms
             var resMsg = message as ResponseMessage;
             if (resMsg != null)
             {
+                // Xử lý khi bị từ chối lời thách đấu → đóng phòng, quay về Lobby
+                if (resMsg.Action == "InviteDeclined")
+                {
+                    MessageBox.Show(
+                        resMsg.ErrorMessage ?? "Đối thủ đã từ chối lời thách đấu của bạn.",
+                        "Từ chối thách đấu",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information
+                    );
+                    // Hủy event để không nhận tin nhắn nữa, rồi đóng form
+                    _clientConnection.OnMessageReceived -= HandleRoomMessage;
+                    this.Close();
+                    return;
+                }
+
                 if (resMsg.Action == "RoomStateUpdate")
                 {
                     var state = System.Text.Json.JsonSerializer.Deserialize<RoomStateDto>(resMsg.Data);

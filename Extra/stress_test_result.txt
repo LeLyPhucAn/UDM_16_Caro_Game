@@ -1,0 +1,807 @@
+Windows PowerShell
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+PS C:\Users\PHUC AN> d:
+PS D:\> cd "D:\C#\Lap_trinh_mang\Project_UDM_16_Caro_Game"
+PS D:\C#\Lap_trinh_mang\Project_UDM_16_Caro_Game> cd Server
+cd : Cannot find path 'D:\C#\Lap_trinh_mang\Project_UDM_16_Caro_Game\Server' because it does not exist.
+At line:1 char:1
++ cd Server
++ ~~~~~~~~~
+    + CategoryInfo          : ObjectNotFound: (D:\C#\Lap_trinh...aro_Game\Server:String) [Set-Location], ItemNotFoundE
+   xception
+    + FullyQualifiedErrorId : PathNotFound,Microsoft.PowerShell.Commands.SetLocationCommand
+
+PS D:\C#\Lap_trinh_mang\Project_UDM_16_Caro_Game> cd Code
+PS D:\C#\Lap_trinh_mang\Project_UDM_16_Caro_Game\Code> cd Server
+PS D:\C#\Lap_trinh_mang\Project_UDM_16_Caro_Game\Code\Server> donet run
+donet : The term 'donet' is not recognized as the name of a cmdlet, function, script file, or operable program. Check
+the spelling of the name, or if a path was included, verify that the path is correct and try again.
+At line:1 char:1
++ donet run
++ ~~~~~
+    + CategoryInfo          : ObjectNotFound: (donet:String) [], CommandNotFoundException
+    + FullyQualifiedErrorId : CommandNotFoundException
+
+PS D:\C#\Lap_trinh_mang\Project_UDM_16_Caro_Game\Code\Server> dotnet run
+[2026-09-26 22:21:31] [ERROR] Lỗi hệ thống khi chạy server | Chi tiết: Only one usage of each socket address (protocol/network address/port) is normally permitted.
+PS D:\C#\Lap_trinh_mang\Project_UDM_16_Caro_Game\Code\Server> dotnet run
+[2026-09-26 22:21:57] [INFO ] ========================================
+[2026-09-26 22:21:57] [INFO ] Server đã khởi động thành công!
+[2026-09-26 22:21:57] [INFO ] Địa chỉ IP : 0.0.0.0
+[2026-09-26 22:21:57] [INFO ] Cổng Port  : 5000
+[2026-09-26 22:21:57] [INFO ] ========================================
+[2026-09-26 22:21:58] [INFO ] [Database] Kết nối database CaroDB thành công: (localdb)\mssqllocaldb
+
+Nhấn phím ENTER để dừng server...
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=b1ce43d2-df50-4e44-929e-66409046739b, IP=127.0.0.1:50993 (Online: 1)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=9d918849-4f34-4dcd-8e5b-9a2511626724, IP=127.0.0.1:50994 (Online: 2)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=0bda7cd6-2e35-4cf9-84df-3bf8129bae6e, IP=127.0.0.1:50992 (Online: 3)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=fe78ebd1-6c60-454a-b9b0-da80c7216e34, IP=127.0.0.1:50995 (Online: 4)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=4e61410c-5d69-41c0-b642-e53688e4045b, IP=127.0.0.1:50996 (Online: 5)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=b8940542-59d8-44f6-91ec-b024d033b83c, IP=127.0.0.1:50997 (Online: 6)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=446f398a-8d89-44a8-92c8-c1d9b9e62019, IP=127.0.0.1:50998 (Online: 7)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=e0b48808-82a9-44fe-ad40-788951cf70dd, IP=127.0.0.1:50999 (Online: 8)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=6906a7d7-c5a1-4ce4-9275-099eb2c361f2, IP=127.0.0.1:51000 (Online: 9)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=dd4f25b3-c35c-4af8-b37f-f1b9563e078c, IP=127.0.0.1:51002 (Online: 10)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=f409ec9c-3cc4-45af-9e2b-a32b49160b9e, IP=127.0.0.1:51001 (Online: 11)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=8fab85ec-7aa3-4ccd-877a-6fc41e2afd9a, IP=127.0.0.1:51004 (Online: 12)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 4e61410c-5d69-41c0-b642-e53688e4045b
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: b1ce43d2-df50-4e44-929e-66409046739b
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: fe78ebd1-6c60-454a-b9b0-da80c7216e34
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: e0b48808-82a9-44fe-ad40-788951cf70dd
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 9d918849-4f34-4dcd-8e5b-9a2511626724
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 0bda7cd6-2e35-4cf9-84df-3bf8129bae6e
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: b8940542-59d8-44f6-91ec-b024d033b83c
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 8fab85ec-7aa3-4ccd-877a-6fc41e2afd9a
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: f409ec9c-3cc4-45af-9e2b-a32b49160b9e
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 6906a7d7-c5a1-4ce4-9275-099eb2c361f2
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 446f398a-8d89-44a8-92c8-c1d9b9e62019
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: dd4f25b3-c35c-4af8-b37f-f1b9563e078c
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=dd4f25b3-c35c-4af8-b37f-f1b9563e078c, IP=127.0.0.1:51002 (Online: 1)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=f409ec9c-3cc4-45af-9e2b-a32b49160b9e, IP=127.0.0.1:51001 (Online: 1)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=4e61410c-5d69-41c0-b642-e53688e4045b, IP=127.0.0.1:50996 (Online: 1)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=b1ce43d2-df50-4e44-929e-66409046739b, IP=127.0.0.1:50993 (Online: 1)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=6906a7d7-c5a1-4ce4-9275-099eb2c361f2, IP=127.0.0.1:51000 (Online: 0)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=446f398a-8d89-44a8-92c8-c1d9b9e62019, IP=127.0.0.1:50998 (Online: 0)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=8fab85ec-7aa3-4ccd-877a-6fc41e2afd9a, IP=127.0.0.1:51004 (Online: 0)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=b8940542-59d8-44f6-91ec-b024d033b83c, IP=127.0.0.1:50997 (Online: 0)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=fe78ebd1-6c60-454a-b9b0-da80c7216e34, IP=127.0.0.1:50995 (Online: 0)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=e0b48808-82a9-44fe-ad40-788951cf70dd, IP=127.0.0.1:50999 (Online: 0)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=9d918849-4f34-4dcd-8e5b-9a2511626724, IP=127.0.0.1:50994 (Online: 0)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=0bda7cd6-2e35-4cf9-84df-3bf8129bae6e, IP=127.0.0.1:50992 (Online: 0)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=cd94b060-7770-4f81-a74f-236a0811d84c, IP=127.0.0.1:51003 (Online: 1)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=09f02e2c-01b8-402e-b28a-7b9bb32199b5, IP=127.0.0.1:51005 (Online: 2)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: cd94b060-7770-4f81-a74f-236a0811d84c
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=9a8e656c-aae4-4959-b043-268706ebf83f, IP=127.0.0.1:51006 (Online: 3)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 09f02e2c-01b8-402e-b28a-7b9bb32199b5
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=5433463b-431a-4482-b200-0185cafc675e, IP=127.0.0.1:51007 (Online: 4)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 9a8e656c-aae4-4959-b043-268706ebf83f
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=053ba1a8-463f-4042-ad85-48f6869c978a, IP=127.0.0.1:51010 (Online: 5)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 5433463b-431a-4482-b200-0185cafc675e
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=b65a1c12-2418-4f06-9d48-9c63bd41831f, IP=127.0.0.1:51008 (Online: 6)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 053ba1a8-463f-4042-ad85-48f6869c978a
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=f80695c7-a6e1-4dd2-8a1b-b2a7c4d01f74, IP=127.0.0.1:51009 (Online: 7)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: b65a1c12-2418-4f06-9d48-9c63bd41831f
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=2e37fc19-d4c4-45b5-b643-078007c7b062, IP=127.0.0.1:51012 (Online: 8)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: f80695c7-a6e1-4dd2-8a1b-b2a7c4d01f74
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=923a4fc9-95a4-460f-a73e-0e982b1db36e, IP=127.0.0.1:51011 (Online: 9)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 2e37fc19-d4c4-45b5-b643-078007c7b062
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=cd7a4a38-efe5-4651-9d1c-694dfd70641a, IP=127.0.0.1:51013 (Online: 10)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 923a4fc9-95a4-460f-a73e-0e982b1db36e
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=572c2893-42d0-4da4-b09b-0200dcddccd0, IP=127.0.0.1:51014 (Online: 11)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: cd7a4a38-efe5-4651-9d1c-694dfd70641a
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=ce6eb657-f76b-4785-8457-ebf734d6cc7a, IP=127.0.0.1:51015 (Online: 12)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 572c2893-42d0-4da4-b09b-0200dcddccd0
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: ce6eb657-f76b-4785-8457-ebf734d6cc7a
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=572c2893-42d0-4da4-b09b-0200dcddccd0, IP=127.0.0.1:51014 (Online: 11)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=ce6eb657-f76b-4785-8457-ebf734d6cc7a, IP=127.0.0.1:51015 (Online: 10)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=18bfefbe-d30d-4504-8c70-b17777f8428e, IP=127.0.0.1:51016 (Online: 11)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=896e5a9e-3334-4fa6-9f3b-8992712b7030, IP=127.0.0.1:51018 (Online: 12)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 18bfefbe-d30d-4504-8c70-b17777f8428e
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 896e5a9e-3334-4fa6-9f3b-8992712b7030
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=18bfefbe-d30d-4504-8c70-b17777f8428e, IP=127.0.0.1:51016 (Online: 11)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=896e5a9e-3334-4fa6-9f3b-8992712b7030, IP=127.0.0.1:51018 (Online: 10)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=409118c8-8b03-4d57-a71d-843eb40fcb11, IP=127.0.0.1:51017 (Online: 11)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=9bb89981-7538-4314-a619-7e55b33c7ab7, IP=127.0.0.1:51019 (Online: 12)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 409118c8-8b03-4d57-a71d-843eb40fcb11
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 9bb89981-7538-4314-a619-7e55b33c7ab7
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=409118c8-8b03-4d57-a71d-843eb40fcb11, IP=127.0.0.1:51017 (Online: 11)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=9bb89981-7538-4314-a619-7e55b33c7ab7, IP=127.0.0.1:51019 (Online: 10)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=000869c3-50d1-42da-95d5-3a8be340a413, IP=127.0.0.1:51020 (Online: 11)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=d1999e97-e592-410b-8ea9-aa1bf7bb71e2, IP=127.0.0.1:51021 (Online: 12)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 000869c3-50d1-42da-95d5-3a8be340a413
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: d1999e97-e592-410b-8ea9-aa1bf7bb71e2
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=000869c3-50d1-42da-95d5-3a8be340a413, IP=127.0.0.1:51020 (Online: 11)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=d1999e97-e592-410b-8ea9-aa1bf7bb71e2, IP=127.0.0.1:51021 (Online: 10)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=b62290a7-e7f0-4260-b530-646725e42953, IP=127.0.0.1:51022 (Online: 11)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: b62290a7-e7f0-4260-b530-646725e42953
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=684bfb6f-f6e5-4698-8ec4-ec1c2adfd4ba, IP=127.0.0.1:51023 (Online: 12)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 684bfb6f-f6e5-4698-8ec4-ec1c2adfd4ba
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=684bfb6f-f6e5-4698-8ec4-ec1c2adfd4ba, IP=127.0.0.1:51023 (Online: 11)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=06eb3288-17d4-4fcd-84ae-5f1bd69c727a, IP=127.0.0.1:51024 (Online: 12)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 06eb3288-17d4-4fcd-84ae-5f1bd69c727a
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=06eb3288-17d4-4fcd-84ae-5f1bd69c727a, IP=127.0.0.1:51024 (Online: 11)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=c38ae18f-25db-4ba8-988c-6eb788f0e625, IP=127.0.0.1:51025 (Online: 12)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: c38ae18f-25db-4ba8-988c-6eb788f0e625
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=c38ae18f-25db-4ba8-988c-6eb788f0e625, IP=127.0.0.1:51025 (Online: 11)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=bbd285c5-5c56-442f-b9c9-64a03b2bae99, IP=127.0.0.1:51026 (Online: 12)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: bbd285c5-5c56-442f-b9c9-64a03b2bae99
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=bbd285c5-5c56-442f-b9c9-64a03b2bae99, IP=127.0.0.1:51026 (Online: 11)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=1a6d4087-2e4f-47d9-b217-42c1cff571f8, IP=127.0.0.1:51027 (Online: 12)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 1a6d4087-2e4f-47d9-b217-42c1cff571f8
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=1a6d4087-2e4f-47d9-b217-42c1cff571f8, IP=127.0.0.1:51027 (Online: 11)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=9e2ab563-7a04-440b-b8af-cea927e19999, IP=127.0.0.1:51028 (Online: 12)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 9e2ab563-7a04-440b-b8af-cea927e19999
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=9e2ab563-7a04-440b-b8af-cea927e19999, IP=127.0.0.1:51028 (Online: 11)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=3193d141-05b9-447f-83c9-8d14b5208915, IP=127.0.0.1:51029 (Online: 12)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 3193d141-05b9-447f-83c9-8d14b5208915
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=3193d141-05b9-447f-83c9-8d14b5208915, IP=127.0.0.1:51029 (Online: 11)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=25d55cc7-3ebd-4314-b0fa-d9c4c0d79eb3, IP=127.0.0.1:51030 (Online: 12)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 25d55cc7-3ebd-4314-b0fa-d9c4c0d79eb3
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=25d55cc7-3ebd-4314-b0fa-d9c4c0d79eb3, IP=127.0.0.1:51030 (Online: 11)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=de55ae4d-cd1d-4991-9a66-0ddc52ec79ca, IP=127.0.0.1:51031 (Online: 12)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: de55ae4d-cd1d-4991-9a66-0ddc52ec79ca
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=de55ae4d-cd1d-4991-9a66-0ddc52ec79ca, IP=127.0.0.1:51031 (Online: 11)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=2c22c635-98be-4f30-9aaa-190c94426eee, IP=127.0.0.1:51032 (Online: 12)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 2c22c635-98be-4f30-9aaa-190c94426eee
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=2c22c635-98be-4f30-9aaa-190c94426eee, IP=127.0.0.1:51032 (Online: 11)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=9ac11b1d-0557-4f30-89c8-da38a03afe31, IP=127.0.0.1:51033 (Online: 12)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 9ac11b1d-0557-4f30-89c8-da38a03afe31
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=9ac11b1d-0557-4f30-89c8-da38a03afe31, IP=127.0.0.1:51033 (Online: 11)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=51487e4f-ebc0-4d4f-b8a6-cef8f3f7256c, IP=127.0.0.1:51034 (Online: 12)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 51487e4f-ebc0-4d4f-b8a6-cef8f3f7256c
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=51487e4f-ebc0-4d4f-b8a6-cef8f3f7256c, IP=127.0.0.1:51034 (Online: 11)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=352d54cc-72da-4c3a-9315-bff7d41f7412, IP=127.0.0.1:51035 (Online: 12)
+[2026-09-26 22:23:01] [ERROR] Lỗi khi gửi dữ liệu tới 127.0.0.1:51015 | Chi tiết: Cannot access a disposed object.
+Object name: 'System.Net.Sockets.NetworkStream'.
+[2026-09-26 22:23:01] [ERROR] Lỗi khi gửi dữ liệu tới 127.0.0.1:51007 | Chi tiết: Cannot access a disposed object.
+Object name: 'System.Net.Sockets.NetworkStream'.
+[2026-09-26 22:23:01] [ERROR] Lỗi khi gửi dữ liệu tới 127.0.0.1:51009 | Chi tiết: Cannot access a disposed object.
+Object name: 'System.Net.Sockets.NetworkStream'.
+[2026-09-26 22:23:01] [ERROR] Lỗi khi gửi dữ liệu tới 127.0.0.1:51012 | Chi tiết: Cannot access a disposed object.
+Object name: 'System.Net.Sockets.NetworkStream'.
+[2026-09-26 22:23:01] [ERROR] Lỗi khi gửi dữ liệu tới 127.0.0.1:51013 | Chi tiết: Cannot access a disposed object.
+Object name: 'System.Net.Sockets.NetworkStream'.
+[2026-09-26 22:23:01] [ERROR] Lỗi khi gửi dữ liệu tới 127.0.0.1:51010 | Chi tiết: Cannot access a disposed object.
+Object name: 'System.Net.Sockets.NetworkStream'.
+[2026-09-26 22:23:01] [ERROR] Lỗi khi gửi dữ liệu tới 127.0.0.1:51023 | Chi tiết: Cannot access a disposed object.
+Object name: 'System.Net.Sockets.NetworkStream'.
+[2026-09-26 22:23:01] [ERROR] Lỗi khi gửi dữ liệu tới 127.0.0.1:51008 | Chi tiết: Cannot access a disposed object.
+Object name: 'System.Net.Sockets.NetworkStream'.
+[2026-09-26 22:23:01] [ERROR] Lỗi khi gửi dữ liệu tới 127.0.0.1:51011 | Chi tiết: Cannot access a disposed object.
+Object name: 'System.Net.Sockets.NetworkStream'.
+[2026-09-26 22:23:01] [ERROR] Lỗi khi gửi dữ liệu tới 127.0.0.1:51014 | Chi tiết: Cannot access a disposed object.
+Object name: 'System.Net.Sockets.NetworkStream'.
+[2026-09-26 22:23:01] [ERROR] Lỗi khi gửi dữ liệu tới 127.0.0.1:51006 | Chi tiết: Cannot access a disposed object.
+Object name: 'System.Net.Sockets.NetworkStream'.
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 352d54cc-72da-4c3a-9315-bff7d41f7412
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=cd7a4a38-efe5-4651-9d1c-694dfd70641a, IP=127.0.0.1:51013 (Online: 11)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=09f02e2c-01b8-402e-b28a-7b9bb32199b5, IP=127.0.0.1:51005 (Online: 10)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=053ba1a8-463f-4042-ad85-48f6869c978a, IP=127.0.0.1:51010 (Online: 9)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=b65a1c12-2418-4f06-9d48-9c63bd41831f, IP=127.0.0.1:51008 (Online: 8)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=2e37fc19-d4c4-45b5-b643-078007c7b062, IP=127.0.0.1:51012 (Online: 7)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=9a8e656c-aae4-4959-b043-268706ebf83f, IP=127.0.0.1:51006 (Online: 6)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=b62290a7-e7f0-4260-b530-646725e42953, IP=127.0.0.1:51022 (Online: 5)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=5433463b-431a-4482-b200-0185cafc675e, IP=127.0.0.1:51007 (Online: 4)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=f80695c7-a6e1-4dd2-8a1b-b2a7c4d01f74, IP=127.0.0.1:51009 (Online: 3)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=923a4fc9-95a4-460f-a73e-0e982b1db36e, IP=127.0.0.1:51011 (Online: 2)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=cd94b060-7770-4f81-a74f-236a0811d84c, IP=127.0.0.1:51003 (Online: 1)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=352d54cc-72da-4c3a-9315-bff7d41f7412, IP=127.0.0.1:51035 (Online: 0)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=e149a090-5553-411e-96e0-511e5f02f19d, IP=127.0.0.1:51036 (Online: 1)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=c1a6935a-58eb-4617-b6e7-a805cac84d8a, IP=127.0.0.1:51037 (Online: 2)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: e149a090-5553-411e-96e0-511e5f02f19d
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=d61691c5-64bb-4605-b4ac-8c827c2ded28, IP=127.0.0.1:51038 (Online: 3)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: c1a6935a-58eb-4617-b6e7-a805cac84d8a
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=c616d392-fa79-4185-b453-1b0f61e2924b, IP=127.0.0.1:51039 (Online: 4)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=e149a090-5553-411e-96e0-511e5f02f19d, IP=127.0.0.1:51036 (Online: 3)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=c1a6935a-58eb-4617-b6e7-a805cac84d8a, IP=127.0.0.1:51037 (Online: 2)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=7e7e79c9-c12c-441f-89ef-03eb239d4898, IP=127.0.0.1:51041 (Online: 3)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 7e7e79c9-c12c-441f-89ef-03eb239d4898
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=9b469aa7-940f-4fbc-b1a4-5dd4240b2131, IP=127.0.0.1:51040 (Online: 4)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=7e7e79c9-c12c-441f-89ef-03eb239d4898, IP=127.0.0.1:51041 (Online: 3)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=80023f3b-93ac-4489-ae7b-699e1547d7ee, IP=127.0.0.1:51043 (Online: 4)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=c999ec3f-88a6-41f9-93d8-7f31f528cf72, IP=127.0.0.1:51042 (Online: 5)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 80023f3b-93ac-4489-ae7b-699e1547d7ee
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=f3bd75f6-1990-4c4c-a394-eb15ff545ff9, IP=127.0.0.1:51045 (Online: 6)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: c999ec3f-88a6-41f9-93d8-7f31f528cf72
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=80023f3b-93ac-4489-ae7b-699e1547d7ee, IP=127.0.0.1:51043 (Online: 5)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=15ac24a2-e258-41da-b2a2-8a61d792e22b, IP=127.0.0.1:51044 (Online: 6)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=c999ec3f-88a6-41f9-93d8-7f31f528cf72, IP=127.0.0.1:51042 (Online: 5)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=635a105f-b760-4c01-98ae-496bf538fdfa, IP=127.0.0.1:51047 (Online: 6)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=7bdefb3f-06db-4b26-8f04-736d88f82656, IP=127.0.0.1:51046 (Online: 7)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 635a105f-b760-4c01-98ae-496bf538fdfa
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=261ca6b2-bd8f-4dbc-82e8-21c6b3bae1b2, IP=127.0.0.1:51048 (Online: 8)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 7bdefb3f-06db-4b26-8f04-736d88f82656
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=635a105f-b760-4c01-98ae-496bf538fdfa, IP=127.0.0.1:51047 (Online: 7)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=fe22e644-616d-47b9-8a5f-c513d484e3f8, IP=127.0.0.1:51049 (Online: 8)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=7bdefb3f-06db-4b26-8f04-736d88f82656, IP=127.0.0.1:51046 (Online: 7)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=8880c4cf-0a6c-464c-8b19-388c96d5df42, IP=127.0.0.1:51050 (Online: 8)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=6d4f54db-ede7-43f9-99b7-1a81b7127188, IP=127.0.0.1:51051 (Online: 9)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 8880c4cf-0a6c-464c-8b19-388c96d5df42
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=7426ce1f-cbaf-48f2-b350-cb4380c50805, IP=127.0.0.1:51052 (Online: 10)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 6d4f54db-ede7-43f9-99b7-1a81b7127188
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=8880c4cf-0a6c-464c-8b19-388c96d5df42, IP=127.0.0.1:51050 (Online: 9)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=f3b2acc6-b4da-4e80-a4bd-87a573acac67, IP=127.0.0.1:51053 (Online: 10)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=6d4f54db-ede7-43f9-99b7-1a81b7127188, IP=127.0.0.1:51051 (Online: 9)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=64df9f65-08b2-473c-b417-c689d093f164, IP=127.0.0.1:51054 (Online: 10)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=8cc7f674-211d-4bf9-bc89-8e58048d3fcb, IP=127.0.0.1:51055 (Online: 11)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 64df9f65-08b2-473c-b417-c689d093f164
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=4295c554-c64b-41a7-b675-7863f599e6ee, IP=127.0.0.1:51056 (Online: 12)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 8cc7f674-211d-4bf9-bc89-8e58048d3fcb
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=64df9f65-08b2-473c-b417-c689d093f164, IP=127.0.0.1:51054 (Online: 11)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=56ac519a-162d-4a86-b66f-823bf9a962f9, IP=127.0.0.1:51057 (Online: 12)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=8cc7f674-211d-4bf9-bc89-8e58048d3fcb, IP=127.0.0.1:51055 (Online: 11)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=a517b814-3738-4544-b091-b99e93e789e8, IP=127.0.0.1:51058 (Online: 12)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=b9695686-1773-439d-938a-a5317730384b, IP=127.0.0.1:51059 (Online: 13)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: a517b814-3738-4544-b091-b99e93e789e8
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: b9695686-1773-439d-938a-a5317730384b
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=a517b814-3738-4544-b091-b99e93e789e8, IP=127.0.0.1:51058 (Online: 12)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=b9695686-1773-439d-938a-a5317730384b, IP=127.0.0.1:51059 (Online: 11)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=353efdc8-17ec-4634-b556-507e3085eb8a, IP=127.0.0.1:51062 (Online: 12)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=3a53874a-e9b1-4a02-9fc6-2e15a873f603, IP=127.0.0.1:51060 (Online: 13)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 353efdc8-17ec-4634-b556-507e3085eb8a
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 3a53874a-e9b1-4a02-9fc6-2e15a873f603
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=353efdc8-17ec-4634-b556-507e3085eb8a, IP=127.0.0.1:51062 (Online: 12)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=3a53874a-e9b1-4a02-9fc6-2e15a873f603, IP=127.0.0.1:51060 (Online: 11)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=6936f12d-5539-49a6-a954-f95d166bf5c1, IP=127.0.0.1:51061 (Online: 12)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=2697f4bf-1b4e-4068-b8e8-db68b8e6a58e, IP=127.0.0.1:51063 (Online: 13)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 6936f12d-5539-49a6-a954-f95d166bf5c1
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 2697f4bf-1b4e-4068-b8e8-db68b8e6a58e
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=6936f12d-5539-49a6-a954-f95d166bf5c1, IP=127.0.0.1:51061 (Online: 12)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=2697f4bf-1b4e-4068-b8e8-db68b8e6a58e, IP=127.0.0.1:51063 (Online: 11)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=b146c429-ebab-4aed-8d3e-4820c2b7f53f, IP=127.0.0.1:51064 (Online: 12)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=717aa02e-1173-41ab-88c2-841204fdc15a, IP=127.0.0.1:51065 (Online: 13)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: b146c429-ebab-4aed-8d3e-4820c2b7f53f
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 717aa02e-1173-41ab-88c2-841204fdc15a
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=b146c429-ebab-4aed-8d3e-4820c2b7f53f, IP=127.0.0.1:51064 (Online: 12)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=717aa02e-1173-41ab-88c2-841204fdc15a, IP=127.0.0.1:51065 (Online: 11)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=fcfcc39a-fbfd-4d34-b257-94daefd0aba5, IP=127.0.0.1:51066 (Online: 12)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=9f15056f-bc43-4610-9bc5-d45a10877c49, IP=127.0.0.1:51067 (Online: 13)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: fcfcc39a-fbfd-4d34-b257-94daefd0aba5
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 9f15056f-bc43-4610-9bc5-d45a10877c49
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=fcfcc39a-fbfd-4d34-b257-94daefd0aba5, IP=127.0.0.1:51066 (Online: 12)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=9f15056f-bc43-4610-9bc5-d45a10877c49, IP=127.0.0.1:51067 (Online: 11)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=349703f2-7bd0-4ed2-bfd2-12ff9a983d77, IP=127.0.0.1:51068 (Online: 12)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=442fbe07-e341-4fc0-ae3f-dc8f18943c95, IP=127.0.0.1:51070 (Online: 13)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 349703f2-7bd0-4ed2-bfd2-12ff9a983d77
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 442fbe07-e341-4fc0-ae3f-dc8f18943c95
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=349703f2-7bd0-4ed2-bfd2-12ff9a983d77, IP=127.0.0.1:51068 (Online: 12)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=442fbe07-e341-4fc0-ae3f-dc8f18943c95, IP=127.0.0.1:51070 (Online: 11)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=f97c7b6d-4c4e-4c47-b49f-cb5ca5da7ac6, IP=127.0.0.1:51069 (Online: 12)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=460bf382-fdf0-48f4-8af3-36725260f4b0, IP=127.0.0.1:51071 (Online: 13)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: f97c7b6d-4c4e-4c47-b49f-cb5ca5da7ac6
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 460bf382-fdf0-48f4-8af3-36725260f4b0
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=f97c7b6d-4c4e-4c47-b49f-cb5ca5da7ac6, IP=127.0.0.1:51069 (Online: 12)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=460bf382-fdf0-48f4-8af3-36725260f4b0, IP=127.0.0.1:51071 (Online: 11)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=f0b0cfda-bab5-4dd5-a81a-2582228f3a74, IP=127.0.0.1:51072 (Online: 12)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=5471b5a4-48b3-4074-9bde-d7c5bc14b373, IP=127.0.0.1:51073 (Online: 13)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: f0b0cfda-bab5-4dd5-a81a-2582228f3a74
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 5471b5a4-48b3-4074-9bde-d7c5bc14b373
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=f0b0cfda-bab5-4dd5-a81a-2582228f3a74, IP=127.0.0.1:51072 (Online: 12)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=5471b5a4-48b3-4074-9bde-d7c5bc14b373, IP=127.0.0.1:51073 (Online: 11)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=49eed659-5cb5-4288-96cd-45fb2e93fe43, IP=127.0.0.1:51076 (Online: 12)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=4d90dfe7-1f0a-482f-a80c-8d9434ef6b68, IP=127.0.0.1:51074 (Online: 13)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 49eed659-5cb5-4288-96cd-45fb2e93fe43
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 4d90dfe7-1f0a-482f-a80c-8d9434ef6b68
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=49eed659-5cb5-4288-96cd-45fb2e93fe43, IP=127.0.0.1:51076 (Online: 12)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=4d90dfe7-1f0a-482f-a80c-8d9434ef6b68, IP=127.0.0.1:51074 (Online: 11)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=f450250f-db2d-421a-b6d9-5d931c523047, IP=127.0.0.1:51075 (Online: 12)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=758fa2ea-7272-44e9-95f9-eaec8d7ac3b5, IP=127.0.0.1:51077 (Online: 13)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: f450250f-db2d-421a-b6d9-5d931c523047
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 758fa2ea-7272-44e9-95f9-eaec8d7ac3b5
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=f450250f-db2d-421a-b6d9-5d931c523047, IP=127.0.0.1:51075 (Online: 12)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=95a35014-8f47-428f-a18b-6a9695eb4eb1, IP=127.0.0.1:51078 (Online: 12)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=758fa2ea-7272-44e9-95f9-eaec8d7ac3b5, IP=127.0.0.1:51077 (Online: 11)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 95a35014-8f47-428f-a18b-6a9695eb4eb1
+[2026-09-26 22:23:01] [DEBUG] Client 127.0.0.1:51048 lỗi I/O: Unable to read data from the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=b22f1d7f-278d-45a1-923b-1150bea24c88, IP=127.0.0.1:51080 (Online: 13)
+[2026-09-26 22:23:01] [DEBUG] Client 127.0.0.1:51040 lỗi I/O: Unable to read data from the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [DEBUG] Client 127.0.0.1:51057 lỗi I/O: Unable to read data from the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [DEBUG] Client 127.0.0.1:51039 lỗi I/O: Unable to read data from the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [DEBUG] Client 127.0.0.1:51056 lỗi I/O: Unable to read data from the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [DEBUG] Client 127.0.0.1:51038 lỗi I/O: Unable to read data from the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [DEBUG] Client 127.0.0.1:51049 lỗi I/O: Unable to read data from the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [DEBUG] Client 127.0.0.1:51053 lỗi I/O: Unable to read data from the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [DEBUG] Client 127.0.0.1:51045 lỗi I/O: Unable to read data from the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [DEBUG] Client 127.0.0.1:51044 lỗi I/O: Unable to read data from the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [DEBUG] Client 127.0.0.1:51052 lỗi I/O: Unable to read data from the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=95a35014-8f47-428f-a18b-6a9695eb4eb1, IP=127.0.0.1:51078 (Online: 12)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 261ca6b2-bd8f-4dbc-82e8-21c6b3bae1b2
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 9b469aa7-940f-4fbc-b1a4-5dd4240b2131
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=261ca6b2-bd8f-4dbc-82e8-21c6b3bae1b2, IP=127.0.0.1:51048 (Online: 12)
+[2026-09-26 22:23:01] [DEBUG] Client 127.0.0.1:51080 lỗi I/O: Unable to read data from the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 56ac519a-162d-4a86-b66f-823bf9a962f9
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: c616d392-fa79-4185-b453-1b0f61e2924b
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 4295c554-c64b-41a7-b675-7863f599e6ee
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: d61691c5-64bb-4605-b4ac-8c827c2ded28
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: fe22e644-616d-47b9-8a5f-c513d484e3f8
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: f3b2acc6-b4da-4e80-a4bd-87a573acac67
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: f3bd75f6-1990-4c4c-a394-eb15ff545ff9
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 15ac24a2-e258-41da-b2a2-8a61d792e22b
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 7426ce1f-cbaf-48f2-b350-cb4380c50805
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=80c43392-87c4-4c5e-befb-a9e0a67d8723, IP=127.0.0.1:51079 (Online: 13)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: b22f1d7f-278d-45a1-923b-1150bea24c88
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=56ac519a-162d-4a86-b66f-823bf9a962f9, IP=127.0.0.1:51057 (Online: 11)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=c616d392-fa79-4185-b453-1b0f61e2924b, IP=127.0.0.1:51039 (Online: 10)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=4295c554-c64b-41a7-b675-7863f599e6ee, IP=127.0.0.1:51056 (Online: 9)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=d61691c5-64bb-4605-b4ac-8c827c2ded28, IP=127.0.0.1:51038 (Online: 8)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=fe22e644-616d-47b9-8a5f-c513d484e3f8, IP=127.0.0.1:51049 (Online: 7)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=f3b2acc6-b4da-4e80-a4bd-87a573acac67, IP=127.0.0.1:51053 (Online: 6)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=f3bd75f6-1990-4c4c-a394-eb15ff545ff9, IP=127.0.0.1:51045 (Online: 5)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=15ac24a2-e258-41da-b2a2-8a61d792e22b, IP=127.0.0.1:51044 (Online: 4)
+[2026-09-26 22:23:01] [ERROR] Lỗi khi gửi dữ liệu tới 127.0.0.1:51079 | Chi tiết: Unable to write data to the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=7426ce1f-cbaf-48f2-b350-cb4380c50805, IP=127.0.0.1:51052 (Online: 3)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 80c43392-87c4-4c5e-befb-a9e0a67d8723
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=a0ffa6f9-266e-41a1-9f56-80a823dfdce0, IP=127.0.0.1:51082 (Online: 4)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=b22f1d7f-278d-45a1-923b-1150bea24c88, IP=127.0.0.1:51080 (Online: 3)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=9b469aa7-940f-4fbc-b1a4-5dd4240b2131, IP=127.0.0.1:51040 (Online: 2)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: a0ffa6f9-266e-41a1-9f56-80a823dfdce0
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=ff3b7bb5-509a-4a42-871a-7e0317413915, IP=127.0.0.1:51081 (Online: 3)
+[2026-09-26 22:23:01] [ERROR] Lỗi khi gửi dữ liệu tới 127.0.0.1:51082 | Chi tiết: Unable to write data to the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [DEBUG] Client 127.0.0.1:51081 lỗi I/O: Unable to read data from the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=c6ef2037-9fd5-4d7d-ad64-74a6e4650bfb, IP=127.0.0.1:51084 (Online: 3)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=a0ffa6f9-266e-41a1-9f56-80a823dfdce0, IP=127.0.0.1:51082 (Online: 2)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=80c43392-87c4-4c5e-befb-a9e0a67d8723, IP=127.0.0.1:51079 (Online: 2)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: ff3b7bb5-509a-4a42-871a-7e0317413915
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=cc698ff2-04b3-4bae-8983-ca40456ee449, IP=127.0.0.1:51083 (Online: 3)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: c6ef2037-9fd5-4d7d-ad64-74a6e4650bfb
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=ff3b7bb5-509a-4a42-871a-7e0317413915, IP=127.0.0.1:51081 (Online: 2)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=8c33a35b-8c37-458a-8b89-4cae38c704ed, IP=127.0.0.1:51085 (Online: 3)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=c6ef2037-9fd5-4d7d-ad64-74a6e4650bfb, IP=127.0.0.1:51084 (Online: 2)
+[2026-09-26 22:23:01] [DEBUG] Client 127.0.0.1:51083 lỗi I/O: Unable to read data from the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=7da44404-b846-473a-b552-717ca59759c4, IP=127.0.0.1:51086 (Online: 3)
+[2026-09-26 22:23:01] [DEBUG] Client 127.0.0.1:51085 lỗi I/O: Unable to read data from the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: cc698ff2-04b3-4bae-8983-ca40456ee449
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=c99f3a31-0908-45fa-8b24-da69c7458348, IP=127.0.0.1:51087 (Online: 4)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 7da44404-b846-473a-b552-717ca59759c4
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 8c33a35b-8c37-458a-8b89-4cae38c704ed
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=cc698ff2-04b3-4bae-8983-ca40456ee449, IP=127.0.0.1:51083 (Online: 3)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=d8913def-0af7-4ad9-aff7-882d9b75fe47, IP=127.0.0.1:51088 (Online: 4)
+[2026-09-26 22:23:01] [ERROR] Lỗi khi gửi dữ liệu tới 127.0.0.1:51088 | Chi tiết: Unable to write data to the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [DEBUG] Client 127.0.0.1:51087 lỗi I/O: Unable to read data from the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=7da44404-b846-473a-b552-717ca59759c4, IP=127.0.0.1:51086 (Online: 3)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: d8913def-0af7-4ad9-aff7-882d9b75fe47
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=400c0e7a-d0f4-4d60-a889-09a5f9a8acb0, IP=127.0.0.1:51089 (Online: 4)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=8c33a35b-8c37-458a-8b89-4cae38c704ed, IP=127.0.0.1:51085 (Online: 3)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: c99f3a31-0908-45fa-8b24-da69c7458348
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=d8913def-0af7-4ad9-aff7-882d9b75fe47, IP=127.0.0.1:51088 (Online: 2)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=f1ac8b51-198b-4e89-8e82-a5b68afa6451, IP=127.0.0.1:51091 (Online: 3)
+[2026-09-26 22:23:01] [DEBUG] Client 127.0.0.1:51089 lỗi I/O: Unable to read data from the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=c99f3a31-0908-45fa-8b24-da69c7458348, IP=127.0.0.1:51087 (Online: 2)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=60a14946-01a6-4954-8973-54fd8a632827, IP=127.0.0.1:51090 (Online: 3)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 400c0e7a-d0f4-4d60-a889-09a5f9a8acb0
+[2026-09-26 22:23:01] [DEBUG] Client 127.0.0.1:51091 lỗi I/O: Unable to read data from the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=4153c586-c525-4889-906a-971010eb1054, IP=127.0.0.1:51092 (Online: 4)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 60a14946-01a6-4954-8973-54fd8a632827
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=400c0e7a-d0f4-4d60-a889-09a5f9a8acb0, IP=127.0.0.1:51089 (Online: 3)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: f1ac8b51-198b-4e89-8e82-a5b68afa6451
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=87f33754-dc00-4ba5-9e40-45ae0922c7c9, IP=127.0.0.1:51093 (Online: 4)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=60a14946-01a6-4954-8973-54fd8a632827, IP=127.0.0.1:51090 (Online: 3)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=f1ac8b51-198b-4e89-8e82-a5b68afa6451, IP=127.0.0.1:51091 (Online: 2)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=503d80ba-81ef-4e40-96d7-b3afa445439a, IP=127.0.0.1:51094 (Online: 3)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=98eb3600-346d-4ec9-843d-98315b38c9b3, IP=127.0.0.1:51095 (Online: 4)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=8a4163da-0f8e-403b-a074-54856c0d794a, IP=127.0.0.1:51096 (Online: 5)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=e20fef3f-b692-40b3-979c-8546dbd76e69, IP=127.0.0.1:51097 (Online: 6)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=66138646-faa2-4925-8b08-4a0f1e5e84e8, IP=127.0.0.1:51098 (Online: 7)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=7253a368-1170-4d58-a03e-14f5e7404151, IP=127.0.0.1:51099 (Online: 8)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=bf1e8e18-b470-460d-8e37-3d54420a227f, IP=127.0.0.1:51101 (Online: 9)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=5a7c4a7c-fc4e-422d-a86d-f067beb7b423, IP=127.0.0.1:51102 (Online: 10)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=3e12d751-7631-4324-b04e-0ed1f5504961, IP=127.0.0.1:51103 (Online: 11)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=7aa792a1-b45c-4852-8557-35a0487f36de, IP=127.0.0.1:51104 (Online: 12)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=3ebf6d70-dbad-4890-9ff9-f10257d647e1, IP=127.0.0.1:51105 (Online: 13)
+[2026-09-26 22:23:01] [DEBUG] Nhận Message từ 503d80ba-81ef-4e40-96d7-b3afa445439a: Type=CreateRoom, Sender=
+[2026-09-26 22:23:01] [DEBUG] Nhận Message từ 7aa792a1-b45c-4852-8557-35a0487f36de: Type=CreateRoom, Sender=
+[2026-09-26 22:23:01] [DEBUG] Nhận Message từ bf1e8e18-b470-460d-8e37-3d54420a227f: Type=CreateRoom, Sender=
+[2026-09-26 22:23:01] [DEBUG] Nhận Message từ 7253a368-1170-4d58-a03e-14f5e7404151: Type=CreateRoom, Sender=
+[2026-09-26 22:23:01] [DEBUG] Nhận Message từ 3ebf6d70-dbad-4890-9ff9-f10257d647e1: Type=CreateRoom, Sender=
+[2026-09-26 22:23:01] [DEBUG] Nhận Message từ 98eb3600-346d-4ec9-843d-98315b38c9b3: Type=CreateRoom, Sender=
+[2026-09-26 22:23:01] [DEBUG] Nhận Message từ 3e12d751-7631-4324-b04e-0ed1f5504961: Type=CreateRoom, Sender=
+[2026-09-26 22:23:01] [DEBUG] Nhận Message từ 8a4163da-0f8e-403b-a074-54856c0d794a: Type=CreateRoom, Sender=
+[2026-09-26 22:23:01] [DEBUG] Nhận Message từ 87f33754-dc00-4ba5-9e40-45ae0922c7c9: Type=CreateRoom, Sender=
+[2026-09-26 22:23:01] [DEBUG] Nhận Message từ 66138646-faa2-4925-8b08-4a0f1e5e84e8: Type=CreateRoom, Sender=
+[2026-09-26 22:23:01] [DEBUG] Nhận Message từ 4153c586-c525-4889-906a-971010eb1054: Type=CreateRoom, Sender=
+[2026-09-26 22:23:01] [INFO ] [CreateRoom] Yêu cầu từ Session: 4153c586-c525-4889-906a-971010eb1054
+[2026-09-26 22:23:01] [DEBUG] Nhận Message từ 5a7c4a7c-fc4e-422d-a86d-f067beb7b423: Type=CreateRoom, Sender=
+[2026-09-26 22:23:01] [INFO ] [CreateRoom] Yêu cầu từ Session: 5a7c4a7c-fc4e-422d-a86d-f067beb7b423
+[2026-09-26 22:23:01] [INFO ] [CreateRoom] Yêu cầu từ Session: 87f33754-dc00-4ba5-9e40-45ae0922c7c9
+[2026-09-26 22:23:01] [INFO ] [CreateRoom] Yêu cầu từ Session: 503d80ba-81ef-4e40-96d7-b3afa445439a
+[2026-09-26 22:23:01] [INFO ] [CreateRoom] Yêu cầu từ Session: 7aa792a1-b45c-4852-8557-35a0487f36de
+[2026-09-26 22:23:01] [INFO ] [CreateRoom] Yêu cầu từ Session: bf1e8e18-b470-460d-8e37-3d54420a227f
+[2026-09-26 22:23:01] [INFO ] [CreateRoom] Yêu cầu từ Session: 7253a368-1170-4d58-a03e-14f5e7404151
+[2026-09-26 22:23:01] [INFO ] [CreateRoom] Yêu cầu từ Session: 98eb3600-346d-4ec9-843d-98315b38c9b3
+[2026-09-26 22:23:01] [INFO ] [CreateRoom] Yêu cầu từ Session: 3ebf6d70-dbad-4890-9ff9-f10257d647e1
+[2026-09-26 22:23:01] [INFO ] [CreateRoom] Yêu cầu từ Session: 8a4163da-0f8e-403b-a074-54856c0d794a
+[2026-09-26 22:23:01] [INFO ] [CreateRoom] Yêu cầu từ Session: 66138646-faa2-4925-8b08-4a0f1e5e84e8
+[2026-09-26 22:23:01] [INFO ] [ROOM] Created: Room_6_0 (1b270f3b-7279-4ece-84d1-7c9cc91df23e)
+[2026-09-26 22:23:01] [INFO ] [CreateRoom] Yêu cầu từ Session: 3e12d751-7631-4324-b04e-0ed1f5504961
+[2026-09-26 22:23:01] [INFO ] [ROOM] Created: Room_0_0 (ebcaad74-440c-4d6d-b573-afe2c33cf15a)
+[2026-09-26 22:23:01] [INFO ] [ROOM] Created: Room_1_0 (72e09b35-fd97-44b2-86b2-16056c568562)
+[2026-09-26 22:23:01] [INFO ] [ROOM] Created: Room_2_0 (8e3d89d1-014a-421d-a149-6affb6438ca2)
+[2026-09-26 22:23:01] [INFO ] [ROOM] Created: Room_11_0 (a90895d4-6e44-436d-9897-8ea1ea74961f)
+[2026-09-26 22:23:01] [INFO ] [ROOM] Created: Room_9_0 (acff72e2-e86e-4d1a-9a04-a9b945aee510)
+[2026-09-26 22:23:01] [INFO ] [ROOM] Created: Room_8_0 (9fc535f6-80ff-4642-b29d-beec1a58d707)
+[2026-09-26 22:23:01] [ERROR] [Network] Lỗi nội bộ khi xử lý CreateRoom từ 7253a368-1170-4d58-a03e-14f5e7404151 | Chi tiết: Collection was modified; enumeration operation may not execute.
+[2026-09-26 22:23:01] [INFO ] [ROOM] Created: Room_3_0 (02221308-146c-47a9-abde-39d8153d4e48)
+[2026-09-26 22:23:01] [INFO ] [ROOM] Player_98eb joined Room_3_0 as Player
+[2026-09-26 22:23:01] [INFO ] [ROOM] Created: Room_4_0 (a7846a13-4b3e-4fac-b8a0-6d009ac7af54)
+[2026-09-26 22:23:01] [DEBUG] Nhận Message từ e20fef3f-b692-40b3-979c-8546dbd76e69: Type=CreateRoom, Sender=
+[2026-09-26 22:23:01] [INFO ] [CreateRoom] Yêu cầu từ Session: e20fef3f-b692-40b3-979c-8546dbd76e69
+[2026-09-26 22:23:01] [INFO ] [ROOM] Player_bf1e joined Room_8_0 as Player
+[2026-09-26 22:23:01] [INFO ] [ROOM] Player_6613 joined Room_6_0 as Player
+[2026-09-26 22:23:01] [INFO ] [ROOM] Player_4153 joined Room_0_0 as Player
+[2026-09-26 22:23:01] [INFO ] [ROOM] Player_7aa7 joined Room_11_0 as Player
+[2026-09-26 22:23:01] [INFO ] [ROOM] Player_503d joined Room_2_0 as Player
+[2026-09-26 22:23:01] [INFO ] [ROOM] Player_87f3 joined Room_1_0 as Player
+[2026-09-26 22:23:01] [INFO ] [ROOM] Player_5a7c joined Room_9_0 as Player
+[2026-09-26 22:23:01] [INFO ] [ROOM] Created: Room_12_0 (ae85e68a-9177-4b6c-ad6a-ba40670c0d56)
+[2026-09-26 22:23:01] [INFO ] [ROOM] Player_8a41 joined Room_4_0 as Player
+[2026-09-26 22:23:01] [INFO ] [ROOM] Created: Room_10_0 (2a832881-b532-44fa-b253-7f428627e9a4)
+[2026-09-26 22:23:01] [INFO ] [ROOM] Player_3e12 joined Room_10_0 as Player
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=319d2e50-8743-4f11-91b4-2ebe35a60f2f, IP=127.0.0.1:51106 (Online: 14)
+[2026-09-26 22:23:01] [INFO ] [ROOM] Player_3ebf joined Room_12_0 as Player
+[2026-09-26 22:23:01] [INFO ] [ROOM] Created: Room_5_0 (7539d674-192e-402d-bd20-13fb95a360c5)
+[2026-09-26 22:23:01] [DEBUG] Nhận Message từ 319d2e50-8743-4f11-91b4-2ebe35a60f2f: Type=CreateRoom, Sender=
+[2026-09-26 22:23:01] [INFO ] [ROOM] Player_e20f joined Room_5_0 as Player
+[2026-09-26 22:23:01] [INFO ] [CreateRoom] Yêu cầu từ Session: 319d2e50-8743-4f11-91b4-2ebe35a60f2f
+[2026-09-26 22:23:01] [INFO ] [ROOM] Created: Room_13_0 (61132723-f8bf-44e8-ba38-a67c4fdf6180)
+[2026-09-26 22:23:01] [INFO ] [ROOM] Player_319d joined Room_13_0 as Player
+[2026-09-26 22:23:01] [ERROR] Lỗi khi gửi dữ liệu tới 127.0.0.1:51093 | Chi tiết: Unable to write data to the transport connection: An existing connection was forcibly closed by the remote host..
+[2026-09-26 22:23:01] [ERROR] Lỗi khi gửi dữ liệu tới 127.0.0.1:51098 | Chi tiết: Unable to write data to the transport connection: An existing connection was forcibly closed by the remote host..
+[2026-09-26 22:23:01] [ERROR] Lỗi khi gửi dữ liệu tới 127.0.0.1:51095 | Chi tiết: Unable to write data to the transport connection: An existing connection was forcibly closed by the remote host..
+[2026-09-26 22:23:01] [ERROR] Lỗi khi gửi dữ liệu tới 127.0.0.1:51092 | Chi tiết: Unable to write data to the transport connection: An existing connection was forcibly closed by the remote host..
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 98eb3600-346d-4ec9-843d-98315b38c9b3
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 4153c586-c525-4889-906a-971010eb1054
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 66138646-faa2-4925-8b08-4a0f1e5e84e8
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 87f33754-dc00-4ba5-9e40-45ae0922c7c9
+[2026-09-26 22:23:01] [DEBUG] Nhận Message từ 5a7c4a7c-fc4e-422d-a86d-f067beb7b423: Type=CreateRoom, Sender=
+[2026-09-26 22:23:01] [INFO ] [CreateRoom] Yêu cầu từ Session: 5a7c4a7c-fc4e-422d-a86d-f067beb7b423
+[2026-09-26 22:23:01] [ERROR] Lỗi khi gửi dữ liệu tới 127.0.0.1:51096 | Chi tiết: Unable to write data to the transport connection: An existing connection was forcibly closed by the remote host..
+[2026-09-26 22:23:01] [ERROR] Lỗi khi gửi dữ liệu tới 127.0.0.1:51104 | Chi tiết: Unable to write data to the transport connection: An existing connection was forcibly closed by the remote host..
+[2026-09-26 22:23:01] [ERROR] Lỗi khi gửi dữ liệu tới 127.0.0.1:51094 | Chi tiết: Unable to write data to the transport connection: An existing connection was forcibly closed by the remote host..
+[2026-09-26 22:23:01] [ERROR] Lỗi khi gửi dữ liệu tới 127.0.0.1:51097 | Chi tiết: Unable to write data to the transport connection: An existing connection was forcibly closed by the remote host..
+[2026-09-26 22:23:01] [ERROR] Lỗi khi gửi dữ liệu tới 127.0.0.1:51105 | Chi tiết: Unable to write data to the transport connection: An existing connection was forcibly closed by the remote host..
+[2026-09-26 22:23:01] [ERROR] Lỗi khi gửi dữ liệu tới 127.0.0.1:51101 | Chi tiết: Unable to write data to the transport connection: An existing connection was forcibly closed by the remote host..
+[2026-09-26 22:23:01] [ERROR] Lỗi khi gửi dữ liệu tới 127.0.0.1:51099 | Chi tiết: Unable to write data to the transport connection: An existing connection was forcibly closed by the remote host..
+[2026-09-26 22:23:01] [ERROR] Lỗi khi gửi dữ liệu tới 127.0.0.1:51103 | Chi tiết: Unable to write data to the transport connection: An existing connection was forcibly closed by the remote host..
+[2026-09-26 22:23:01] [INFO ] [ROOM] Player_87f3 left Room_1_0
+[2026-09-26 22:23:01] [INFO ] [ROOM] Player_4153 left Room_0_0
+[2026-09-26 22:23:01] [INFO ] [ROOM] Player_6613 left Room_6_0
+[2026-09-26 22:23:01] [INFO ] [ROOM] Removed: 1b270f3b-7279-4ece-84d1-7c9cc91df23e
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 8a4163da-0f8e-403b-a074-54856c0d794a
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 7aa792a1-b45c-4852-8557-35a0487f36de
+[2026-09-26 22:23:01] [INFO ] [ROOM] Player_7aa7 left Room_11_0
+[2026-09-26 22:23:01] [INFO ] [ROOM] Removed: a90895d4-6e44-436d-9897-8ea1ea74961f
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 3ebf6d70-dbad-4890-9ff9-f10257d647e1
+[2026-09-26 22:23:01] [INFO ] [ROOM] Player_5a7c left Room_9_0
+[2026-09-26 22:23:01] [INFO ] [ROOM] Removed: acff72e2-e86e-4d1a-9a04-a9b945aee510
+[2026-09-26 22:23:01] [INFO ] [LeaveRoom] Session 5a7c4a7c-fc4e-422d-a86d-f067beb7b423 da roi phong acff72e2-e86e-4d1a-9a04-a9b945aee510
+[2026-09-26 22:23:01] [ERROR] Lỗi khi gửi dữ liệu tới 127.0.0.1:51102 | Chi tiết: Unable to write data to the transport connection: An existing connection was forcibly closed by the remote host..
+[2026-09-26 22:23:01] [INFO ] [ROOM] Removed: ebcaad74-440c-4d6d-b573-afe2c33cf15a
+[2026-09-26 22:23:01] [INFO ] [ROOM] Removed: 72e09b35-fd97-44b2-86b2-16056c568562
+[2026-09-26 22:23:01] [INFO ] [ROOM] Player_98eb left Room_3_0
+[2026-09-26 22:23:01] [INFO ] [ROOM] Removed: 02221308-146c-47a9-abde-39d8153d4e48
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 503d80ba-81ef-4e40-96d7-b3afa445439a
+[2026-09-26 22:23:01] [INFO ] [ROOM] Player_503d left Room_2_0
+[2026-09-26 22:23:01] [INFO ] [ROOM] Removed: 8e3d89d1-014a-421d-a149-6affb6438ca2
+[2026-09-26 22:23:01] [INFO ] [ROOM] Player_3ebf left Room_12_0
+[2026-09-26 22:23:01] [INFO ] [ROOM] Removed: ae85e68a-9177-4b6c-ad6a-ba40670c0d56
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: bf1e8e18-b470-460d-8e37-3d54420a227f
+[2026-09-26 22:23:01] [INFO ] [ROOM] Player_bf1e left Room_8_0
+[2026-09-26 22:23:01] [INFO ] [ROOM] Removed: 9fc535f6-80ff-4642-b29d-beec1a58d707
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 319d2e50-8743-4f11-91b4-2ebe35a60f2f
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=4153c586-c525-4889-906a-971010eb1054, IP=127.0.0.1:51092 (Online: 12)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=87f33754-dc00-4ba5-9e40-45ae0922c7c9, IP=127.0.0.1:51093 (Online: 11)
+[2026-09-26 22:23:01] [INFO ] [ROOM] Player_8a41 left Room_4_0
+[2026-09-26 22:23:01] [INFO ] [ROOM] Removed: a7846a13-4b3e-4fac-b8a0-6d009ac7af54
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: e20fef3f-b692-40b3-979c-8546dbd76e69
+[2026-09-26 22:23:01] [INFO ] [ROOM] Player_e20f left Room_5_0
+[2026-09-26 22:23:01] [INFO ] [ROOM] Removed: 7539d674-192e-402d-bd20-13fb95a360c5
+[2026-09-26 22:23:01] [ERROR] Lỗi khi gửi dữ liệu tới 127.0.0.1:51106 | Chi tiết: Unable to write data to the transport connection: An existing connection was forcibly closed by the remote host..
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=3ebf6d70-dbad-4890-9ff9-f10257d647e1, IP=127.0.0.1:51105 (Online: 8)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 3e12d751-7631-4324-b04e-0ed1f5504961
+[2026-09-26 22:23:01] [INFO ] [ROOM] Created: Room_9_1 (8754d44b-a0f8-438c-8d60-1bdff8d47786)
+[2026-09-26 22:23:01] [INFO ] [ROOM] Player_5a7c joined Room_9_1 as Player
+[2026-09-26 22:23:01] [INFO ] [ROOM] Player_319d left Room_13_0
+[2026-09-26 22:23:01] [INFO ] [ROOM] Removed: 61132723-f8bf-44e8-ba38-a67c4fdf6180
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=2e02f14f-4e4a-4cfb-81d3-e048380a575d, IP=127.0.0.1:51107 (Online: 8)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=98eb3600-346d-4ec9-843d-98315b38c9b3, IP=127.0.0.1:51095 (Online: 10)
+[2026-09-26 22:23:01] [DEBUG] Nhận Message từ 2e02f14f-4e4a-4cfb-81d3-e048380a575d: Type=CreateRoom, Sender=
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=7aa792a1-b45c-4852-8557-35a0487f36de, IP=127.0.0.1:51104 (Online: 13)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=503d80ba-81ef-4e40-96d7-b3afa445439a, IP=127.0.0.1:51094 (Online: 9)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=e20fef3f-b692-40b3-979c-8546dbd76e69, IP=127.0.0.1:51097 (Online: 6)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=66138646-faa2-4925-8b08-4a0f1e5e84e8, IP=127.0.0.1:51098 (Online: 5)
+[2026-09-26 22:23:01] [INFO ] [ROOM] Player_3e12 left Room_10_0
+[2026-09-26 22:23:01] [INFO ] [ROOM] Removed: 2a832881-b532-44fa-b253-7f428627e9a4
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 5a7c4a7c-fc4e-422d-a86d-f067beb7b423
+[2026-09-26 22:23:01] [INFO ] [ROOM] Player_5a7c left Room_9_1
+[2026-09-26 22:23:01] [INFO ] [ROOM] Removed: 8754d44b-a0f8-438c-8d60-1bdff8d47786
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=a44247a4-858e-48ac-8884-8ea5d4fbd5a9, IP=127.0.0.1:51108 (Online: 5)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=8a4163da-0f8e-403b-a074-54856c0d794a, IP=127.0.0.1:51096 (Online: 7)
+[2026-09-26 22:23:01] [INFO ] [CreateRoom] Yêu cầu từ Session: 2e02f14f-4e4a-4cfb-81d3-e048380a575d
+[2026-09-26 22:23:01] [INFO ] [ROOM] Created: Room_14_0 (5de360d8-b18b-4d86-b671-21ba47e226e1)
+[2026-09-26 22:23:01] [INFO ] [ROOM] Player_2e02 joined Room_14_0 as Player
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 7253a368-1170-4d58-a03e-14f5e7404151
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=319d2e50-8743-4f11-91b4-2ebe35a60f2f, IP=127.0.0.1:51106 (Online: 4)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=5a7c4a7c-fc4e-422d-a86d-f067beb7b423, IP=127.0.0.1:51102 (Online: 3)
+[2026-09-26 22:23:01] [DEBUG] Nhận Message từ a44247a4-858e-48ac-8884-8ea5d4fbd5a9: Type=CreateRoom, Sender=
+[2026-09-26 22:23:01] [INFO ] [CreateRoom] Yêu cầu từ Session: a44247a4-858e-48ac-8884-8ea5d4fbd5a9
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=bf1e8e18-b470-460d-8e37-3d54420a227f, IP=127.0.0.1:51101 (Online: 7)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=3e12d751-7631-4324-b04e-0ed1f5504961, IP=127.0.0.1:51103 (Online: 4)
+[2026-09-26 22:23:01] [DEBUG] Nhận Message từ 2e02f14f-4e4a-4cfb-81d3-e048380a575d: Type=CreateRoom, Sender=
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=7253a368-1170-4d58-a03e-14f5e7404151, IP=127.0.0.1:51099 (Online: 3)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=3e719da8-59c1-4382-ade2-f072a5d325f7, IP=127.0.0.1:51109 (Online: 4)
+[2026-09-26 22:23:01] [INFO ] [ROOM] Created: Room_15_0 (3f08de91-cd0c-4c22-87d6-4e6de13f9d32)
+[2026-09-26 22:23:01] [INFO ] [CreateRoom] Yêu cầu từ Session: 2e02f14f-4e4a-4cfb-81d3-e048380a575d
+[2026-09-26 22:23:01] [DEBUG] Nhận Message từ 3e719da8-59c1-4382-ade2-f072a5d325f7: Type=CreateRoom, Sender=
+[2026-09-26 22:23:01] [INFO ] [CreateRoom] Yêu cầu từ Session: 3e719da8-59c1-4382-ade2-f072a5d325f7
+[2026-09-26 22:23:01] [INFO ] [ROOM] Created: Room_16_0 (ee526517-edf0-4cc0-b17c-2594e42a570f)
+[2026-09-26 22:23:01] [INFO ] [ROOM] Player_2e02 left Room_14_0
+[2026-09-26 22:23:01] [INFO ] [ROOM] Removed: 5de360d8-b18b-4d86-b671-21ba47e226e1
+[2026-09-26 22:23:01] [INFO ] [LeaveRoom] Session 2e02f14f-4e4a-4cfb-81d3-e048380a575d da roi phong 5de360d8-b18b-4d86-b671-21ba47e226e1
+[2026-09-26 22:23:01] [INFO ] [ROOM] Player_3e71 joined Room_16_0 as Player
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=5f2717ec-603b-47fe-9d0b-bf700658cc4e, IP=127.0.0.1:51110 (Online: 4)
+[2026-09-26 22:23:01] [INFO ] [ROOM] Player_a442 joined Room_15_0 as Player
+[2026-09-26 22:23:01] [DEBUG] Nhận Message từ 3e719da8-59c1-4382-ade2-f072a5d325f7: Type=CreateRoom, Sender=
+[2026-09-26 22:23:01] [INFO ] [CreateRoom] Yêu cầu từ Session: 3e719da8-59c1-4382-ade2-f072a5d325f7
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=dd3e4a31-0dc6-43d7-8390-966856fee5b5, IP=127.0.0.1:51111 (Online: 5)
+[2026-09-26 22:23:01] [ERROR] Lỗi khi gửi dữ liệu tới 127.0.0.1:51107 | Chi tiết: Unable to write data to the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [DEBUG] Nhận Message từ 5f2717ec-603b-47fe-9d0b-bf700658cc4e: Type=CreateRoom, Sender=
+[2026-09-26 22:23:01] [INFO ] [CreateRoom] Yêu cầu từ Session: 5f2717ec-603b-47fe-9d0b-bf700658cc4e
+[2026-09-26 22:23:01] [INFO ] [ROOM] Player_3e71 left Room_16_0
+[2026-09-26 22:23:01] [INFO ] [ROOM] Removed: ee526517-edf0-4cc0-b17c-2594e42a570f
+[2026-09-26 22:23:01] [INFO ] [LeaveRoom] Session 3e719da8-59c1-4382-ade2-f072a5d325f7 da roi phong ee526517-edf0-4cc0-b17c-2594e42a570f
+[2026-09-26 22:23:01] [INFO ] [ROOM] Created: Room_14_1 (59eb0fe8-3a1b-48a9-9d2d-ed137434fe1b)
+[2026-09-26 22:23:01] [DEBUG] Nhận Message từ a44247a4-858e-48ac-8884-8ea5d4fbd5a9: Type=CreateRoom, Sender=
+[2026-09-26 22:23:01] [INFO ] [ROOM] Created: Room_17_0 (96dec7a1-2567-40f7-9e9c-0cd42f499a8f)
+[2026-09-26 22:23:01] [DEBUG] Nhận Message từ dd3e4a31-0dc6-43d7-8390-966856fee5b5: Type=CreateRoom, Sender=
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=6e64fabb-14df-4c5c-a4bc-d611b5213d60, IP=127.0.0.1:51112 (Online: 6)
+[2026-09-26 22:23:01] [INFO ] [ROOM] Created: Room_16_1 (0923c3bd-1abf-4a49-b549-c41fcae8a0ae)
+[2026-09-26 22:23:01] [INFO ] [ROOM] Player_3e71 joined Room_16_1 as Player
+[2026-09-26 22:23:01] [INFO ] [CreateRoom] Yêu cầu từ Session: a44247a4-858e-48ac-8884-8ea5d4fbd5a9
+[2026-09-26 22:23:01] [INFO ] [ROOM] Player_5f27 joined Room_17_0 as Player
+[2026-09-26 22:23:01] [INFO ] [CreateRoom] Yêu cầu từ Session: dd3e4a31-0dc6-43d7-8390-966856fee5b5
+[2026-09-26 22:23:01] [DEBUG] Nhận Message từ 6e64fabb-14df-4c5c-a4bc-d611b5213d60: Type=CreateRoom, Sender=
+[2026-09-26 22:23:01] [INFO ] [CreateRoom] Yêu cầu từ Session: 6e64fabb-14df-4c5c-a4bc-d611b5213d60
+[2026-09-26 22:23:01] [INFO ] [ROOM] Player_a442 left Room_15_0
+[2026-09-26 22:23:01] [INFO ] [ROOM] Removed: 3f08de91-cd0c-4c22-87d6-4e6de13f9d32
+[2026-09-26 22:23:01] [INFO ] [LeaveRoom] Session a44247a4-858e-48ac-8884-8ea5d4fbd5a9 da roi phong 3f08de91-cd0c-4c22-87d6-4e6de13f9d32
+[2026-09-26 22:23:01] [ERROR] Lỗi khi gửi dữ liệu tới 127.0.0.1:51108 | Chi tiết: Unable to write data to the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [INFO ] [ROOM] Player_2e02 joined Room_14_1 as Player
+[2026-09-26 22:23:01] [INFO ] [ROOM] Created: Room_19_0 (05df1d9e-e77d-4e6c-9173-3b617a52d7aa)
+[2026-09-26 22:23:01] [INFO ] [ROOM] Player_6e64 joined Room_19_0 as Player
+[2026-09-26 22:23:01] [INFO ] [ROOM] Created: Room_18_0 (75ca8c21-caa6-4d7d-a5eb-c8e8082e3535)
+[2026-09-26 22:23:01] [INFO ] [ROOM] Created: Room_15_1 (5260324d-25a3-485c-a7de-4cd3e6fc6b85)
+[2026-09-26 22:23:01] [INFO ] [ROOM] Player_a442 joined Room_15_1 as Player
+[2026-09-26 22:23:01] [ERROR] Lỗi khi gửi dữ liệu tới 127.0.0.1:51109 | Chi tiết: Unable to write data to the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [DEBUG] Nhận Message từ 5f2717ec-603b-47fe-9d0b-bf700658cc4e: Type=CreateRoom, Sender=
+[2026-09-26 22:23:01] [INFO ] [CreateRoom] Yêu cầu từ Session: 5f2717ec-603b-47fe-9d0b-bf700658cc4e
+[2026-09-26 22:23:01] [INFO ] [ROOM] Player_5f27 left Room_17_0
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 2e02f14f-4e4a-4cfb-81d3-e048380a575d
+[2026-09-26 22:23:01] [INFO ] [ROOM] Player_2e02 left Room_14_1
+[2026-09-26 22:23:01] [INFO ] [ROOM] Removed: 59eb0fe8-3a1b-48a9-9d2d-ed137434fe1b
+[2026-09-26 22:23:01] [DEBUG] Nhận Message từ 6e64fabb-14df-4c5c-a4bc-d611b5213d60: Type=CreateRoom, Sender=
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=2e02f14f-4e4a-4cfb-81d3-e048380a575d, IP=127.0.0.1:51107 (Online: 5)
+[2026-09-26 22:23:01] [INFO ] [ROOM] Removed: 96dec7a1-2567-40f7-9e9c-0cd42f499a8f
+[2026-09-26 22:23:01] [INFO ] [LeaveRoom] Session 5f2717ec-603b-47fe-9d0b-bf700658cc4e da roi phong 96dec7a1-2567-40f7-9e9c-0cd42f499a8f
+[2026-09-26 22:23:01] [INFO ] [ROOM] Player_dd3e joined Room_18_0 as Player
+[2026-09-26 22:23:01] [INFO ] [CreateRoom] Yêu cầu từ Session: 6e64fabb-14df-4c5c-a4bc-d611b5213d60
+[2026-09-26 22:23:01] [INFO ] [ROOM] Player_6e64 left Room_19_0
+[2026-09-26 22:23:01] [INFO ] [ROOM] Removed: 05df1d9e-e77d-4e6c-9173-3b617a52d7aa
+[2026-09-26 22:23:01] [INFO ] [LeaveRoom] Session 6e64fabb-14df-4c5c-a4bc-d611b5213d60 da roi phong 05df1d9e-e77d-4e6c-9173-3b617a52d7aa
+[2026-09-26 22:23:01] [ERROR] Lỗi khi gửi dữ liệu tới 127.0.0.1:51110 | Chi tiết: Unable to write data to the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 3e719da8-59c1-4382-ade2-f072a5d325f7
+[2026-09-26 22:23:01] [ERROR] Lỗi khi gửi dữ liệu tới 127.0.0.1:51111 | Chi tiết: Unable to write data to the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [INFO ] [ROOM] Created: Room_17_1 (53c7b946-9a95-4a46-bd29-41a117e56ab4)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: a44247a4-858e-48ac-8884-8ea5d4fbd5a9
+[2026-09-26 22:23:01] [INFO ] [ROOM] Player_a442 left Room_15_1
+[2026-09-26 22:23:01] [INFO ] [ROOM] Removed: 5260324d-25a3-485c-a7de-4cd3e6fc6b85
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: dd3e4a31-0dc6-43d7-8390-966856fee5b5
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=fbb49ad7-825e-4c08-8049-a40f11c60ebc, IP=127.0.0.1:51113 (Online: 6)
+[2026-09-26 22:23:01] [INFO ] [ROOM] Player_5f27 joined Room_17_1 as Player
+[2026-09-26 22:23:01] [ERROR] Lỗi khi gửi dữ liệu tới 127.0.0.1:51112 | Chi tiết: Unable to write data to the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [INFO ] [ROOM] Player_3e71 left Room_16_1
+[2026-09-26 22:23:01] [INFO ] [ROOM] Removed: 0923c3bd-1abf-4a49-b549-c41fcae8a0ae
+[2026-09-26 22:23:01] [INFO ] [ROOM] Player_dd3e left Room_18_0
+[2026-09-26 22:23:01] [INFO ] [ROOM] Removed: 75ca8c21-caa6-4d7d-a5eb-c8e8082e3535
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 5f2717ec-603b-47fe-9d0b-bf700658cc4e
+[2026-09-26 22:23:01] [INFO ] [ROOM] Created: Room_19_1 (dc6eda3d-c763-422b-9031-684fe26c29de)
+[2026-09-26 22:23:01] [INFO ] [ROOM] Player_6e64 joined Room_19_1 as Player
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=3e719da8-59c1-4382-ade2-f072a5d325f7, IP=127.0.0.1:51109 (Online: 5)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=d7a9a914-9b95-4d22-9cdd-84f470e8cf3b, IP=127.0.0.1:51114 (Online: 6)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=dd3e4a31-0dc6-43d7-8390-966856fee5b5, IP=127.0.0.1:51111 (Online: 4)
+[2026-09-26 22:23:01] [INFO ] [ROOM] Player_5f27 left Room_17_1
+[2026-09-26 22:23:01] [INFO ] [ROOM] Removed: 53c7b946-9a95-4a46-bd29-41a117e56ab4
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 6e64fabb-14df-4c5c-a4bc-d611b5213d60
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=81bbf9a8-607f-4c0f-9651-191b7664a474, IP=127.0.0.1:51115 (Online: 5)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=a44247a4-858e-48ac-8884-8ea5d4fbd5a9, IP=127.0.0.1:51108 (Online: 5)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=5f2717ec-603b-47fe-9d0b-bf700658cc4e, IP=127.0.0.1:51110 (Online: 4)
+[2026-09-26 22:23:01] [INFO ] [ROOM] Player_6e64 left Room_19_1
+[2026-09-26 22:23:01] [INFO ] [ROOM] Removed: dc6eda3d-c763-422b-9031-684fe26c29de
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=7a1326de-3254-4f32-a462-cfca8e3477ff, IP=127.0.0.1:51116 (Online: 5)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=6e64fabb-14df-4c5c-a4bc-d611b5213d60, IP=127.0.0.1:51112 (Online: 4)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=4a6260d4-cd94-443d-8428-640ad08390e7, IP=127.0.0.1:51117 (Online: 5)
+[2026-09-26 22:23:01] [DEBUG] Client 127.0.0.1:51116 lỗi I/O: Unable to read data from the transport connection: An existing connection was forcibly closed by the remote host..
+[2026-09-26 22:23:01] [DEBUG] Client 127.0.0.1:51115 lỗi I/O: Unable to read data from the transport connection: An existing connection was forcibly closed by the remote host..
+[2026-09-26 22:23:01] [DEBUG] Client 127.0.0.1:51113 lỗi I/O: Unable to read data from the transport connection: An existing connection was forcibly closed by the remote host..
+[2026-09-26 22:23:01] [DEBUG] Client 127.0.0.1:51114 lỗi I/O: Unable to read data from the transport connection: An existing connection was forcibly closed by the remote host..
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 4a6260d4-cd94-443d-8428-640ad08390e7
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=f879aa0f-99a3-4f61-95e7-100b5861828d, IP=127.0.0.1:51118 (Online: 6)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 7a1326de-3254-4f32-a462-cfca8e3477ff
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 81bbf9a8-607f-4c0f-9651-191b7664a474
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: fbb49ad7-825e-4c08-8049-a40f11c60ebc
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: d7a9a914-9b95-4d22-9cdd-84f470e8cf3b
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=4a6260d4-cd94-443d-8428-640ad08390e7, IP=127.0.0.1:51117 (Online: 5)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=6347e2c9-037f-424d-9707-c8bb7b7410a9, IP=127.0.0.1:51119 (Online: 6)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=7a1326de-3254-4f32-a462-cfca8e3477ff, IP=127.0.0.1:51116 (Online: 5)
+[2026-09-26 22:23:01] [DEBUG] Client 127.0.0.1:51118 lỗi I/O: Unable to read data from the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=fbb49ad7-825e-4c08-8049-a40f11c60ebc, IP=127.0.0.1:51113 (Online: 4)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=d7a9a914-9b95-4d22-9cdd-84f470e8cf3b, IP=127.0.0.1:51114 (Online: 3)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 6347e2c9-037f-424d-9707-c8bb7b7410a9
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=f7eb5f02-7ce6-435b-ac1d-296615493c1f, IP=127.0.0.1:51120 (Online: 4)
+[2026-09-26 22:23:01] [ERROR] Lỗi khi gửi dữ liệu tới 127.0.0.1:51119 | Chi tiết: Unable to write data to the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: f879aa0f-99a3-4f61-95e7-100b5861828d
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=6347e2c9-037f-424d-9707-c8bb7b7410a9, IP=127.0.0.1:51119 (Online: 3)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=a01a92bc-c9ed-4ab8-b5a6-1ddbcf9cb70e, IP=127.0.0.1:51121 (Online: 4)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=81bbf9a8-607f-4c0f-9651-191b7664a474, IP=127.0.0.1:51115 (Online: 3)
+[2026-09-26 22:23:01] [DEBUG] Client 127.0.0.1:51121 lỗi I/O: Unable to read data from the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=f879aa0f-99a3-4f61-95e7-100b5861828d, IP=127.0.0.1:51118 (Online: 2)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=b9786111-a84a-4618-9fc3-680c898d9daf, IP=127.0.0.1:51122 (Online: 3)
+[2026-09-26 22:23:01] [DEBUG] Client 127.0.0.1:51120 lỗi I/O: Unable to read data from the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: a01a92bc-c9ed-4ab8-b5a6-1ddbcf9cb70e
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: b9786111-a84a-4618-9fc3-680c898d9daf
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=a8a4e404-257a-4c60-93ce-39f610789563, IP=127.0.0.1:51123 (Online: 4)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: f7eb5f02-7ce6-435b-ac1d-296615493c1f
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=a01a92bc-c9ed-4ab8-b5a6-1ddbcf9cb70e, IP=127.0.0.1:51121 (Online: 3)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: a8a4e404-257a-4c60-93ce-39f610789563
+[2026-09-26 22:23:01] [ERROR] Lỗi khi gửi dữ liệu tới 127.0.0.1:51123 | Chi tiết: Unable to write data to the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=024e01d0-b8fc-41bd-a02f-e981d00be0c2, IP=127.0.0.1:51124 (Online: 4)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=f7eb5f02-7ce6-435b-ac1d-296615493c1f, IP=127.0.0.1:51120 (Online: 3)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=b9786111-a84a-4618-9fc3-680c898d9daf, IP=127.0.0.1:51122 (Online: 2)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 024e01d0-b8fc-41bd-a02f-e981d00be0c2
+[2026-09-26 22:23:01] [ERROR] Lỗi khi gửi dữ liệu tới 127.0.0.1:51124 | Chi tiết: Unable to write data to the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=29ed31b1-8ece-4513-b003-070a3c66409c, IP=127.0.0.1:51125 (Online: 3)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=024e01d0-b8fc-41bd-a02f-e981d00be0c2, IP=127.0.0.1:51124 (Online: 2)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=a8a4e404-257a-4c60-93ce-39f610789563, IP=127.0.0.1:51123 (Online: 1)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=f7382a81-57fb-4fb6-a942-9a75605462f8, IP=127.0.0.1:51126 (Online: 2)
+[2026-09-26 22:23:01] [DEBUG] Client 127.0.0.1:51125 lỗi I/O: Unable to read data from the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=6d6cb6b8-3336-41d4-ac0c-8da1d5e3f8dc, IP=127.0.0.1:51127 (Online: 3)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: f7382a81-57fb-4fb6-a942-9a75605462f8
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 29ed31b1-8ece-4513-b003-070a3c66409c
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=9786dd4a-3512-485f-9ae1-0a0d666bba95, IP=127.0.0.1:51128 (Online: 4)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 6d6cb6b8-3336-41d4-ac0c-8da1d5e3f8dc
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=f7382a81-57fb-4fb6-a942-9a75605462f8, IP=127.0.0.1:51126 (Online: 3)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 9786dd4a-3512-485f-9ae1-0a0d666bba95
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=761781e7-526c-4f0e-b2dd-e79c58954964, IP=127.0.0.1:51129 (Online: 4)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=6d6cb6b8-3336-41d4-ac0c-8da1d5e3f8dc, IP=127.0.0.1:51127 (Online: 3)
+[2026-09-26 22:23:01] [ERROR] Lỗi khi gửi dữ liệu tới 127.0.0.1:51128 | Chi tiết: Unable to write data to the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 761781e7-526c-4f0e-b2dd-e79c58954964
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=e8cc3083-dfa4-4cef-af5e-553d79c2afcc, IP=127.0.0.1:51130 (Online: 4)
+[2026-09-26 22:23:01] [ERROR] Lỗi khi gửi dữ liệu tới 127.0.0.1:51129 | Chi tiết: Unable to write data to the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=29ed31b1-8ece-4513-b003-070a3c66409c, IP=127.0.0.1:51125 (Online: 3)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=761781e7-526c-4f0e-b2dd-e79c58954964, IP=127.0.0.1:51129 (Online: 2)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=8cef9ab5-b4b3-4a69-8028-f9f9522a26f0, IP=127.0.0.1:51131 (Online: 3)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=9786dd4a-3512-485f-9ae1-0a0d666bba95, IP=127.0.0.1:51128 (Online: 2)
+[2026-09-26 22:23:01] [DEBUG] Client 127.0.0.1:51130 lỗi I/O: Unable to read data from the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=4bd5d6f8-90eb-4119-b200-68f08547efa6, IP=127.0.0.1:51132 (Online: 3)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 8cef9ab5-b4b3-4a69-8028-f9f9522a26f0
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: e8cc3083-dfa4-4cef-af5e-553d79c2afcc
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=db1a4f8f-91e0-46ca-b66e-8d0b9d1930eb, IP=127.0.0.1:51133 (Online: 4)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 4bd5d6f8-90eb-4119-b200-68f08547efa6
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=8cef9ab5-b4b3-4a69-8028-f9f9522a26f0, IP=127.0.0.1:51131 (Online: 3)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: db1a4f8f-91e0-46ca-b66e-8d0b9d1930eb
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=b51f4a08-c814-4ee1-99af-6603389bedf1, IP=127.0.0.1:51134 (Online: 4)
+[2026-09-26 22:23:01] [ERROR] Lỗi khi gửi dữ liệu tới 127.0.0.1:51133 | Chi tiết: Unable to write data to the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [ERROR] Lỗi khi gửi dữ liệu tới 127.0.0.1:51134 | Chi tiết: Unable to write data to the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: b51f4a08-c814-4ee1-99af-6603389bedf1
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=4b17ab7b-505c-4b82-8660-25dca29e4eb8, IP=127.0.0.1:51135 (Online: 4)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=4bd5d6f8-90eb-4119-b200-68f08547efa6, IP=127.0.0.1:51132 (Online: 3)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=e8cc3083-dfa4-4cef-af5e-553d79c2afcc, IP=127.0.0.1:51130 (Online: 3)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=db1a4f8f-91e0-46ca-b66e-8d0b9d1930eb, IP=127.0.0.1:51133 (Online: 2)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=b51f4a08-c814-4ee1-99af-6603389bedf1, IP=127.0.0.1:51134 (Online: 1)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=93951370-4075-4073-9075-4cb962574156, IP=127.0.0.1:51136 (Online: 2)
+[2026-09-26 22:23:01] [DEBUG] Client 127.0.0.1:51135 lỗi I/O: Unable to read data from the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=72ba33a4-4bcc-4f9c-be3f-96cb96386217, IP=127.0.0.1:51137 (Online: 3)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 93951370-4075-4073-9075-4cb962574156
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 4b17ab7b-505c-4b82-8660-25dca29e4eb8
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=576d9646-cb42-499b-ab7e-00d429b892fe, IP=127.0.0.1:51138 (Online: 4)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 72ba33a4-4bcc-4f9c-be3f-96cb96386217
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=93951370-4075-4073-9075-4cb962574156, IP=127.0.0.1:51136 (Online: 3)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 576d9646-cb42-499b-ab7e-00d429b892fe
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=06ac8223-4502-4de9-b58f-01a5e3ff2542, IP=127.0.0.1:51139 (Online: 4)
+[2026-09-26 22:23:01] [ERROR] Lỗi khi gửi dữ liệu tới 127.0.0.1:51138 | Chi tiết: Unable to write data to the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=72ba33a4-4bcc-4f9c-be3f-96cb96386217, IP=127.0.0.1:51137 (Online: 3)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 06ac8223-4502-4de9-b58f-01a5e3ff2542
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=cd8152f5-a4b9-406a-bb6e-ecd0ef643430, IP=127.0.0.1:51140 (Online: 4)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=4b17ab7b-505c-4b82-8660-25dca29e4eb8, IP=127.0.0.1:51135 (Online: 3)
+[2026-09-26 22:23:01] [ERROR] Lỗi khi gửi dữ liệu tới 127.0.0.1:51139 | Chi tiết: Unable to write data to the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=06ac8223-4502-4de9-b58f-01a5e3ff2542, IP=127.0.0.1:51139 (Online: 2)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=01641131-265a-4559-b3e8-9c0513a8001a, IP=127.0.0.1:51141 (Online: 3)
+[2026-09-26 22:23:01] [DEBUG] Client 127.0.0.1:51140 lỗi I/O: Unable to read data from the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=576d9646-cb42-499b-ab7e-00d429b892fe, IP=127.0.0.1:51138 (Online: 2)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=288b170c-2ea7-4f41-80c4-aa719defd5e7, IP=127.0.0.1:51142 (Online: 3)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 01641131-265a-4559-b3e8-9c0513a8001a
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: cd8152f5-a4b9-406a-bb6e-ecd0ef643430
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=c23b89be-41d1-4a99-a90d-1898554bf5f8, IP=127.0.0.1:51143 (Online: 4)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 288b170c-2ea7-4f41-80c4-aa719defd5e7
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=01641131-265a-4559-b3e8-9c0513a8001a, IP=127.0.0.1:51141 (Online: 3)
+[2026-09-26 22:23:01] [ERROR] Lỗi khi gửi dữ liệu tới 127.0.0.1:51143 | Chi tiết: Unable to write data to the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=f6278661-657e-4ec2-b286-c3d1932bcf13, IP=127.0.0.1:51144 (Online: 4)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=288b170c-2ea7-4f41-80c4-aa719defd5e7, IP=127.0.0.1:51142 (Online: 3)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: c23b89be-41d1-4a99-a90d-1898554bf5f8
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=cd8152f5-a4b9-406a-bb6e-ecd0ef643430, IP=127.0.0.1:51140 (Online: 2)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=3eb1969a-078f-4908-964b-f4a14af9dd12, IP=127.0.0.1:51145 (Online: 3)
+[2026-09-26 22:23:01] [DEBUG] Client 127.0.0.1:51144 lỗi I/O: Unable to read data from the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=c23b89be-41d1-4a99-a90d-1898554bf5f8, IP=127.0.0.1:51143 (Online: 2)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=c4f110f2-3419-4ca0-bb8f-dd402047c2f1, IP=127.0.0.1:51146 (Online: 3)
+[2026-09-26 22:23:01] [DEBUG] Client 127.0.0.1:51145 lỗi I/O: Unable to read data from the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: f6278661-657e-4ec2-b286-c3d1932bcf13
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=138e161c-3210-4fd4-81cd-28bf43b5199b, IP=127.0.0.1:51147 (Online: 4)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: c4f110f2-3419-4ca0-bb8f-dd402047c2f1
+[2026-09-26 22:23:01] [DEBUG] Client 127.0.0.1:51147 lỗi I/O: Unable to read data from the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 3eb1969a-078f-4908-964b-f4a14af9dd12
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=f6278661-657e-4ec2-b286-c3d1932bcf13, IP=127.0.0.1:51144 (Online: 3)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=17f79de1-974a-4a7d-a103-13560a94a86c, IP=127.0.0.1:51148 (Online: 4)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=c4f110f2-3419-4ca0-bb8f-dd402047c2f1, IP=127.0.0.1:51146 (Online: 3)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 138e161c-3210-4fd4-81cd-28bf43b5199b
+[2026-09-26 22:23:01] [ERROR] Lỗi khi gửi dữ liệu tới 127.0.0.1:51148 | Chi tiết: Unable to write data to the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=07d5985a-4813-4a24-b665-a00646e5d21b, IP=127.0.0.1:51149 (Online: 4)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 17f79de1-974a-4a7d-a103-13560a94a86c
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=138e161c-3210-4fd4-81cd-28bf43b5199b, IP=127.0.0.1:51147 (Online: 3)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=3eb1969a-078f-4908-964b-f4a14af9dd12, IP=127.0.0.1:51145 (Online: 2)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=11c99bf0-2a41-41bf-a897-cf7108a218f8, IP=127.0.0.1:51150 (Online: 3)
+[2026-09-26 22:23:01] [DEBUG] Client 127.0.0.1:51149 lỗi I/O: Unable to read data from the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=17f79de1-974a-4a7d-a103-13560a94a86c, IP=127.0.0.1:51148 (Online: 2)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=aad4b1d9-dea5-47bc-bd61-882a0ca110ea, IP=127.0.0.1:51153 (Online: 3)
+[2026-09-26 22:23:01] [DEBUG] Client 127.0.0.1:51150 lỗi I/O: Unable to read data from the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 07d5985a-4813-4a24-b665-a00646e5d21b
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=40a40ed6-138a-47c9-b2bb-5647628be3a8, IP=127.0.0.1:51154 (Online: 4)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: aad4b1d9-dea5-47bc-bd61-882a0ca110ea
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 11c99bf0-2a41-41bf-a897-cf7108a218f8
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=07d5985a-4813-4a24-b665-a00646e5d21b, IP=127.0.0.1:51149 (Online: 3)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=f4882600-d90b-4b52-94e1-357dcb238aac, IP=127.0.0.1:51155 (Online: 4)
+[2026-09-26 22:23:01] [DEBUG] Client 127.0.0.1:51154 lỗi I/O: Unable to read data from the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=aad4b1d9-dea5-47bc-bd61-882a0ca110ea, IP=127.0.0.1:51153 (Online: 3)
+[2026-09-26 22:23:01] [ERROR] Lỗi khi gửi dữ liệu tới 127.0.0.1:51155 | Chi tiết: Unable to write data to the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: f4882600-d90b-4b52-94e1-357dcb238aac
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=2dbe8e1b-66b9-49c6-b930-af7345411eb9, IP=127.0.0.1:51156 (Online: 4)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 40a40ed6-138a-47c9-b2bb-5647628be3a8
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=11c99bf0-2a41-41bf-a897-cf7108a218f8, IP=127.0.0.1:51150 (Online: 3)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=f4882600-d90b-4b52-94e1-357dcb238aac, IP=127.0.0.1:51155 (Online: 2)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=e9cefbbf-7124-42ce-83ef-c69bef0eb2e9, IP=127.0.0.1:51157 (Online: 3)
+[2026-09-26 22:23:01] [DEBUG] Client 127.0.0.1:51156 lỗi I/O: Unable to read data from the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=40a40ed6-138a-47c9-b2bb-5647628be3a8, IP=127.0.0.1:51154 (Online: 2)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=091a7374-3c35-40cd-be62-be450640ec43, IP=127.0.0.1:51158 (Online: 3)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 2dbe8e1b-66b9-49c6-b930-af7345411eb9
+[2026-09-26 22:23:01] [DEBUG] Client 127.0.0.1:51157 lỗi I/O: Unable to read data from the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 091a7374-3c35-40cd-be62-be450640ec43
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=599fcf6e-fc44-4025-8a16-36901a166d99, IP=127.0.0.1:51159 (Online: 4)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=2dbe8e1b-66b9-49c6-b930-af7345411eb9, IP=127.0.0.1:51156 (Online: 3)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: e9cefbbf-7124-42ce-83ef-c69bef0eb2e9
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 599fcf6e-fc44-4025-8a16-36901a166d99
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=dbbfac04-578f-4524-8548-082cabcd3e59, IP=127.0.0.1:51160 (Online: 4)
+[2026-09-26 22:23:01] [ERROR] Lỗi khi gửi dữ liệu tới 127.0.0.1:51159 | Chi tiết: Unable to write data to the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=e9cefbbf-7124-42ce-83ef-c69bef0eb2e9, IP=127.0.0.1:51157 (Online: 3)
+[2026-09-26 22:23:01] [ERROR] Lỗi khi gửi dữ liệu tới 127.0.0.1:51160 | Chi tiết: Unable to write data to the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: dbbfac04-578f-4524-8548-082cabcd3e59
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=1cac3d36-6d6d-46f7-ba5c-4d7651573cc5, IP=127.0.0.1:51161 (Online: 4)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=091a7374-3c35-40cd-be62-be450640ec43, IP=127.0.0.1:51158 (Online: 3)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=599fcf6e-fc44-4025-8a16-36901a166d99, IP=127.0.0.1:51159 (Online: 2)
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=dbbfac04-578f-4524-8548-082cabcd3e59, IP=127.0.0.1:51160 (Online: 1)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=9692388a-2188-44f5-920f-945c2e52ce63, IP=127.0.0.1:51162 (Online: 2)
+[2026-09-26 22:23:01] [DEBUG] Client 127.0.0.1:51161 lỗi I/O: Unable to read data from the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 9692388a-2188-44f5-920f-945c2e52ce63
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=0abb990b-f08a-4757-9bad-a49a102ac5b8, IP=127.0.0.1:51163 (Online: 3)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 1cac3d36-6d6d-46f7-ba5c-4d7651573cc5
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=9692388a-2188-44f5-920f-945c2e52ce63, IP=127.0.0.1:51162 (Online: 2)
+[2026-09-26 22:23:01] [INFO ] [+] Client kết nối: SessionId=9c64a4f9-ed76-4a06-87d8-9e80c8aebe78, IP=127.0.0.1:51164 (Online: 3)
+[2026-09-26 22:23:01] [DEBUG] Client 127.0.0.1:51163 lỗi I/O: Unable to read data from the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=1cac3d36-6d6d-46f7-ba5c-4d7651573cc5, IP=127.0.0.1:51161 (Online: 2)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 0abb990b-f08a-4757-9bad-a49a102ac5b8
+[2026-09-26 22:23:01] [DEBUG] Client 127.0.0.1:51164 lỗi I/O: Unable to read data from the transport connection: An established connection was aborted by the software in your host machine..
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=0abb990b-f08a-4757-9bad-a49a102ac5b8, IP=127.0.0.1:51163 (Online: 1)
+[2026-09-26 22:23:01] [INFO ] [Disconnect] Client ngat ket noi: 9c64a4f9-ed76-4a06-87d8-9e80c8aebe78
+[2026-09-26 22:23:01] [INFO ] [-] Client ngắt kết nối: SessionId=9c64a4f9-ed76-4a06-87d8-9e80c8aebe78, IP=127.0.0.1:51164 (Online: 0)
+[2026-09-26 22:23:02] [INFO ] [+] Client kết nối: SessionId=a2bd048f-9aff-4e46-929c-9d56cac12f5d, IP=127.0.0.1:51166 (Online: 1)
+[2026-09-26 22:23:02] [INFO ] [Disconnect] Client ngat ket noi: a2bd048f-9aff-4e46-929c-9d56cac12f5d
+[2026-09-26 22:23:02] [INFO ] [-] Client ngắt kết nối: SessionId=a2bd048f-9aff-4e46-929c-9d56cac12f5d, IP=127.0.0.1:51166 (Online: 0)

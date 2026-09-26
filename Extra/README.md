@@ -1,4 +1,4 @@
-﻿# Extra
+# Extra
 
 Lưu tài liệu bổ sung và bằng chứng:
 

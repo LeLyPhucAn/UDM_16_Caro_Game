@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Windows.Forms;
 using Client.Network;       // Giao tiếp mạng
@@ -29,14 +29,12 @@ namespace Client.Forms
 
         private const int TURN_TIMEOUT_SECONDS = 60;
         private const int GRACE_PERIOD_SECONDS = 90;
-        private const int REMATCH_PROMPT_DELAY_MS = 5000;
+        private const int REMATCH_PROMPT_DELAY_MS = 5000; // Đợi 5 giây trước khi hỏi tái đấu
 
+        private bool _gameEnded = false;
 
         private Button? _btnSurrender;
         private Button? _btnDraw;
-        private Label? _lblCountdownOverlay;
-        private System.Windows.Forms.Timer? _countdownTimer;
-        private int _countdownTicks;
         private System.Windows.Forms.Timer _clientTimer = new System.Windows.Forms.Timer();
         private int _remainingSeconds = TURN_TIMEOUT_SECONDS;
 
@@ -145,40 +143,7 @@ namespace Client.Forms
                 pnlTop.Controls.Add(_btnDraw);
             }
 
-            // Setup countdown overlay
-            _lblCountdownOverlay = new Label
-            {
-                AutoSize = false,
-                Dock = DockStyle.Fill,
-                TextAlign = ContentAlignment.MiddleCenter,
-                Font = new Font("Segoe UI", 72, FontStyle.Bold),
-                BackColor = Color.FromArgb(200, 0, 0, 0),
-                ForeColor = Color.Yellow,
-                Visible = false
-            };
-            pnlBoard.Controls.Add(_lblCountdownOverlay);
-            _lblCountdownOverlay.BringToFront();
 
-            _countdownTimer = new System.Windows.Forms.Timer { Interval = 1000 };
-            _countdownTimer.Tick += (s, e) =>
-            {
-                _countdownTicks--;
-                if (_countdownTicks > 0)
-                {
-                    _lblCountdownOverlay.Text = _countdownTicks.ToString();
-                }
-                else if (_countdownTicks == 0)
-                {
-                    _lblCountdownOverlay.Text = "BẮT ĐẦU!";
-                    _boardControl.Enabled = true;
-                    _clientTimer.Start();
-                }
-                else
-                {
-                    _countdownTimer.Stop();
-                    _lblCountdownOverlay.Visible = false;
-                }
-            };
 
             btnSend.Click += BtnSend_Click;
             txtChatInput.KeyDown += TxtChatInput_KeyDown;
@@ -346,8 +311,11 @@ namespace Client.Forms
                         }
                     }
 
-                    // Bắt đầu đếm ngược thời gian
+                    // Bắt đầu đếm ngược thời gian lượt đi
                     _remainingSeconds = TURN_TIMEOUT_SECONDS;
+                    UpdateTimerUI(_remainingSeconds);
+
+                    if (_boardControl != null) _boardControl.Enabled = !_isSpectator;
                     _clientTimer.Start();
                 }
                 // 2. XỬ LÝ KHI CÓ NGƯỜI ĐÁNH CỜ
@@ -413,6 +381,8 @@ namespace Client.Forms
                         _boardControl?.HighlightWinningCells(winningPts);
                     }
 
+                    _gameEnded = true; // Đánh dấu game đã kết thúc
+
                     // Gọi phương thức async xử lý hiệu ứng 5s và hộp thoại tái đấu
                     HandleEndGameSequenceAsync(gameOverMsg);
                 }
@@ -423,11 +393,17 @@ namespace Client.Forms
                 {
                     if (!_isSpectator)
                     {
-                        var dialogResult = MessageBox.Show("Đối thủ muốn TÁI ĐẤU với bạn. Bạn có đồng ý không?", "Tái đấu", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                        var dialogResult = MessageBox.Show(
+                            "Đối thủ muốn TÁI ĐẤU với bạn. Bạn có đồng ý không?",
+                            "Tái đấu",
+                            MessageBoxButtons.YesNo,
+                            MessageBoxIcon.Question
+                        );
                         if (dialogResult == DialogResult.Yes)
                         {
                             var req = new CaroGame.Protocol.Messages.RequestMessage { SenderId = _playerName, Action = "RematchAccepted", Data = _roomId };
                             _ = _clientConnection.SendMessageAsync(req);
+                            // Không cần đóng form. Server sẽ gửi GameStateMessage để reset game.
                         }
                         else
                         {
@@ -443,20 +419,8 @@ namespace Client.Forms
                         MessageBox.Show("Đối thủ đã từ chối yêu cầu tái đấu.", "Tái đấu bị từ chối", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
                 }
-                else if (message is ResponseMessage resMsgAccept && resMsgAccept.Action == "RematchAccepted")
-                {
-                    if (_roomName.StartsWith("Bot AI"))
-                    {
-                        // Đối với Bot AI, không quay về phòng chờ (RoomForm) mà chơi tiếp luôn
-                        // GameStateMessage sẽ được gửi ngay sau đây để khởi tạo lại bàn cờ.
-                    }
-                    else
-                    {
-                        MessageBox.Show("Đối thủ đã đồng ý tái đấu! Đang quay về sảnh...", "Tái đấu", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        this.DialogResult = DialogResult.Retry;
-                        this.Close();
-                    }
-                }
+                // RematchAccepted: Server sẽ tự gửi GameStateMessage mới, không cần đóng form
+                // (handler GameStateMessage ở trên sẽ tự reset bàn cờ)
                 else if (message is ResponseMessage resMsgDraw && resMsgDraw.Action == "OpponentDrawRequest")
                 {
                     if (!_isSpectator)
@@ -547,6 +511,12 @@ namespace Client.Forms
 
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
+            if (this.DialogResult == DialogResult.Retry || _isSpectator || !_clientConnection.IsConnected) 
+            {
+                base.OnFormClosing(e);
+                return;
+            }
+
             base.OnFormClosing(e);
 
             DialogResult result = MessageBox.Show(
@@ -771,13 +741,32 @@ namespace Client.Forms
             {
                 ShowEndGameEffect(isWin);
 
-                // Đợi 5 giây
+                // Hien thi thong bao ket qua rieng cho cac truong hop dac biet
+                if (gameOverMsg.ResultType == "Timeout")
+                {
+                    MessageBox.Show(
+                        isWin ? "CHIẾN THắNG!\n\nĐối thủ đã hết thời gian suy nghĩ." : "Bạn đã hết giờ suy nghĩ! Đối thủ được xử thắng.",
+                        "Kết thúc", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else if (gameOverMsg.ResultType == "Disconnect")
+                {
+                    MessageBox.Show(
+                        isWin ? "Đối thủ không kết nối lại kịp trong 90 giây!\nBạn được xử thắng." : "Bạn không kết nối lại kịp thời gian cho phép!\nĐối thủ được xử thắng.",
+                        "Kết thúc", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else if (gameOverMsg.ResultType == "Surrender")
+                {
+                    MessageBox.Show(
+                        isWin ? "Đối thủ đã đầu hàng! Chúc mừng giành chiến thắng." : "Bạn đã đầu hàng.",
+                        "Kết thúc", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+
+                // Đợi 5 giây hiệu ứng trước khi hiển thị hộp thoại tái đấu
                 await Task.Delay(REMATCH_PROMPT_DELAY_MS);
 
-                HideVictoryEffect();
-
-                // Chỉ hiển thị hộp thoại tái đấu nếu 1 bên thắng 5 quân liên tiếp
-                if (gameOverMsg.ResultType == "Win" && !_isSpectator)
+                // Ca 2 ben (Win, Timeout, Surrender) deu duoc hoi tai dau (tru khan gia va Disconnect)
+                bool canRematch = !_isSpectator && gameOverMsg.ResultType != "Disconnect";
+                if (canRematch)
                 {
                     var dialogResult = MessageBox.Show(
                         "Bạn có muốn gửi YÊU CẦU TÁI ĐẤU tới đối thủ không?",
@@ -792,21 +781,8 @@ namespace Client.Forms
                         _ = _clientConnection.SendMessageAsync(req);
                     }
                 }
-                else if (gameOverMsg.ResultType == "Timeout")
-                {
-                    MessageBox.Show(isWin ? "CHIẾN THẮNG!\n\nĐối thủ đã hết thời gian suy nghĩ." : "Bạn đã hết giờ suy nghĩ! Đối thủ được xử thắng.", "Kết thúc", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-                else if (gameOverMsg.ResultType == "Disconnect")
-                {
-                    MessageBox.Show(isWin ? "Đối thủ không kết nối lại kịp trong 90 giây!\nBạn được xử thắng." : "Bạn không kết nối lại kịp thời gian cho phép!\nĐối thủ được xử thắng.", "Kết thúc", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-                else if (gameOverMsg.ResultType == "Surrender")
-                {
-                    MessageBox.Show(isWin ? $"Đối thủ đã đầu hàng! Chúc mừng giành chiến thắng." : "Bạn đã đầu hàng.", "Kết thúc", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
             }
         }
-
         private void ConfettiTimer_Tick(object? sender, EventArgs e)
         {
             for (int i = 0; i < _confettiParticles.Count; i++)
